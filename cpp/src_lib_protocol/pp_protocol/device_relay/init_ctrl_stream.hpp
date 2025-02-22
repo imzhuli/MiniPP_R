@@ -4,14 +4,16 @@
 class xInitCtrlStream : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(CheckKey);
+        W(CheckKey, Ipv4Address, Ipv6Address);
     }
     void DeserializeMembers() override {
-        R(CheckKey);
+        R(CheckKey, Ipv4Address, Ipv6Address);
     }
 
 public:
     std::string CheckKey;
+    xNetAddress Ipv4Address;
+    xNetAddress Ipv6Address;
 };
 
 class xInitCtrlStreamResp : public xBinaryMessage {

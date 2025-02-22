@@ -58,11 +58,12 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     // accept data stream and move it to long idle list
     Conn->PostPacket(Cmd_Terminal_RL_InitDataStreamResp, Header.RequestId, R);
 
-    X_DEBUG_PRINTF("device accepted, DeviceRuntimeId:%" PRIu64 "", NewDevice->DeviceRuntimeId);
-    Conn->DeviceId            = NewDevice->DeviceRuntimeId;
-    CtrlConn->DeviceId        = NewDevice->DeviceRuntimeId;
-    NewDevice->CtrlConnection = CtrlConn;
-    NewDevice->DataConnection = Conn;
+    X_DEBUG_PRINTF("device accepted, DeviceRuntimeId:%" PRIu64 ", DevicdLocalIdString=%s", NewDevice->DeviceRuntimeId, S.DeviceLocalIdString.c_str());
+    Conn->DeviceId                 = NewDevice->DeviceRuntimeId;
+    CtrlConn->DeviceId             = NewDevice->DeviceRuntimeId;
+    NewDevice->CtrlConnection      = CtrlConn;
+    NewDevice->DataConnection      = Conn;
+    NewDevice->DeviceLocalIdString = S.DeviceLocalIdString;
     DeviceConnectionManager.KeepAlive(Conn);
     return true;
 }

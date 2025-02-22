@@ -27,9 +27,10 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
         return false;
     }
     // TODO: check
+    X_DEBUG_PRINTF("New Terminal Device: Ipv4:%s, Ipv6:%s", S.Ipv4Address.IpToString().c_str(), S.Ipv6Address.IpToString().c_str());
 
     auto R      = xInitCtrlStreamResp();
-    R.DeviceId  = 1024;
+    R.DeviceId  = 0;
     R.CtrlId    = Conn->ConnectionId;
     R.DeviceKey = "hello world!";
     Conn->PostPacket(Cmd_Terminal_RL_InitCtrlStreamResp, Header.RequestId, R);

@@ -3,6 +3,6 @@
 killall server_config_center
 killall server_relay_device
 
-nohup ./_build/cpp/bin/server_config_center -c "./test_assets/cc.ini" >> ./logs/cc.log &
-nohup ./_build/cpp/bin/server_relay_device -c "./test_assets/rd.ini" >> ./logs/rd.log &
+nohup ./_build/cpp/bin/server_config_center -c "./test_assets/cc.ini" > ./logs/cc.log &
+nohup ./_build/cpp/bin/server_relay_device -c "./test_assets/rd.ini" > ./logs/rd.log &
 

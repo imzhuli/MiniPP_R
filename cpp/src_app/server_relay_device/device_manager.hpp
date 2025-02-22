@@ -12,6 +12,7 @@ struct xDevice : xListNode {
     uint32_t               Flags           = FLAG_INIT;
     xRD_DeviceConnection * CtrlConnection  = 0;
     xRD_DeviceConnection * DataConnection  = 0;
+    std::string            DeviceLocalIdString;
 
     void MarkDelete() {
         Flags |= FLAG_DELETE;

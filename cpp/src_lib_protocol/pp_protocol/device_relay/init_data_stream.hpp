@@ -4,15 +4,16 @@
 class xInitDataStream : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(CtrlId, DataKey);
+        W(CtrlId, DataKey, DeviceLocalIdString);
     }
     void DeserializeMembers() override {
-        R(CtrlId, DataKey);
+        R(CtrlId, DataKey, DeviceLocalIdString);
     }
 
 public:
     uint64_t    CtrlId;
     std::string DataKey;
+    std::string DeviceLocalIdString;
 };
 
 class xInitDataStreamResp : public xBinaryMessage {
