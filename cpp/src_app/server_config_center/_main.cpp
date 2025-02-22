@@ -188,15 +188,13 @@ int main(int argc, char ** argv) {
     SetupIpv6TestChannel();
     RuntimeAssert(SetupChallengeChannel());
 
-    // for test:
-    auto TestRelay        = xCC_RelayServerBase();
-    TestRelay.CtrlAddress = xNetAddress::Parse("192.168.5.116:17000");
-    TestRelay.DataAddress = xNetAddress::Parse("192.168.5.116:17001");
-    auto Key              = RelayServerManager.AddServerInfo(TestRelay);
-    cout << "TestRelayServerKey: " << StrToHex(&Key, 8) << endl;
-    RelayServerManager.RemoveServerInfoByKey(Key);
-    Key = RelayServerManager.AddServerInfo(TestRelay);
-    cout << "TestRelayServerKey: " << StrToHex(&Key, 8) << endl;
+    for (auto & A : ForceRelayServerList) {
+        auto Key = RelayServerManager.AddServerInfo(A);
+
+        X_DEBUG_PRINTF(
+            "ForcedRelayServerKey: %llx ForcedRelayServerAddress:%s->%s", (long long)(Key), A.CtrlAddress.ToString().c_str(), A.DataAddress.ToString().c_str()
+        );
+    }
 
     auto Ticker = xTicker();
     while (true) {

@@ -18,3 +18,5 @@ extern std::string IpLocationDbFilename;
 extern xCC_IpLocationManager       IpLocationManager;
 extern xCC_ChallengeContextManager ChallengeContextManager;
 extern xCC_RelayServerManager      RelayServerManager;
+
+extern std::vector<xCC_RelayServerBase> ForceRelayServerList;
