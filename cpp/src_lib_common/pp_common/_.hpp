@@ -85,6 +85,15 @@ using xCityId      = uint32_t;
 
 constexpr const uint64_t DeaultRequestTimeoutMS = 1'500;
 
+static constexpr xContinentId CID_UNSPECIFIC    = 0x00;
+static constexpr xContinentId CID_ASIA          = 0x01;
+static constexpr xContinentId CID_EUROP         = 0x02;
+static constexpr xContinentId CID_NORTH_AMERICA = 0x03;
+static constexpr xContinentId CID_SOUTH_AMERICA = 0x04;
+static constexpr xContinentId CID_AFRICA        = 0x05;
+static constexpr xContinentId CID_OCEANIA       = 0x06;
+static constexpr xContinentId CID_ANTARCTIC     = 0x07;
+
 inline uint32_t High32(uint64_t U) {
     return (uint32_t)(U >> 32);
 }
