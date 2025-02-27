@@ -29,10 +29,11 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
     // TODO: check
     X_DEBUG_PRINTF("New Terminal Device: Ipv4:%s, Ipv6:%s", S.Ipv4Address.IpToString().c_str(), S.Ipv6Address.IpToString().c_str());
 
-    auto R      = xInitCtrlStreamResp();
-    R.DeviceId  = 0;
-    R.CtrlId    = Conn->ConnectionId;
-    R.DeviceKey = "hello world!";
+    auto R       = xInitCtrlStreamResp();
+    R.DeviceId   = 0;
+    R.CtrlId     = Conn->ConnectionId;
+    R.DeviceKey  = "hello world!";
+    R.EnableIpv6 = S.Resolved3rdIpv6 || S.Ipv6Address;
     Conn->PostPacket(Cmd_Terminal_RL_InitCtrlStreamResp, Header.RequestId, R);
     DeviceConnectionManager.KeepAlive(Conn);
     return true;
