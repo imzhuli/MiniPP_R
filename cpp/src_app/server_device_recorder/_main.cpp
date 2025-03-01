@@ -33,7 +33,7 @@ int main(int argc, char ** argv) {
 
     while (true) {
         IC.LoopOnce();
-        DRSG.Tick();
+        DRService.Tick();
     }
     return 0;
 }
