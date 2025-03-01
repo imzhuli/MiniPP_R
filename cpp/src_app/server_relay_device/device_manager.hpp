@@ -31,7 +31,11 @@ public:
 
     xDevice * GetDeviceById(uint64_t DeviceId) {
         auto Device = DevicePool.CheckAndGet(DeviceId);
-        if (!Device || Device->IsBeingDeleted()) {
+        if (!Device) {
+            return nullptr;
+        }
+        if (Device->IsBeingDeleted()) {
+            X_DEBUG_PRINTF("device is being deleted");
             return nullptr;
         }
         return Device;
