@@ -198,6 +198,7 @@ int main(int argc, char ** argv) {
         argc, argv,
         {
             { 'd', nullptr, "device_id", true },
+            { '6', nullptr, "ipv6", false },
             { 'c', nullptr, "config", true },
         }
     );
@@ -207,6 +208,12 @@ int main(int argc, char ** argv) {
     cout << "input device id:" << *Did << endl;
     TargetDeviceId = atoll(Did->c_str());
     cout << "DeviceId:" << TargetDeviceId << endl;
+
+    auto TestAddress = TargetAddress;
+    auto V6          = CL["ipv6"];
+    if (V6()) {
+        TestAddress = TargetAddress6;
+    }
 
     cout << RelayAddress.ToString() << endl;
     cout << TargetAddress.ToString() << endl;
