@@ -16,13 +16,16 @@
 //
 #include <cinttypes>
 
-// type-defs
+//
 using namespace xel::common;
 
+// consts
 using xel::InvalidDataSize;
 using xel::MaxPacketPayloadSize;
 using xel::MaxPacketSize;
 using xel::PacketHeaderSize;
+
+// type-defs
 using xel::xAbstract;
 using xel::xBinaryMessage;
 using xel::xCommandLine;
@@ -83,7 +86,8 @@ using xStateId     = uint32_t;
 using xProvinceId  = xStateId;
 using xCityId      = uint32_t;
 
-constexpr const uint64_t DeaultRequestTimeoutMS = 1'500;
+static constexpr const uint64_t DeaultRequestTimeoutMS            = 1'500;
+static constexpr const uint32_t MAX_RELAY_DEVICE_SERVER_SUPPORTED = 4096;  // IdManagerMini::MaxObjectId
 
 static constexpr xContinentId CID_UNSPECIFIC    = 0x00;
 static constexpr xContinentId CID_ASIA          = 0x01;

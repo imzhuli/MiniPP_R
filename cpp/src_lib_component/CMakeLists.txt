@@ -11,9 +11,7 @@ include_directories(
 
 # local libs
 aux_source_directory("./pp_component"                SRC)
-
-
-aux_source_directory("./ppc_common/"   SRC)
+aux_source_directory("./pp_component/server_list"   SRC)
 
 add_library(${libname} ${SRC})
 target_compile_definitions(${libname} PRIVATE X_OPTION_STATIC)
