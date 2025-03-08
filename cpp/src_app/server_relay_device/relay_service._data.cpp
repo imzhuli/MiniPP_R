@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <pp_protocol/command.hpp>
 #include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/dns_query.hpp>
 #include <pp_protocol/device_relay/init_ctrl_stream.hpp>
 #include <pp_protocol/device_relay/init_data_stream.hpp>
 #include <pp_protocol/device_relay/post_data.hpp>
@@ -65,6 +66,12 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     NewDevice->DataConnection      = Conn;
     NewDevice->DeviceLocalIdString = S.DeviceLocalIdString;
     DeviceConnectionManager.KeepAlive(Conn);
+
+    // test: send dns query:
+    auto DQ     = xDnsQuery();
+    DQ.Hostname = "www.163.com";
+    CtrlConn->PostPacket(Cmd_Terminal_RL_DnsQuery, 1024, DQ);
+
     return true;
 }
 

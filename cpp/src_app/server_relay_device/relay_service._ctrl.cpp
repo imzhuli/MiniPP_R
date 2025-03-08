@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <pp_protocol/command.hpp>
 #include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/dns_query.hpp>
 #include <pp_protocol/device_relay/init_ctrl_stream.hpp>
 #include <pp_protocol/device_relay/init_data_stream.hpp>
 #include <pp_protocol/device_relay/post_data.hpp>
@@ -16,6 +17,9 @@ bool xDeviceRelayService::OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketHeade
     switch (Header.CommandId) {
         case Cmd_Terminal_RL_InitCtrlStream: {
             return OnTerminalInitCtrlStream(Conn, Header, Payload, PayloadSize);
+        }
+        case Cmd_Terminal_RL_DnsQueryResp: {
+            return OnTerminalDnsQueryResp(Conn, Header, Payload, PayloadSize);
         }
     }
     return false;
@@ -36,5 +40,20 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
     R.EnableIpv6 = S.Resolved3rdIpv6 || S.Ipv6Address;
     Conn->PostPacket(Cmd_Terminal_RL_InitCtrlStreamResp, Header.RequestId, R);
     DeviceConnectionManager.KeepAlive(Conn);
+    return true;
+}
+
+bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+    auto Resp = xDnsQueryResp();
+    //
+    X_DEBUG_PRINTF("DnsQueryResp: \n%s", HexShow(Payload, PayloadSize).c_str());
+
+    if (!Resp.Deserialize(Payload, PayloadSize)) {
+        return false;
+    }
+    X_DEBUG_PRINTF(
+        "New Terminal Device: Hostname:%s Ipv4:%s, Ipv6:%s", Resp.Hostname.c_str(), Resp.PrimaryIpv4.IpToString().c_str(), Resp.PrimaryIpv6.IpToString().c_str()
+    );
+
     return true;
 }

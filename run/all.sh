@@ -1,4 +1,5 @@
-./_build/cpp/bin/_pa_embedded_client -r 127.0.0.1:17002 -t 240e:ff:e020:966:0:ff:b042:f296:80
+# ./_build/cpp/bin/_pa_embedded_client -r 127.0.0.1:17002 -t 240e:ff:e020:966:0:ff:b042:f296:80
+set -e 
 
 killall server_config_center
 killall server_relay_device

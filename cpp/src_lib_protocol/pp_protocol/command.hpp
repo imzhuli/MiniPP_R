@@ -39,14 +39,18 @@ static constexpr const xPacketCommandId Cmd_PostRelayServerAudit = Cmd_Managemen
 
 // backend base:
 static constexpr const xPacketCommandId Cmd_BackendBase             = 0x04'000;
-static constexpr const xPacketCommandId Cmd_AuditTerminalInfo       = Cmd_BackendBase + 0x01;
+static constexpr const xPacketCommandId Cmd_AuditTerminalInfo       = Cmd_BackendBase + 0x01;  // 旧版, 弃用
 static constexpr const xPacketCommandId Cmd_AuditTerminalInfoResp   = Cmd_BackendBase + 0x02;  // 一般不处理返回
-static constexpr const xPacketCommandId Cmd_AuditUsageByAuditId     = Cmd_BackendBase + 0x03;
+static constexpr const xPacketCommandId Cmd_AuditUsageByAuditId     = Cmd_BackendBase + 0x03;  // 旧版, 弃用
 static constexpr const xPacketCommandId Cmd_AuditUsageByAuditIdResp = Cmd_BackendBase + 0x04;  // 一般不处理返回
-static constexpr const xPacketCommandId Cmd_BackendChallenge        = Cmd_BackendBase + 0x101;
-static constexpr const xPacketCommandId Cmd_BackendChallengeResp    = Cmd_BackendBase + 0x102;
-static constexpr const xPacketCommandId Cmd_AuthByUserPass          = Cmd_BackendBase + 0x201;
-static constexpr const xPacketCommandId Cmd_AuthByUserPassResp      = Cmd_BackendBase + 0x202;
+
+static constexpr const xPacketCommandId Cmd_AuditTerminalInfo2     = Cmd_BackendBase + 0x05;  // 2025-03-09 新增, 无返回
+static constexpr const xPacketCommandId Cmd_DeviceRelayServerInfo2 = Cmd_BackendBase + 0x06;  // 2025-03-09 新增, 无返回
+
+static constexpr const xPacketCommandId Cmd_BackendChallenge     = Cmd_BackendBase + 0x101;
+static constexpr const xPacketCommandId Cmd_BackendChallengeResp = Cmd_BackendBase + 0x102;
+static constexpr const xPacketCommandId Cmd_AuthByUserPass       = Cmd_BackendBase + 0x201;
+static constexpr const xPacketCommandId Cmd_AuthByUserPassResp   = Cmd_BackendBase + 0x202;
 
 // server management:
 // clang-format on
@@ -98,8 +102,8 @@ static constexpr const xPacketCommandId Cmd_Terminal_RL_PostUdpChannelData   = C
 static constexpr const xPacketCommandId Cmd_Terminal_RL_CreateUdpChannelResp = Cmd_Terminal_RL_Base + 0x13;
 static constexpr const xPacketCommandId Cmd_Terminal_RL_UdpChannelKeepAlive  = Cmd_Terminal_RL_Base + 0x14;
 
-static constexpr const xPacketCommandId Cmd_Terminal_RL_RequireLog = Cmd_Terminal_RL_Base + 0x20;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_PushLog    = Cmd_Terminal_RL_Base + 0x21;
+static constexpr const xPacketCommandId Cmd_Terminal_RL_DnsQuery     = Cmd_Terminal_RL_Base + 0x20;
+static constexpr const xPacketCommandId Cmd_Terminal_RL_DnsQueryResp = Cmd_Terminal_RL_Base + 0x21;
 
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey);
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey);
