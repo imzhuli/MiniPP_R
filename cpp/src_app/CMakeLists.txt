@@ -55,6 +55,7 @@ set(target_list
 	server_config_center
 	server_config_center_root
 	server_device_recorder
+	server_proxy_access
 	server_relay_device
 	server_relay_device_server_list
 	)
