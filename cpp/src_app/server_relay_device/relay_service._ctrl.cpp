@@ -15,10 +15,10 @@
 bool xDeviceRelayService::OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
     X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", Header.CommandId, HexShow(Payload, PayloadSize).c_str());
     switch (Header.CommandId) {
-        case Cmd_Terminal_RL_InitCtrlStream: {
+        case Cmd_DV_RL_InitCtrlStream: {
             return OnTerminalInitCtrlStream(Conn, Header, Payload, PayloadSize);
         }
-        case Cmd_Terminal_RL_DnsQueryResp: {
+        case Cmd_DV_RL_DnsQueryResp: {
             return OnTerminalDnsQueryResp(Conn, Header, Payload, PayloadSize);
         }
     }
@@ -38,7 +38,7 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
     R.CtrlId     = Conn->ConnectionId;
     R.DeviceKey  = "hello world!";
     R.EnableIpv6 = S.Resolved3rdIpv6 || S.Ipv6Address;
-    Conn->PostPacket(Cmd_Terminal_RL_InitCtrlStreamResp, Header.RequestId, R);
+    Conn->PostPacket(Cmd_DV_RL_InitCtrlStreamResp, Header.RequestId, R);
     DeviceConnectionManager.KeepAlive(Conn);
     return true;
 }

@@ -16,13 +16,13 @@
 bool xDeviceRelayService::OnDataPacket(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
     X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", Header.CommandId, HexShow(Payload, PayloadSize).c_str());
     switch (Header.CommandId) {
-        case Cmd_Terminal_RL_InitDataStream: {
+        case Cmd_DV_RL_InitDataStream: {
             return OnTerminalInitDataStream(Conn, Header, Payload, PayloadSize);
         }
-        case Cmd_Terminal_RL_NotifyConnectionState: {
+        case Cmd_DV_RL_NotifyConnectionState: {
             return OnTerminalTargetConnectionUpdate(Conn, Header, Payload, PayloadSize);
         }
-        case Cmd_Terminal_RL_PostData: {
+        case Cmd_DV_RL_PostData: {
             return OnTerminalPostData(Conn, Header, Payload, PayloadSize);
         }
         default:
@@ -57,7 +57,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     R.Accepted = true;
 
     // accept data stream and move it to long idle list
-    Conn->PostPacket(Cmd_Terminal_RL_InitDataStreamResp, Header.RequestId, R);
+    Conn->PostPacket(Cmd_DV_RL_InitDataStreamResp, Header.RequestId, R);
 
     X_DEBUG_PRINTF("device accepted, DeviceRuntimeId:%" PRIu64 ", DevicdLocalIdString=%s", NewDevice->DeviceRuntimeId, S.DeviceLocalIdString.c_str());
     Conn->DeviceId                 = NewDevice->DeviceRuntimeId;
@@ -70,7 +70,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     // test: send dns query:
     auto DQ     = xDnsQuery();
     DQ.Hostname = "www.163.com";
-    CtrlConn->PostPacket(Cmd_Terminal_RL_DnsQuery, 1024, DQ);
+    CtrlConn->PostPacket(Cmd_DV_RL_DnsQuery, 1024, DQ);
 
     return true;
 }

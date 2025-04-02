@@ -75,7 +75,7 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, xP
     auto CC                  = xTR_CreateConnection();
     CC.RelaySideConnectionId = RCC->RelaySideConnectionId;
     CC.TargetAddress         = R.TargetAddress;
-    D->CtrlConnection->PostPacket(Cmd_Terminal_RL_CreateConnection, 0, CC);
+    D->CtrlConnection->PostPacket(Cmd_DV_RL_CreateConnection, 0, CC);
 
     return true;
 }
@@ -104,7 +104,7 @@ bool xDeviceRelayService::OnProxyDestroyConnection(xRD_ProxyConnection * Conn, x
     }
     assert(D->DataConnection);
 
-    D->DataConnection->PostPacket(Cmd_Terminal_RL_DestroyConnection, 0, RL);
+    D->DataConnection->PostPacket(Cmd_DV_RL_DestroyConnection, 0, RL);
     return true;
 }
 
@@ -141,6 +141,6 @@ bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, xPacketHea
     Push.RelaySideConnectionId  = RC->RelaySideConnectionId;
     Push.PayloadView            = R.PayloadView;
 
-    DC->DataConnection->PostPacket(Cmd_Terminal_RL_PostData, 0, Push);
+    DC->DataConnection->PostPacket(Cmd_DV_RL_PostData, 0, Push);
     return true;
 }

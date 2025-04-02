@@ -77,31 +77,31 @@ static constexpr const xPacketCommandId Cmd_PA_RL_PostData              = Cmd_PA
 static constexpr const xPacketCommandId Cmd_PA_RL_ProxyClientNotify     = Cmd_PA_RL_Base + 0x09;
 
 // terminal-config-center:
-static constexpr const xPacketCommandId Cmd_Terminal_CC_Base          = 0x07'000;
-static constexpr const xPacketCommandId Cmd_Terminal_CC_Challenge     = Cmd_Terminal_CC_Base + 0x01;
-static constexpr const xPacketCommandId Cmd_Terminal_CC_ChallengeResp = Cmd_Terminal_CC_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_DV_CC_Base          = 0x07'000;
+static constexpr const xPacketCommandId Cmd_DV_CC_Challenge     = Cmd_DV_CC_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_DV_CC_ChallengeResp = Cmd_DV_CC_Base + 0x02;
 
 // terminal-relay:
-static constexpr const xPacketCommandId Cmd_Terminal_RL_Base                  = 0x08'000;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_InitCtrlStream        = Cmd_Terminal_RL_Base + 0x01;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_InitCtrlStreamResp    = Cmd_Terminal_RL_Base + 0x02;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_InitDataStream        = Cmd_Terminal_RL_Base + 0x03;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_InitDataStreamResp    = Cmd_Terminal_RL_Base + 0x04;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_CreateConnection      = Cmd_Terminal_RL_Base + 0x05;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_DestroyConnection     = Cmd_Terminal_RL_Base + 0x06;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_NotifyConnectionState = Cmd_Terminal_RL_Base + 0x07;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_PostData              = Cmd_Terminal_RL_Base + 0x08;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_ProxyClientNotify     = Cmd_Terminal_RL_Base + 0x09;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_ForceDetroyConnection = Cmd_Terminal_RL_Base + 0x0A;
+static constexpr const xPacketCommandId Cmd_DV_RL_Base                  = 0x08'000;
+static constexpr const xPacketCommandId Cmd_DV_RL_InitCtrlStream        = Cmd_DV_RL_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_DV_RL_InitCtrlStreamResp    = Cmd_DV_RL_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_DV_RL_InitDataStream        = Cmd_DV_RL_Base + 0x03;
+static constexpr const xPacketCommandId Cmd_DV_RL_InitDataStreamResp    = Cmd_DV_RL_Base + 0x04;
+static constexpr const xPacketCommandId Cmd_DV_RL_CreateConnection      = Cmd_DV_RL_Base + 0x05;
+static constexpr const xPacketCommandId Cmd_DV_RL_DestroyConnection     = Cmd_DV_RL_Base + 0x06;
+static constexpr const xPacketCommandId Cmd_DV_RL_NotifyConnectionState = Cmd_DV_RL_Base + 0x07;
+static constexpr const xPacketCommandId Cmd_DV_RL_PostData              = Cmd_DV_RL_Base + 0x08;
+static constexpr const xPacketCommandId Cmd_DV_RL_ProxyClientNotify     = Cmd_DV_RL_Base + 0x09;
+static constexpr const xPacketCommandId Cmd_DV_RL_ForceDetroyConnection = Cmd_DV_RL_Base + 0x0A;
 
-static constexpr const xPacketCommandId Cmd_Terminal_RL_CreateUdpChannel     = Cmd_Terminal_RL_Base + 0x10;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_CloseUdpChannel      = Cmd_Terminal_RL_Base + 0x11;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_PostUdpChannelData   = Cmd_Terminal_RL_Base + 0x12;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_CreateUdpChannelResp = Cmd_Terminal_RL_Base + 0x13;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_UdpChannelKeepAlive  = Cmd_Terminal_RL_Base + 0x14;
+static constexpr const xPacketCommandId Cmd_DV_RL_CreateUdpChannel     = Cmd_DV_RL_Base + 0x10;
+static constexpr const xPacketCommandId Cmd_DV_RL_CloseUdpChannel      = Cmd_DV_RL_Base + 0x11;
+static constexpr const xPacketCommandId Cmd_DV_RL_PostUdpChannelData   = Cmd_DV_RL_Base + 0x12;
+static constexpr const xPacketCommandId Cmd_DV_RL_CreateUdpChannelResp = Cmd_DV_RL_Base + 0x13;
+static constexpr const xPacketCommandId Cmd_DV_RL_UdpChannelKeepAlive  = Cmd_DV_RL_Base + 0x14;
 
-static constexpr const xPacketCommandId Cmd_Terminal_RL_DnsQuery     = Cmd_Terminal_RL_Base + 0x20;
-static constexpr const xPacketCommandId Cmd_Terminal_RL_DnsQueryResp = Cmd_Terminal_RL_Base + 0x21;
+static constexpr const xPacketCommandId Cmd_DV_RL_DnsQuery     = Cmd_DV_RL_Base + 0x20;
+static constexpr const xPacketCommandId Cmd_DV_RL_DnsQueryResp = Cmd_DV_RL_Base + 0x21;
 
 // cc-pa:
 static constexpr const xPacketCommandId Cmd_CC_PA_Base = 0x09'000;

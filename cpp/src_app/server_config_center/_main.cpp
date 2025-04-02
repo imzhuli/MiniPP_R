@@ -35,7 +35,7 @@ struct xIpv6TestChennelReactor : xUdpChannel::iListener {
 
         X_DEBUG_PRINTF("Request body: \n%s", HexShow(Payload, PayloadSize).c_str());
         switch (Header.CommandId) {
-            case Cmd_Terminal_CC_Challenge: {
+            case Cmd_DV_CC_Challenge: {
                 OnTerminalChallenge(ChannelPtr, Payload, PayloadSize, RemoteAddress);
                 break;
             }
@@ -67,7 +67,7 @@ struct xIpv6TestChennelReactor : xUdpChannel::iListener {
         Resp.TerminalAddress = RemoteAddress.Ip();
 
         ubyte Buffer[MaxPacketSize];
-        auto  RSize = WritePacket(Cmd_Terminal_CC_ChallengeResp, 0, Buffer, Resp);
+        auto  RSize = WritePacket(Cmd_DV_CC_ChallengeResp, 0, Buffer, Resp);
 
         X_DEBUG_PRINTF("Post Response to %s\n%s", RemoteAddress.ToString().c_str(), HexShow(Buffer, RSize).c_str());
         ChannelPtr->PostData(Buffer, RSize, RemoteAddress);
@@ -100,7 +100,7 @@ struct xChallengeChennelReactor : xUdpChannel::iListener {
 
         X_DEBUG_PRINTF("Request body: \n%s", HexShow(Payload, PayloadSize).c_str());
         switch (Header.CommandId) {
-            case Cmd_Terminal_CC_Challenge: {
+            case Cmd_DV_CC_Challenge: {
                 OnTerminalChallenge(ChannelPtr, Payload, PayloadSize, RemoteAddress);
                 break;
             }
@@ -143,7 +143,7 @@ struct xChallengeChennelReactor : xUdpChannel::iListener {
         }
 
         ubyte Buffer[MaxPacketSize];
-        auto  RSize = WritePacket(Cmd_Terminal_CC_ChallengeResp, 0, Buffer, Resp);
+        auto  RSize = WritePacket(Cmd_DV_CC_ChallengeResp, 0, Buffer, Resp);
 
         X_DEBUG_PRINTF("Post Response to %s\n%s", RemoteAddress.ToString().c_str(), HexShow(Buffer, RSize).c_str());
         ChannelPtr->PostData(Buffer, RSize, RemoteAddress);
