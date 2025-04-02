@@ -43,4 +43,8 @@ static inline std::string DebugSign(const std::string_view& V) {
     return DebugSign(V.data(), V.size());
 }
 
+extern uint32_t HashString(const char * S);
+extern uint32_t HashString(const char * S, size_t Len);
+extern uint32_t HashString(const std::string & S);
+
 // clang-format on

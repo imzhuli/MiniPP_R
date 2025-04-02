@@ -9,11 +9,11 @@
 
 using xCC_RelayServerKey = uint64_t;
 
-struct xCC_xCC_RelayServerInfo_RegionAllNode : xListNode {};
-struct xCC_xCC_RelayServerInfo_RegionContinentNode : xListNode {};
-struct xCC_xCC_RelayServerInfo_RegionContryNode : xListNode {};
-struct xCC_xCC_RelayServerInfo_RegionStateNode : xListNode {};
-struct xCC_xCC_RelayServerInfo_RegionCityNode : xListNode {};
+struct xCC_RelayServerInfo_RegionAllNode : xListNode {};
+struct xCC_RelayServerInfo_RegionContinentNode : xListNode {};
+struct xCC_RelayServerInfo_RegionContryNode : xListNode {};
+struct xCC_RelayServerInfo_RegionStateNode : xListNode {};
+struct xCC_RelayServerInfo_RegionCityNode : xListNode {};
 
 struct xCC_RelayServerBase {
     xCC_RelayServerKey Key         = 0;
@@ -22,9 +22,9 @@ struct xCC_RelayServerBase {
 };
 
 struct xCC_RelayServerInfo
-    : xCC_xCC_RelayServerInfo_RegionAllNode
-    , xCC_xCC_RelayServerInfo_RegionContinentNode
-    , xCC_xCC_RelayServerInfo_RegionContryNode {
+    : xCC_RelayServerInfo_RegionAllNode
+    , xCC_RelayServerInfo_RegionContinentNode
+    , xCC_RelayServerInfo_RegionContryNode {
     //
     xCC_RelayServerBase Base;
 };
@@ -44,9 +44,9 @@ public:
     const xCC_RelayServerBase * GetRelayServerByRegion(const xRegionId & Rid);
 
 private:
-    xList<xCC_xCC_RelayServerInfo_RegionAllNode>                               RelayServerListAll;
-    std::map<xContinentId, xList<xCC_xCC_RelayServerInfo_RegionContinentNode>> ContinentListMap;
-    std::map<xCountryId, xList<xCC_xCC_RelayServerInfo_RegionContryNode>>      ContryListMap;
+    xList<xCC_RelayServerInfo_RegionAllNode>                               RelayServerListAll;
+    std::map<xContinentId, xList<xCC_RelayServerInfo_RegionContinentNode>> ContinentListMap;
+    std::map<xCountryId, xList<xCC_RelayServerInfo_RegionContryNode>>      ContryListMap;
 
     static constexpr const size_t                        RelayServerPoolSize = 4096;
     std::array<xCC_RelayServerInfo, RelayServerPoolSize> RelayServerPool;

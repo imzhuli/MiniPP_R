@@ -11,15 +11,16 @@ struct xPA_RelayConnection;
 struct xPA_RelayGroup;
 
 struct xPA_RelayConnectionIdleNode : xListNode {
-    uint64_t LastKeepAliveTimestampMS = 0;
+    uint64_t LastKeepAliveRequestTimestampMS  = 0;
+    uint64_t LastKeepAliveResponseTimestampMS = 0;
 };
 
 struct xPA_RelayConnection
     : xPA_RelayConnectionIdleNode
     , xTcpConnection {
     //
-    xIndexId         ConnectionId = 0;
     xPA_RelayGroup * GroupPtr;
+    xIndexId         ConnectionId = 0;
     //
 };
 
@@ -36,23 +37,26 @@ class xPA_RelayConnectionManager : xTcpConnection::iListener {
 public:
     bool Init(xIoContext * IoContextPtr);
     void Clean();
-    void AddRelayGroup(const xNetAddress & TargetAddress);
+    void AddRelayGroup(uint64_t RuntimeRelayServerId, const xNetAddress & TargetAddress);
     void Tick(uint64_t NowMS);
 
     inline xTcpConnection * GetConnectionById(uint64_t ConnectionId) {
-        auto TCPP = ConnectionIdPool.CheckAndGet(ConnectionId);
         if (auto TCPP = ConnectionIdPool.CheckAndGet(ConnectionId)) {
             return *TCPP;
         }
         return nullptr;
     }
+    xTcpConnection * GetConnectionByRelayServerAddress(const xNetAddress & TargetAddress);
 
 protected:
     void DoFreeKillList();
     void DoFreeKillGroupList();
     void DoReconnectAndKeepAlive();
-
     void DoFreeGroup(xPA_RelayGroup * GP);
+
+    void KeepAlive(xPA_RelayConnection * RCP);
+    void DeferKillConnection(xPA_RelayConnection * RCP);
+    void DeferKillGroup(xPA_RelayGroup * GP);
 
 protected:
     // callback on connected, normally this is not needed to be handled
@@ -64,11 +68,11 @@ protected:
     virtual bool OnPacket(xPA_RelayConnection * RCP, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
 
 private:
-    xIoContext *                            ICP = nullptr;
-    xTicker                                 Ticker;
-    xList<xPA_RelayConnectionIdleNode>      IdleList;
-    xList<xPA_RelayConnectionIdleNode>      KillList;
-    xList<xPA_RelayGroupKillNode>           KillGroupList;
-    std::map<xNetAddress, xPA_RelayGroup *> RelayGroupMap;
-    xIndexedStorage<xPA_RelayConnection *>  ConnectionIdPool;
+    xIoContext *                           ICP = nullptr;
+    xTicker                                Ticker;
+    xList<xPA_RelayConnectionIdleNode>     IdleList;
+    xList<xPA_RelayConnectionIdleNode>     KillList;
+    xList<xPA_RelayGroupKillNode>          KillGroupList;
+    std::map<uint64_t, xPA_RelayGroup *>   RelayGroupMap;
+    xIndexedStorage<xPA_RelayConnection *> ConnectionIdPool;
 };

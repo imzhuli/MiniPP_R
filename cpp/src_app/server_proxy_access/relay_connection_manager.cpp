@@ -1,11 +1,13 @@
 #include "./relay_connection_manager.hpp"
 
 static constexpr const int64_t RECONNECT_OR_KEEPALIVE_TIMEOUT         = 60'000;
+static constexpr const int64_t KEEPALIVE_RESPONSE_TIMEOUT             = RECONNECT_OR_KEEPALIVE_TIMEOUT / 3 + RECONNECT_OR_KEEPALIVE_TIMEOUT;
 static constexpr const int     MAX_RECONNECT_OR_KEEPALIVE_CHECK_COUNT = 200;
 
 bool xPA_RelayConnectionManager::Init(xIoContext * IoContextPtr) {
     this->ICP = IoContextPtr;
     RuntimeAssert(ConnectionIdPool.Init(MAX_RELAY_SERVER_ID));
+    Ticker.Update();
     return true;
 }
 
@@ -26,19 +28,23 @@ void xPA_RelayConnectionManager::Tick(uint64_t NowMS) {
     DoReconnectAndKeepAlive();
 }
 
-void xPA_RelayConnectionManager::AddRelayGroup(const xNetAddress & TargetAddress) {
+void xPA_RelayConnectionManager::AddRelayGroup(uint64_t RuntimeServerId, const xNetAddress & TargetAddress) {
     // Never Call this in a callback !!!!
     assert(TargetAddress && TargetAddress.Port);
-    auto & GP = RelayGroupMap[TargetAddress];
+    auto & GP = RelayGroupMap[RuntimeServerId];
     if (GP) {
-        return;
+        if (GP->TargetAddress == TargetAddress) {
+            return;
+        }
+        DeferKillGroup(Steal(GP));
     }
+
     GP                = new xPA_RelayGroup;
     GP->TargetAddress = TargetAddress;
     for (auto & RC : GP->Connections) {
         RC.GroupPtr = GP;
         // set this to zero to enhance preload new server group startup time
-        RC.LastKeepAliveTimestampMS = 0;
+        RC.LastKeepAliveRequestTimestampMS = 0;
         IdleList.GrabHead(RC);
     }
 }
@@ -46,44 +52,42 @@ void xPA_RelayConnectionManager::AddRelayGroup(const xNetAddress & TargetAddress
 void xPA_RelayConnectionManager::OnConnected(xTcpConnection * TcpConnectionPtr) {
     auto RCP = static_cast<xPA_RelayConnection *>(TcpConnectionPtr);
     X_DEBUG_PRINTF("ConnectionId=%" PRIx64 "", RCP->ConnectionId);
+    KeepAlive(RCP);
 }
 
 void xPA_RelayConnectionManager::OnPeerClose(xTcpConnection * TcpConnectionPtr) {
     auto RCP = static_cast<xPA_RelayConnection *>(TcpConnectionPtr);
-    // put to reconnect queue end
     X_DEBUG_PRINTF("ConnectionId=%" PRIx64 "", RCP->ConnectionId);
-    KillList.GrabTail(*RCP);
+    DeferKillConnection(RCP);
 }
 
 size_t xPA_RelayConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) {
     auto RCP = static_cast<xPA_RelayConnection *>(TcpConnectionPtr);
-    cout << "Data On: " << RCP->ConnectionId << endl;
-    cout << HexShow(DataPtr, DataSize) << endl;
-    return DataSize;
+    X_DEBUG_PRINTF("\n%s", HexShow(DataPtr, DataSize).c_str());
 
-    // size_t RemainSize = DataSize;
-    // while (RemainSize >= PacketHeaderSize) {
-    //     auto Header = xPacketHeader::Parse(DataPtr);
-    //     if (!Header) { /* header error */
-    //         return InvalidDataSize;
-    //     }
-    //     auto PacketSize = Header.PacketSize;  // make a copy, so Header can be reused
-    //     if (RemainSize < PacketSize) {        // wait for data
-    //         break;
-    //     }
-    //     if (Header.IsKeepAlive()) {
-    //         RCP->LastKeepAliveTimestampMS = Ticker();
-    //     } else {
-    //         auto PayloadPtr  = xPacket::GetPayloadPtr(DataPtr);
-    //         auto PayloadSize = Header.GetPayloadSize();
-    //         if (!OnPacket(RCP, Header, PayloadPtr, PayloadSize)) { /* packet error */
-    //             return InvalidDataSize;
-    //         }
-    //     }
-    //     DataPtr    += PacketSize;
-    //     RemainSize -= PacketSize;
-    // }
-    // return DataSize - RemainSize;
+    size_t RemainSize = DataSize;
+    while (RemainSize >= PacketHeaderSize) {
+        auto Header = xPacketHeader::Parse(DataPtr);
+        if (!Header) { /* header error */
+            return InvalidDataSize;
+        }
+        auto PacketSize = Header.PacketSize;  // make a copy, so Header can be reused
+        if (RemainSize < PacketSize) {        // wait for data
+            break;
+        }
+        if (Header.IsKeepAlive()) {
+            KeepAlive(RCP);
+        } else {
+            auto PayloadPtr  = xPacket::GetPayloadPtr(DataPtr);
+            auto PayloadSize = Header.GetPayloadSize();
+            if (!OnPacket(RCP, Header, PayloadPtr, PayloadSize)) { /* packet error */
+                return InvalidDataSize;
+            }
+        }
+        DataPtr    += PacketSize;
+        RemainSize -= PacketSize;
+    }
+    return DataSize - RemainSize;
 }
 
 void xPA_RelayConnectionManager::DoFreeKillList() {
@@ -91,7 +95,7 @@ void xPA_RelayConnectionManager::DoFreeKillList() {
         ConnectionIdPool.Release(Steal(RCP->ConnectionId));
         RCP->Clean();
 
-        RCP->LastKeepAliveTimestampMS = Ticker();
+        RCP->LastKeepAliveRequestTimestampMS = Ticker();
         IdleList.GrabTail(*RCP);
     }
 }
@@ -104,6 +108,19 @@ void xPA_RelayConnectionManager::DoFreeGroup(xPA_RelayGroup * GP) {
         }
     }
     delete GP;
+}
+
+void xPA_RelayConnectionManager::KeepAlive(xPA_RelayConnection * RCP) {
+    RCP->LastKeepAliveResponseTimestampMS = Ticker();
+    IdleList.GrabTail(*RCP);
+}
+
+void xPA_RelayConnectionManager::DeferKillConnection(xPA_RelayConnection * RCP) {
+    KillList.GrabTail(*RCP);
+}
+
+void xPA_RelayConnectionManager::DeferKillGroup(xPA_RelayGroup * GP) {
+    KillGroupList.GrabTail(*GP);
 }
 
 void xPA_RelayConnectionManager::DoFreeKillGroupList() {
@@ -121,20 +138,26 @@ void xPA_RelayConnectionManager::DoReconnectAndKeepAlive() {
         if (++CheckCount > MAX_RECONNECT_OR_KEEPALIVE_CHECK_COUNT) {
             return false;
         }
-        return RECONNECT_OR_KEEPALIVE_TIMEOUT <= SignedDiff(NowMS, Node.LastKeepAliveTimestampMS);
+        return RECONNECT_OR_KEEPALIVE_TIMEOUT <= SignedDiff(NowMS, Node.LastKeepAliveRequestTimestampMS);
     })) {
         if (!RCP->IsOpen()) {
             RCP->ConnectionId = ConnectionIdPool.Acquire();
             RCP->Init(this->ICP, RCP->GroupPtr->TargetAddress, this);
         } else {
+            if (KEEPALIVE_RESPONSE_TIMEOUT <= SignedDiff(NowMS, RCP->LastKeepAliveResponseTimestampMS)) {
+                X_DEBUG_PRINTF("RemoveKeepAliveResponseTimeoutConnection ConnectionId=%" PRIx64 "", RCP->ConnectionId);
+                DeferKillConnection(RCP);
+                continue;
+            }
             RCP->PostRequestKeepAlive();
         }
-        RCP->LastKeepAliveTimestampMS = NowMS;
+        RCP->LastKeepAliveRequestTimestampMS = NowMS;
         TempList.AddTail(*RCP);
     }
     IdleList.GrabListTail(TempList);
 }
 
 bool xPA_RelayConnectionManager::OnPacket(xPA_RelayConnection * RCP, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", CommandId=%" PRIx32 "\n%s\n", RCP->ConnectionId, Header.CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
     return true;
 }

@@ -11,7 +11,7 @@ int main(int argc, char ** argv) {
     auto RCMG = xResourceGuard(GlobalRelayConnectionManager, &IC);
 
     GlobalRunState.Start();
-    GlobalRelayConnectionManager.AddRelayGroup(xNetAddress::Parse("127.0.0.1:10000"));
+    GlobalRelayConnectionManager.AddRelayGroup(1234, xNetAddress::Parse("127.0.0.1:10000"));
 
     while (GlobalRunState) {
         GlobalTicker.Update();

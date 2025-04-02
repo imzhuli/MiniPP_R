@@ -1,8 +1,8 @@
 #include <core/core_time.hpp>
 #include <crypto/md5.hpp>
 #include <pp_common/base.hpp>
+#include <pp_protocol/cc_terminal/terminal.hpp>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/config_center/terminal.hpp>
 
 // dont reorder
 #include "./_config.hpp"
