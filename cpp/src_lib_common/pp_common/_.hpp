@@ -74,6 +74,8 @@ using std::endl;
 using std::flush;
 
 // min_defs:
+using xVersion = uint32_t;
+
 using xGroupId      = uint32_t;
 using xServerId     = uint32_t;
 using xAccountId    = uint64_t;
@@ -85,6 +87,12 @@ using xCountryId   = uint32_t;
 using xStateId     = uint32_t;
 using xProvinceId  = xStateId;
 using xCityId      = uint32_t;
+
+using xSourcePoolId = uint16_t;  //
+
+// min static constants
+static constexpr const xSourcePoolId UNSPEC_SOURCE_POOL_ID = 0;
+static constexpr const xSourcePoolId MAX_SOURCE_POOL_ID    = 255;  // included
 
 static constexpr const uint64_t DeaultRequestTimeoutMS            = 1'500;
 static constexpr const uint32_t MAX_RELAY_DEVICE_SERVER_SUPPORTED = 4096;  // IdManagerMini::MaxObjectId
@@ -98,14 +106,10 @@ static constexpr xContinentId CID_AFRICA        = 0x05;
 static constexpr xContinentId CID_OCEANIA       = 0x06;
 static constexpr xContinentId CID_ANTARCTIC     = 0x07;
 
-inline uint32_t High32(uint64_t U) {
-    return (uint32_t)(U >> 32);
-}
+// clang-format off
 
-inline uint32_t Low32(uint64_t U) {
-    return (uint32_t)(U);
-}
+static inline uint32_t High32(uint64_t U) { return (uint32_t)(U >> 32); }
+static inline uint32_t Low32(uint64_t U)  { return (uint32_t)(U); }
+static inline uint64_t Make64(uint32_t H32, uint32_t L32) { return (static_cast<uint64_t>(H32) << 32) + L32; }
 
-inline uint64_t Make64(uint32_t H32, uint32_t L32) {
-    return (static_cast<uint64_t>(H32) << 32) + L32;
-}
+// clang-format on

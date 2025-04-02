@@ -3,7 +3,6 @@ project (pp_apps)
 
 include_directories(
 	../src_lib_common/
-	../src_lib_component/
 	../src_lib_db/
 	../src_lib_protocol/
 	${LOCAL_3RD_INCLUDE_DIR}
@@ -17,7 +16,7 @@ link_directories(
 )
 
 message(STATUS ${LIBRARY_OUTPUT_PATH})
-set(LOCAL_PP_LIBRARIES ppcomponent ppprotocol ppdb ppcommon)
+set(LOCAL_PP_LIBRARIES ppprotocol ppdb ppcommon)
 
 # enable specific macors by system type:
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -56,7 +55,6 @@ set(target_list
 	server_device_recorder
 	server_proxy_access
 	server_relay_device
-	server_relay_device_server_list
 	)
 
 foreach(item IN LISTS target_list)

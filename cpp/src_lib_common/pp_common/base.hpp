@@ -24,24 +24,23 @@ namespace __pp_common_detail__ {
     }
 
 }  // namespace __pp_common_detail__
+
 template <typename... T>
 inline void TickAll(uint64_t NowMS, T &... All) {
     __pp_common_detail__::__TickAll__(NowMS, All...);
 }
 
 // clang-format off
+
 #define CASE_PRINT(x) case x: X_DEBUG_PRINTF("%s", X_STRINGIFY(x)); break
 
 template<typename T>
-// pointer to unique_ptr wrapper
-std::unique_ptr<T> P2U(T * Ptr) {
-    return std::unique_ptr<T>(Ptr);
-}
+std::unique_ptr<T> P2U(T * Ptr) { return std::unique_ptr<T>(Ptr); }
+
+
 
 std::string DebugSign(const void * DataPtr, size_t Size);
-static inline std::string DebugSign(const std::string_view& V) {
-    return DebugSign(V.data(), V.size());
-}
+static inline std::string DebugSign(const std::string_view& V) { return DebugSign(V.data(), V.size()); }
 
 extern uint32_t HashString(const char * S);
 extern uint32_t HashString(const char * S, size_t Len);

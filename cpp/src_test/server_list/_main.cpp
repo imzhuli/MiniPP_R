@@ -1,33 +1,169 @@
-#include <pp_component/server_list/server_list.hpp>
+#include <ostream>
+#include <pp_protocol/cc_proxy/relay_info.hpp>
+using namespace std;
 
 int main(int, char **) {
 
-    xServerInfoManager SIM;
-    RuntimeAssert(SIM.Init());
+    std::vector<xCC_PA_RelayServerInfo> TotalList;
 
-    xNetAddress Addr1 = xNetAddress::Parse("192.168.10.1:8888");
-    xNetAddress Addr2 = xNetAddress::Parse("192.168.10.2:8888");
-    xNetAddress Addr3 = xNetAddress::Parse("192.168.10.3:8888");
-    xNetAddress Addr4 = xNetAddress::Parse("192.168.10.4:8888");
-    xNetAddress Addr5 = xNetAddress::Parse("192.168.10.5:8888");
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
 
-    cout << Addr1.ToString() << endl;
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
 
-    SIM.AddServerInfo(Addr1);
-    SIM.AddServerInfo(Addr2);
-    SIM.AddServerInfo(Addr3);
-    SIM.AddServerInfo(Addr4);
-    SIM.AddServerInfo(Addr5);
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
 
-    SIM.RemoveServerByIndex(0);
-    SIM.RemoveServerByIndex(2);
-    SIM.RemoveServerByIndex(4);
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:7777") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.1:1001") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.2:1002") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.3:1003") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.4:1004") });
+    TotalList.push_back({ 1024, xNetAddress::Parse("192.168.1.5:1005") });
 
-    SIM.AddServerInfo(Addr1);
+    cout << ToString(TotalList) << endl;
 
-    cout << SIM.Dump() << endl;
+    auto W = xCC_PA_DownloadRelayServerListRespWriter();
 
-    SIM.Clean();
+    ubyte B[4000];
+
+    do {
+        W.Version         = 888;
+        W.StartIndex      = 0;
+        W.TotalServerList = &TotalList;
+        auto WSize        = W.Serialize(B, sizeof(B));
+
+        auto R     = xCC_PA_DownloadRelayServerListRespReader();
+        auto RSize = R.Deserialize(B, WSize);
+        cout << RSize << endl;
+        cout << R.StartIndex << endl;
+        cout << R.Count << endl;
+        cout << ToString(R.LocalServerList) << endl;
+
+        auto NextIndex = R.StartIndex + R.Count;
+        if (NextIndex < R.Total) {
+            W.StartIndex = NextIndex;
+            auto WSize   = W.Serialize(B, sizeof(B));
+
+            auto R2    = xCC_PA_DownloadRelayServerListRespReader();
+            auto RSize = R2.Deserialize(B, WSize);
+            cout << RSize << endl;
+            cout << R2.StartIndex << endl;
+            cout << R2.Count << endl;
+            cout << ToString(R2.LocalServerList) << endl;
+        }
+
+    } while (false);
+
     return 0;
     //
 }

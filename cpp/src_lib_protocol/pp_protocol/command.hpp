@@ -53,7 +53,6 @@ static constexpr const xPacketCommandId Cmd_AuthByUserPass       = Cmd_BackendBa
 static constexpr const xPacketCommandId Cmd_AuthByUserPassResp   = Cmd_BackendBase + 0x202;
 
 // server management:
-// clang-format on
 static constexpr const xPacketCommandId Cmd_ServerManagementBase    = 0x05'000;
 static constexpr const xPacketCommandId Cmd_QueryRunningState       = Cmd_ServerManagementBase + 1;
 static constexpr const xPacketCommandId Cmd_QueryRunningStateResp   = Cmd_ServerManagementBase + 2;
@@ -66,9 +65,8 @@ static constexpr const xPacketCommandId Cmd_EnableDnsDispatcherResp = Cmd_Server
 
 static constexpr const xPacketCommandId Cmd_GetBackendServerList     = Cmd_ServerManagementBase + 100;
 static constexpr const xPacketCommandId Cmd_GetBackendServerListResp = Cmd_ServerManagementBase + 101;
-// clang-formt on
 
-// proxyaccess-relay:
+// pa-relay:
 static constexpr const xPacketCommandId Cmd_PA_RL_Base                  = 0x06'000;
 static constexpr const xPacketCommandId Cmd_PA_RL_Challenge             = Cmd_PA_RL_Base + 0x01;
 static constexpr const xPacketCommandId Cmd_PA_RL_ChallengeResp         = Cmd_PA_RL_Base + 0x02;
@@ -104,6 +102,9 @@ static constexpr const xPacketCommandId Cmd_Terminal_RL_UdpChannelKeepAlive  = C
 
 static constexpr const xPacketCommandId Cmd_Terminal_RL_DnsQuery     = Cmd_Terminal_RL_Base + 0x20;
 static constexpr const xPacketCommandId Cmd_Terminal_RL_DnsQueryResp = Cmd_Terminal_RL_Base + 0x21;
+
+// cc-pa:
+static constexpr const xPacketCommandId Cmd_CC_PA_Base = 0x09'000;
 
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey);
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey);
