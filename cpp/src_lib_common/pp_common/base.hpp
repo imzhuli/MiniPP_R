@@ -37,8 +37,6 @@ inline void TickAll(uint64_t NowMS, T &... All) {
 template<typename T>
 std::unique_ptr<T> P2U(T * Ptr) { return std::unique_ptr<T>(Ptr); }
 
-
-
 std::string DebugSign(const void * DataPtr, size_t Size);
 static inline std::string DebugSign(const std::string_view& V) { return DebugSign(V.data(), V.size()); }
 

@@ -76,12 +76,12 @@ static constexpr const xPacketCommandId Cmd_PA_RL_NotifyConnectionState = Cmd_PA
 static constexpr const xPacketCommandId Cmd_PA_RL_PostData              = Cmd_PA_RL_Base + 0x06;
 static constexpr const xPacketCommandId Cmd_PA_RL_ProxyClientNotify     = Cmd_PA_RL_Base + 0x09;
 
-// terminal-config-center:
+// cc-device:
 static constexpr const xPacketCommandId Cmd_DV_CC_Base          = 0x07'000;
 static constexpr const xPacketCommandId Cmd_DV_CC_Challenge     = Cmd_DV_CC_Base + 0x01;
 static constexpr const xPacketCommandId Cmd_DV_CC_ChallengeResp = Cmd_DV_CC_Base + 0x02;
 
-// terminal-relay:
+// device-relay:
 static constexpr const xPacketCommandId Cmd_DV_RL_Base                  = 0x08'000;
 static constexpr const xPacketCommandId Cmd_DV_RL_InitCtrlStream        = Cmd_DV_RL_Base + 0x01;
 static constexpr const xPacketCommandId Cmd_DV_RL_InitCtrlStreamResp    = Cmd_DV_RL_Base + 0x02;
@@ -102,6 +102,12 @@ static constexpr const xPacketCommandId Cmd_DV_RL_UdpChannelKeepAlive  = Cmd_DV_
 
 static constexpr const xPacketCommandId Cmd_DV_RL_DnsQuery     = Cmd_DV_RL_Base + 0x20;
 static constexpr const xPacketCommandId Cmd_DV_RL_DnsQueryResp = Cmd_DV_RL_Base + 0x21;
+
+// device-state-relay(dsr) / device-selector
+static constexpr const xPacketCommandId Cmd_DSR_DS_Base            = 0x09'000;
+static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOnline    = Cmd_DSR_DS_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOffline   = Cmd_DSR_DS_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceKeepAlive = Cmd_DSR_DS_Base + 0x03;
 
 // cc-pa:
 static constexpr const xPacketCommandId Cmd_CC_PA_Base = 0x09'000;

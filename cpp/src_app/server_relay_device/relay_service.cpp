@@ -5,10 +5,10 @@
 
 #include <algorithm>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/device_relay/connection.hpp>
-#include <pp_protocol/device_relay/init_ctrl_stream.hpp>
-#include <pp_protocol/device_relay/init_data_stream.hpp>
-#include <pp_protocol/device_relay/post_data.hpp>
+#include <pp_protocol/dv_rl/connection.hpp>
+#include <pp_protocol/dv_rl/init_ctrl_stream.hpp>
+#include <pp_protocol/dv_rl/init_data_stream.hpp>
+#include <pp_protocol/dv_rl/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 
 bool xDeviceRelayService::Init(xIoContext * CP, xNetAddress ControllerBindAddress, xNetAddress DataBindAddress, xNetAddress ProxyBindAddress) {

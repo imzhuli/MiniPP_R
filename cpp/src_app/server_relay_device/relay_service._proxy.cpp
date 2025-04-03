@@ -5,8 +5,8 @@
 
 #include <algorithm>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/device_relay/connection.hpp>
-#include <pp_protocol/device_relay/post_data.hpp>
+#include <pp_protocol/dv_rl/connection.hpp>
+#include <pp_protocol/dv_rl/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 #include <pp_protocol/proxy_relay/connection.hpp>
 

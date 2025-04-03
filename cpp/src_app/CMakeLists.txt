@@ -52,7 +52,8 @@ endfunction()
 
 set(target_list
 	server_config_center
-	server_device_recorder
+	server_device_selector
+	server_device_state_relay
 	server_proxy_access
 	server_relay_device
 	)
