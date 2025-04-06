@@ -1,7 +1,7 @@
 #include <core/core_time.hpp>
 #include <crypto/md5.hpp>
 #include <pp_common/base.hpp>
-#include <pp_protocol/cc_terminal/terminal.hpp>
+#include <pp_protocol/cc_dv/device.hpp>
 #include <pp_protocol/command.hpp>
 
 // dont reorder

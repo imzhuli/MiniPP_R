@@ -101,14 +101,14 @@ enum eServerType : uint32_t {
     UNSPECIFIED = 0x00,
 
     // main service
-    CONFIG_CENTER         = 0x01,
-    DEVICE_RELAY          = 0x02,
-    DEVICE_SELECTOR       = 0x03,
-    THIRD_RELAY           = 0x04,
-    STATIC_RELAY_TERMINAL = 0x05,
-    PROXY_ACCESS          = 0x06,
-    ACCOUNT_CACHE         = 0x07,
-    AUDIT_CACHE           = 0x08,  // dispatch audit & server info
+    CONFIG_CENTER         = 0x01,  // CC
+    DEVICE_RELAY          = 0x02,  // DR
+    DEVICE_SELECTOR       = 0x03,  // DS
+    THIRD_RELAY           = 0x04,  // TR
+    STATIC_RELAY_TERMINAL = 0x05,  // SRT
+    PROXY_ACCESS          = 0x06,  // PA
+    ACCOUNT_CACHE         = 0x07,  // ACC
+    AUDIT_CACHE           = 0x08,  // ADC
 
     // dispatchers
     CONFIG_CENTER_ENTRY   = 0x01'01,  // not used // 2025-04-07
