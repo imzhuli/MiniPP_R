@@ -97,6 +97,26 @@ static constexpr const xSourcePoolId MAX_SOURCE_POOL_ID    = 255;  // included
 static constexpr const uint64_t DeaultRequestTimeoutMS            = 1'500;
 static constexpr const uint32_t MAX_RELAY_DEVICE_SERVER_SUPPORTED = 4096;  // IdManagerMini::MaxObjectId
 
+enum eServerType : uint32_t {
+    UNSPECIFIED = 0x00,
+
+    // main service
+    CONFIG_CENTER         = 0x01,
+    DEVICE_RELAY          = 0x02,
+    DEVICE_SELECTOR       = 0x03,
+    THIRD_RELAY           = 0x04,
+    STATIC_RELAY_TERMINAL = 0x05,
+    PROXY_ACCESS          = 0x06,
+    ACCOUNT_CACHE         = 0x07,
+    AUDIT_CACHE           = 0x08,  // dispatch audit & server info
+
+    // dispatchers
+    CONFIG_CENTER_ENTRY   = 0x01'01,  // not used // 2025-04-07
+    DEVICE_SELECTOR_ENTRY = 0x01'02,
+    ACCOUNT_CACHE_ENTRY   = 0x01'03,
+    AUDIT_CACHE_ENTRY     = 0x01'04,
+};
+
 static constexpr xContinentId CID_UNSPECIFIC    = 0x00;
 static constexpr xContinentId CID_ASIA          = 0x01;
 static constexpr xContinentId CID_EUROP         = 0x02;
