@@ -20,20 +20,20 @@ int main(int, char **) {
     int j = 0;
 
     Reset(i, 1024);
-    cout << YN(i == 1024) << endl;
+    RuntimeAssert(i == 1024);
 
     j = Steal(i, 777);
-    cout << YN(j == 1024) << endl;
-    cout << YN(i == 777) << endl;
+    RuntimeAssert(j == 1024);
+    RuntimeAssert(i == 777);
 
     j = Steal(i);
-    cout << YN(j == 777) << endl;
-    cout << YN(i == 0) << endl;
+    RuntimeAssert(j == 777);
+    RuntimeAssert(i == 0);
 
     Reset(i, 666);
-    cout << YN(i == 666) << endl;
+    RuntimeAssert(i == 666);
     Reset(i);
-    cout << YN(i == 0) << endl;
+    RuntimeAssert(i == 0);
 
     return 0;
 }
