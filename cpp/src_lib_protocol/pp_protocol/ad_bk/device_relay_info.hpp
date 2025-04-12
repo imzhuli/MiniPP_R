@@ -33,14 +33,14 @@ struct xAD_BK_ThirdRelayServerInfo {
 
 struct xAD_BK_DeivceRelayServerInfo {
 
-    static constexpr const uint16_t INVALID_ROUTE_ID = (uint16_t)(-1);
+    static constexpr const xServerRouteId INVALID_ROUTE_ID = (uint16_t)(-1);
 
-    std::string ServerUuid;
-    uint16_t    ServerIndex;                       // 这是运行时由配置中心给的值, 在同一时刻不会重复,
-    uint16_t    ServerRouteId = INVALID_ROUTE_ID;  // 为减少服务器间延迟而给服务器硬写的区块ID.
-    xNetAddress ExportCtrlAddress;
-    xNetAddress ExportDataAddress;
-    xNetAddress ExportPAAddress;
+    std::string    ServerUuid;
+    uint16_t       ServerIndex;                       // 这是运行时由配置中心给的值, 在同一时刻不会重复,
+    xServerRouteId ServerRouteId = INVALID_ROUTE_ID;  // 为减少服务器间延迟而给服务器硬写的区块ID.
+    xNetAddress    ExportCtrlAddress;
+    xNetAddress    ExportDataAddress;
+    xNetAddress    ExportPAAddress;
 
     uint32_t LatestDeviceCount;                  // 最新时刻的设备数量
     uint32_t NewOnlineDevcieSinceLastPost;       // 新连线的设备数量 (不去重)

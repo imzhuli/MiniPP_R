@@ -85,10 +85,11 @@ using xConnectionId = uint64_t;
 using xContinentId = uint32_t;
 using xCountryId   = uint32_t;
 using xStateId     = uint32_t;
-using xProvinceId  = xStateId;
 using xCityId      = uint32_t;
 
-using xSourcePoolId = uint16_t;  //
+using xServerRouteId = uint16_t;  // 强行划分的服务器路径归属 id
+using xSourcePoolId  = uint16_t;  //
+using xAuditId       = uint64_t;
 
 // min static constants
 static constexpr const xSourcePoolId UNSPEC_SOURCE_POOL_ID = 0;
@@ -131,5 +132,9 @@ static constexpr xContinentId CID_ANTARCTIC     = 0x07;
 static inline uint32_t High32(uint64_t U) { return (uint32_t)(U >> 32); }
 static inline uint32_t Low32(uint64_t U)  { return (uint32_t)(U); }
 static inline uint64_t Make64(uint32_t H32, uint32_t L32) { return (static_cast<uint64_t>(H32) << 32) + L32; }
+
+static inline uint16_t High16(uint64_t U) { return (uint16_t)(U >> 48); }
+static inline uint64_t Low48(uint64_t U)  { return U & 0x0000'FFFF'FFFF'FFFFu; }
+static inline uint64_t Make64_H16L48(uint16_t H16, uint64_t L48) { return (static_cast<uint64_t>(H16) << 48) + L48; }
 
 // clang-format on

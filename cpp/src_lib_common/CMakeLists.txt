@@ -8,8 +8,10 @@ include_directories(
 )
 
 # local libs
-aux_source_directory("./pp_common"    SRC)
-aux_source_directory("./pp_error"     SRC)
+aux_source_directory("./pp_common"                      SRC)
+aux_source_directory("./pp_common/local_auth_cache"     SRC)
+aux_source_directory("./pp_common/request_id_pool"     SRC)
+
 add_library(${libname} ${SRC})
 target_compile_definitions(${libname} PRIVATE X_OPTION_STATIC)
 
