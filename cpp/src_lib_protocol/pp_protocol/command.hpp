@@ -112,5 +112,14 @@ static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceKeepAlive = Cmd_DSR_DS_
 // cc-pa:
 static constexpr const xPacketCommandId Cmd_CC_PA_Base = 0x09'000;
 
+// ac-cc
+static constexpr const xPacketCommandId Cmd_AC_CC_Base                       = 0x0A'000;
+static constexpr const xPacketCommandId Cmd_AC_CC_AllocServerId              = Cmd_AC_CC_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_AC_CC_AllocServerIdResp          = Cmd_AC_CC_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_AC_CC_DownloadDispatcherList     = Cmd_AC_CC_Base + 0x03;
+static constexpr const xPacketCommandId Cmd_AC_CC_DownloadDispatcherListResp = Cmd_AC_CC_Base + 0x04;
+static constexpr const xPacketCommandId Cmd_AC_CC_DownloadBackendList        = Cmd_AC_CC_Base + 0x05;
+static constexpr const xPacketCommandId Cmd_AC_CC_DownloadBackendListResp    = Cmd_AC_CC_Base + 0x06;
+
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey);
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey);

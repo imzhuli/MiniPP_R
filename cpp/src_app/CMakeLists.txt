@@ -51,11 +51,13 @@ function(build_app sub_dir_name)
 endfunction()
 
 set(target_list
+	server_auth_dispatcher
 	server_config_center
 	server_device_selector
 	server_device_state_relay
 	server_proxy_access
 	server_relay_device
+	server_server_list
 	)
 
 foreach(item IN LISTS target_list)

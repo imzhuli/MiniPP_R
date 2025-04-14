@@ -47,6 +47,7 @@ endfunction()
 
 build_app(cpp)
 build_app(fake_client)
+build_app(protocol)
 build_app(request_id_pool)
 build_app(server_list)
 build_app(udp_echo)
