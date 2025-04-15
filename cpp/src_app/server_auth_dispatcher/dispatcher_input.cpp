@@ -1,4 +1,4 @@
-#include "./dispatcher.hpp"
+#include "./dispatcher_input.hpp"
 
 bool xAD_CacheDispatcherInput::Init(xIoContext * ICP, const xNetAddress & Address) {
     RuntimeAssert(xService::Init(ICP, Address, 1024));
