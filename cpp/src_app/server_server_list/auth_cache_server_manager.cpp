@@ -44,7 +44,7 @@ bool xCC_AuthCacheServerManager::OnAllocAuthCacheServerId(xServiceClientConnecti
 
     auto R     = x_AC_CC_AllocServerIdResp();
     R.ServerId = V.U32;
-    PostPacket(Connection, Cmd_AC_CC_AllocServerIdResp, RequestId, R);
+    PostMessage(Connection, Cmd_AC_CC_AllocServerIdResp, RequestId, R);
     return true;
 }
 
