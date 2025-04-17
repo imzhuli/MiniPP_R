@@ -125,6 +125,7 @@ size_t xBackendConnection::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Dat
             auto PayloadPtr  = xPacket::GetPayloadPtr(DataPtr);
             auto PayloadSize = Header.GetPayloadSize();
             if (!OnPacket(Header, PayloadPtr, PayloadSize)) { /* packet error */
+                X_DEBUG_PRINTF("Invalid packet");
                 return InvalidDataSize;
             }
         }
@@ -136,19 +137,12 @@ size_t xBackendConnection::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Dat
 
 bool xBackendConnection::OnPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
     X_DEBUG_PRINTF("CommandId: %" PRIu32 ", RequestId:%" PRIx64 ": \n%s", Header.CommandId, Header.RequestId, HexShow(PayloadPtr, PayloadSize).c_str());
-
     if (State == eState::Ready) {
-        switch (Header.CommandId) {
-            default:
-                break;
-        }
-        return false;
+        return OnBackendPacket(Header, PayloadPtr, PayloadSize);
     }
-
     if (Header.CommandId != Cmd_BackendChallengeResp) {
         return false;
     }
-
     return OnCmdBackendChallengeResp(Header, PayloadPtr, PayloadSize);
 }
 
@@ -165,12 +159,17 @@ bool xBackendConnection::OnCmdBackendChallengeResp(const xPacketHeader & Header,
 
     State                           = eState::Ready;
     LastRequestKeepAliveTimestampMS = LastKeepAliveTimestampMS = Ticker();
+    return OnConnectionReady();
+}
+
+bool xBackendConnection::OnConnectionReady() {
     X_DEBUG_PRINTF("Backend connection ready");
     return true;
 }
 
 bool xBackendConnection::PostData(const void * Data, size_t DataSize) {
     if (State != eState::Ready) {
+        X_DEBUG_PRINTF("");
         return false;
     }
     Connection.PostData(Data, DataSize);
@@ -181,6 +180,7 @@ bool xBackendConnection::PostMessage(xPacketCommandId CmdId, xPacketRequestId Re
     ubyte Buffer[MaxPacketSize];
     auto  PSize = WritePacket(CmdId, RequestId, Buffer, Message);
     if (!PSize) {
+        X_DEBUG_PRINTF("");
         return false;
     }
     return PostData(Buffer, PSize);

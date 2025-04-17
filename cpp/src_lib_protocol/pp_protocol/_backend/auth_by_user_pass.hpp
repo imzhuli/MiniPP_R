@@ -1,13 +1,15 @@
 #pragma once
 #include "../base.hpp"
 
-class xBackendAuthByUserPass : public xBinaryMessage {
+class xPPB_AuthByUserPass : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(UserPass, ClientIp);
+        W(UserPass);
+        // W(ClientIp);
     }
     void DeserializeMembers() override {
-        R(UserPass, ClientIp);
+        R(UserPass);
+        R(ClientIp);
     }
 
 public:
@@ -15,7 +17,7 @@ public:
     xNetAddress ClientIp;
 };
 
-class xBackendAuthByUserPassResp : public xBinaryMessage {
+class xPPB_AuthByUserPassResp : public xBinaryMessage {
 public:
     void SerializeMembers() override {
         W(ErrorCode);
