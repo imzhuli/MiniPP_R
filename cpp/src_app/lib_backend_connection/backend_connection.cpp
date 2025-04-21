@@ -183,5 +183,6 @@ bool xBackendConnection::PostMessage(xPacketCommandId CmdId, xPacketRequestId Re
         X_DEBUG_PRINTF("");
         return false;
     }
+    X_DEBUG_PRINTF("Post:\n%s", HexShow(Buffer, PSize).c_str());
     return PostData(Buffer, PSize);
 }

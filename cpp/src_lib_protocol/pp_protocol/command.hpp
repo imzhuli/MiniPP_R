@@ -109,9 +109,6 @@ static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOnline    = Cmd_DSR_DS_
 static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOffline   = Cmd_DSR_DS_Base + 0x02;
 static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceKeepAlive = Cmd_DSR_DS_Base + 0x03;
 
-// cc-pa:
-static constexpr const xPacketCommandId Cmd_CC_PA_Base = 0x09'000;
-
 // ac-cc
 static constexpr const xPacketCommandId Cmd_AC_CC_Base                       = 0x0A'000;
 static constexpr const xPacketCommandId Cmd_AC_CC_AllocServerId              = Cmd_AC_CC_Base + 0x01;
@@ -120,6 +117,13 @@ static constexpr const xPacketCommandId Cmd_AC_CC_DownloadDispatcherList     = C
 static constexpr const xPacketCommandId Cmd_AC_CC_DownloadDispatcherListResp = Cmd_AC_CC_Base + 0x04;
 static constexpr const xPacketCommandId Cmd_AC_CC_DownloadBackendList        = Cmd_AC_CC_Base + 0x05;
 static constexpr const xPacketCommandId Cmd_AC_CC_DownloadBackendListResp    = Cmd_AC_CC_Base + 0x06;
+
+// cc-pa:
+static constexpr const xPacketCommandId Cmd_CC_PA_Base                          = 0x0B'000;
+static constexpr const xPacketCommandId Cmd_CC_PA_GetRelayServerListVersion     = Cmd_CC_PA_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_CC_PA_GetRelayServerListVersionResp = Cmd_CC_PA_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_CC_PA_DownloadRelayServerList       = Cmd_CC_PA_Base + 0x03;
+static constexpr const xPacketCommandId Cmd_CC_PA_DownloadRelayServerListResp   = Cmd_CC_PA_Base + 0x04;
 
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey);
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey);

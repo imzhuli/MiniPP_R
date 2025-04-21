@@ -5,7 +5,7 @@ class xPPB_AuthByUserPass : public xBinaryMessage {
 public:
     void SerializeMembers() override {
         W(UserPass);
-        // W(ClientIp);
+        W(ClientIp);
     }
     void DeserializeMembers() override {
         R(UserPass);
@@ -41,6 +41,8 @@ public:
             X_DEBUG_PRINTF("HasError");
         }
     }
+
+    std::string ToString() const;
 
 public:
     uint32_t     ErrorCode;

@@ -68,9 +68,9 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     DeviceConnectionManager.KeepAlive(Conn);
 
     // test: send dns query:
-    auto DQ     = xDnsQuery();
-    DQ.Hostname = "www.163.com";
-    CtrlConn->PostPacket(Cmd_DV_RL_DnsQuery, 1024, DQ);
+    // auto DQ     = xDnsQuery();
+    // DQ.Hostname = "www.163.com";
+    // CtrlConn->PostPacket(Cmd_DV_RL_DnsQuery, 1024, DQ);
 
     return true;
 }

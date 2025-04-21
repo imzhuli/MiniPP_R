@@ -2,6 +2,7 @@
 #include "../base.hpp"
 
 struct xCC_PA_RelayServerInfo {
+    uint32_t      RuntimeServerId;
     xSourcePoolId SourcePoolId;
     xNetAddress   ExportProxyAddress;
 };
@@ -63,6 +64,7 @@ struct xCC_PA_DownloadRelayServerListRespWriter : xBinaryMessage {
         W(Count);
         for (size_t I = StartIndex; I < EndIndex; ++I) {
             auto & Info = (*TotalServerList)[I];
+            W(Info.RuntimeServerId);
             W(Info.SourcePoolId);
             W(Info.ExportProxyAddress);
         }
@@ -85,6 +87,7 @@ struct xCC_PA_DownloadRelayServerListRespReader : xBinaryMessage {
         RenewValue(LocalServerList, Count);
         for (uint32_t I = 0; I < Count; ++I) {
             auto & Info = LocalServerList[I];
+            R(Info.RuntimeServerId);
             R(Info.SourcePoolId);
             R(Info.ExportProxyAddress);
         }

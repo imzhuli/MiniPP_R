@@ -29,6 +29,8 @@ void xPA_RelayConnectionManager::Tick(uint64_t NowMS) {
 }
 
 void xPA_RelayConnectionManager::AddRelayGroup(uint64_t RuntimeServerId, const xNetAddress & TargetAddress) {
+
+    X_DEBUG_PRINTF("%" PRIx64 ": %s", RuntimeServerId, TargetAddress.ToString().c_str());
     // Never Call this in a callback !!!!
     assert(TargetAddress && TargetAddress.Port);
     auto & GP = RelayGroupMap[RuntimeServerId];
