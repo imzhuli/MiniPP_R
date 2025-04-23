@@ -34,19 +34,19 @@ void xPA_RelayServerListManager::Tick(uint64_t NowMS) {
     }
 }
 
-void xPA_RelayServerListManager::OnServerConnected(xClientConnection * PC) {
-    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", TargetAddress=%s", PC->GetConnectionId(), PC->GetTargetAddress().ToString().c_str());
+void xPA_RelayServerListManager::OnServerConnected(xClientConnection & CC) {
+    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", TargetAddress=%s", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str());
     ++AvailableServerCount;
 }
 
-void xPA_RelayServerListManager::OnServerClose(xClientConnection * PC) {
-    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", TargetAddress=%s", PC->GetConnectionId(), PC->GetTargetAddress().ToString().c_str());
+void xPA_RelayServerListManager::OnServerClose(xClientConnection & CC) {
+    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", TargetAddress=%s", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str());
     --AvailableServerCount;
 }
 
-bool xPA_RelayServerListManager::OnServerPacket(xClientConnection * PC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+bool xPA_RelayServerListManager::OnServerPacket(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
     X_DEBUG_PRINTF(
-        "ConnectionId=%" PRIx64 ", TargetAddress=%s, CommandId=%" PRIx32 "", PC->GetConnectionId(), PC->GetTargetAddress().ToString().c_str(), Header.CommandId
+        "ConnectionId=%" PRIx64 ", TargetAddress=%s, CommandId=%" PRIx32 "", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str(), Header.CommandId
     );
     return true;
 }

@@ -19,6 +19,7 @@ struct xCC_RelayServerBase {
     xCC_RelayServerKey Key         = 0;
     xNetAddress        CtrlAddress = {};
     xNetAddress        DataAddress = {};
+    xNetAddress        PAAddress   = {};
 };
 
 struct xCC_RelayServerInfo

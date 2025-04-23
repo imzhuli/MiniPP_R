@@ -91,6 +91,8 @@ using xServerRouteId = uint16_t;  // 强行划分的服务器路径归属 id
 using xSourcePoolId  = uint16_t;  //
 using xAuditId       = uint64_t;
 
+using xServerRuntimeKey = uint64_t;  // 由配置中心分配的动态服务器ID, 由序列和随机数组成
+
 // min static constants
 static constexpr const xSourcePoolId UNSPEC_SOURCE_POOL_ID = 0;
 static constexpr const xSourcePoolId MAX_SOURCE_POOL_ID    = 255;  // included

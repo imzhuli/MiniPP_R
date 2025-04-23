@@ -37,12 +37,21 @@ bool xCC_PAConfigManager::OnQueryRelayServerListVersion(
 
     auto Resp    = xCC_PA_GetRelayServerListVersionResp();
     Resp.Version = 1;
-    Connection.PostMessage() return true;
+    PostMessage(Connection, Cmd_CC_PA_GetRelayServerListVersionResp, Header.RequestId, Resp);
+    return true;
 }
 
 bool xCC_PAConfigManager::OnDownloadRelayServerList(
     xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize
 ) {
+    if (!BuildTotalList()) {
+        X_DEBUG_PRINTF("Failed to build local relay server protocol list");
+        return true;
+    }
 
     return true;
+}
+
+bool xCC_PAConfigManager::BuildTotalList() {
+    return false;
 }

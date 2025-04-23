@@ -22,9 +22,9 @@ public:
     void StartDownloadRelayServerList();
 
 protected:
-    void OnServerConnected(xClientConnection * PC) override;
-    void OnServerClose(xClientConnection * PC) override;
-    bool OnServerPacket(xClientConnection * PC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
+    void OnServerConnected(xClientConnection & CC) override;
+    void OnServerClose(xClientConnection & CC) override;
+    bool OnServerPacket(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
 
 private:
     std::vector<uint64_t>            ConfigCenterConnectionIdList;
