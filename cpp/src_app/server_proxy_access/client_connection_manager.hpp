@@ -5,7 +5,7 @@ struct xPA_AccountCheckNode : xListNode {
     uint64_t CheckAccountTimestampMS = 0;
 };
 struct xPA_KillClientConnectionNode : xListNode {
-    uint64_t LingerTimestamp = 0;
+    uint64_t LingerKillTimestamp = 0;
 };
 
 using xPA_AccountCheckList         = xList<xPA_AccountCheckNode>;
@@ -44,6 +44,8 @@ struct xPA_ClientConnection
         eError,
     };
 
+    uint64_t ConnectionId = 0;
+
     eProxyPhase Phase             = eUnknown;
     uint64_t    StartTimeMS       = 0;
     uint64_t    RelayConnectionId = 0;
@@ -63,7 +65,9 @@ struct xPA_ClientConnection
     } Http;
 };
 
-class xPA_ClientConnectionManager : xTcpServer::iListener {
+class xPA_ClientConnectionManager
+    : public xTcpServer::iListener
+    , public xTcpConnection::iListener {
 public:
     bool Init(xIoContext * ICP, const xNetAddress & BindAddress, size_t ConnectionPoolSize);
     void Clean();
@@ -72,13 +76,30 @@ public:
 
 protected:
     void OnTick();
+    void LingerKillConnection(xPA_KillClientConnectionNode & Conn) {
+        Conn.LingerKillTimestamp = Ticker();
+        LingerKillConnectionList.GrabTail(Conn);
+    }
+    void KillConnection(xPA_KillClientConnectionNode & Conn) {
+        KillConnectionList.GrabTail(Conn);
+    }
+    void CleanupConnection(xPA_ClientConnection & Conn);
 
 protected:
-    void OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
-
+    void   OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
+    size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override {
+        return DataSize;
+    }
+    void OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
+        Pure();
+    }
     //
 protected:
     xTicker                               Ticker;
     xTcpServer                            TcpServer;
     xIndexedStorage<xPA_ClientConnection> ConnectionPool;
+
+    xPA_AccountCheckList         AccountTimeoutList;
+    xPA_KIllClientConnectionList LingerKillConnectionList;
+    xPA_KIllClientConnectionList KillConnectionList;
 };
