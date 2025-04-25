@@ -18,6 +18,7 @@ int main(int argc, char ** argv) {
     LoadConfig(ConfigFilename->c_str());
 
     auto ICG   = xResourceGuard(IC);
+    auto CAMG  = xResourceGuard(GlobalAuthCacheManager, &IC, ConfigCenterAddressList[0]);
     auto RCMG  = xResourceGuard(GlobalRelayConnectionManager, &IC);
     auto RSLMG = xResourceGuard(GlobalRelayServerListManager, &IC, ConfigCenterAddressList);
 
@@ -26,7 +27,7 @@ int main(int argc, char ** argv) {
     while (GlobalRunState) {
         GlobalTicker.Update();
         IC.LoopOnce();
-        TickAll(GlobalTicker(), GlobalRelayServerListManager);
+        TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager);
     }
     GlobalRunState.Finish();
 

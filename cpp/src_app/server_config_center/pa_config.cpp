@@ -11,7 +11,7 @@ bool xCC_PAConfigManager::Init(xIoContext * ICP, const xNetAddress & BindAddress
 void xCC_PAConfigManager::Clean() {
 }
 
-bool xCC_PAConfigManager::OnPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+bool xCC_PAConfigManager::OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
     switch (Header.CommandId) {
         case Cmd_CC_PA_GetRelayServerListVersion:
             return OnQueryRelayServerListVersion(Connection, Header, PayloadPtr, PayloadSize);

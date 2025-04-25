@@ -47,7 +47,10 @@ bool LoadConfig(const char * filename) {
     Loader.Require(BindAddressForDevice, "BindAddressForDevice");
     Loader.Require(BindAddressForDeviceV6Test, "BindAddressForDeviceV6Test");
     Loader.Require(BindAddressForProxyAccess, "BindAddressForProxyAccess");
+    Loader.Require(BindAddressForGetBackendServerList, "BindAddressForGetBackendServerList");
+
     Loader.Require(IpLocationDbFilename, "IpLocationDbFilename");
+    Loader.Require(BackendServerListFilename, "BackendServerListFilename");
 
     std::string ForcedRelayerConfigFile;
     Loader.Optional(ForcedRelayerConfigFile, "ForcedRelayerConfigFile");

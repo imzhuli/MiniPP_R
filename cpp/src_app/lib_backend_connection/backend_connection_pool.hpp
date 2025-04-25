@@ -22,7 +22,6 @@ private:
     void OnServerConnected(xClientConnection & CC) override;
     bool OnServerPacket(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
     void OnServerClose(xClientConnection & CC) override;
-
     bool OnCmdBackendChallengeResp(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
 
     //

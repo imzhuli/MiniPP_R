@@ -125,5 +125,10 @@ static constexpr const xPacketCommandId Cmd_CC_PA_GetRelayServerListVersionResp 
 static constexpr const xPacketCommandId Cmd_CC_PA_DownloadRelayServerList       = Cmd_CC_PA_Base + 0x03;
 static constexpr const xPacketCommandId Cmd_CC_PA_DownloadRelayServerListResp   = Cmd_CC_PA_Base + 0x04;
 
+// all-cc
+static constexpr const xPacketCommandId Cmd_ALL_CC_Base                          = 0x0C'000;
+static constexpr const xPacketCommandId Cmd_ALL_CC_DownloadBackendServerList     = Cmd_ALL_CC_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_ALL_CC_DownloadBackendServerListResp = Cmd_ALL_CC_Base + 0x01;
+
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey);
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey);

@@ -15,7 +15,7 @@ void xCC_AuthCacheServerManager::Clean() {
     xService::Clean();
 }
 
-bool xCC_AuthCacheServerManager::OnPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+bool xCC_AuthCacheServerManager::OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
     switch (Header.CommandId) {
         case Cmd_AC_CC_AllocServerId:
             return OnAllocAuthCacheServerId(Connection, Header.RequestId, PayloadPtr, PayloadSize);

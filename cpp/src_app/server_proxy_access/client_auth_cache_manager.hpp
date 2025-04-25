@@ -36,6 +36,9 @@ public:
     void Tick();
     void Tick(uint64_t NowMS);
 
+    void RequestAuth(uint64_t RequestSourceId, const std::string & UserPass);
+    void RequestAuth(const xNetAddress & Address);
+
 protected:
     void OnTick();
     void UpdateUsage(xPA_AuthCacheNode & Node) {

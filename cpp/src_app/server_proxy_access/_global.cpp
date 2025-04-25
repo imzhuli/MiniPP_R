@@ -12,6 +12,7 @@ std::vector<xNetAddress> ConfigCenterAddressList;
 
 xRunState                   GlobalRunState;
 xTicker                     GlobalTicker;
+xPA_AuthCacheManager        GlobalAuthCacheManager;
 xPA_RelayConnectionManager  GlobalRelayConnectionManager;
 xPA_ClientConnectionManager GlobalClientConnectionManager;
 xPA_RelayServerListManager  GlobalRelayServerListManager;
