@@ -1,11 +1,18 @@
 #pragma once
+#include "../lib_backend_connection/backend_connection_pool.hpp"
+
 #include <map>
 #include <pp_common/base.hpp>
-#include <server_arch/client_pool.hpp>
 
-class xPA_AuthRequestManager : xClientPool {
+class xPA_AuthRequestManager : public xClientPool {
 
-    void OnServerConnected(xClientConnection & PC) override;
-    void OnServerClose(xClientConnection & PC) override;
-    bool OnServerPacket(xClientConnection & PC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
+public:
+    bool Init(xIoContext * ICP, size_t MaxConnectionCount = 1024);
+    void Clean();
+
+protected:
+    uint64_t PostAuthRequest();
+    bool     OnBackendPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
+
+    //
 };
