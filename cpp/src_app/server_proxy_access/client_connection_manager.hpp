@@ -89,13 +89,16 @@ protected:
     void   OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
     void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
-        Pure();
+        X_DEBUG_PRINTF("");
     }
 
 protected:
     size_t OnChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    size_t OnS5ClientAuth(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
+
     size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    size_t OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     //
 protected:
     xTicker                               Ticker;

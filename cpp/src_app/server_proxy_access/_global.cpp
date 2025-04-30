@@ -21,6 +21,7 @@ void LoadConfig(const std::string & filename) {
     auto Loader                     = xel::xConfigLoader(filename.c_str());
     auto ConfigCenterAddressListStr = std::string();
 
+    Loader.Require(ConfigTcpBindAddress, "TcpBindAddress");
     Loader.Require(ConfigCenterAddressListStr, "ConfigCenterAddressList");
     //
     auto CCList = Split(ConfigCenterAddressListStr, ",");

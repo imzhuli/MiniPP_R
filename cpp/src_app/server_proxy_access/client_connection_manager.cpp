@@ -69,12 +69,13 @@ void xPA_ClientConnectionManager::CleanupConnection(xPA_ClientConnection & Conn)
 }
 
 size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) {
+    X_DEBUG_PRINTF("\n%s", HexShow(DataPtr, DataSize).c_str());
     auto CP = (xPA_ClientConnection *)TcpConnectionPtr;
     switch (CP->Phase) {
         case xPA_ClientConnection::eUnknown:
             return OnChallenge(CP, DataPtr, DataSize);
-            // case xProxyClientConnection::eS5WaitForAuthInfo:
-            //     return OnS5ClientAuth(ConnectionPtr, DataPtr, DataSize);
+        case xPA_ClientConnection::eS5WaitForAuthInfo:
+            return OnS5ClientAuth(CP, DataPtr, DataSize);
             // case xProxyClientConnection::eS5WaitForConnectionRequest:
             //     return OnS5ConnectionRequest(ConnectionPtr, DataPtr, DataSize);
             // case xProxyClientConnection::eS5ConnectionReady:
@@ -110,6 +111,7 @@ size_t xPA_ClientConnectionManager::OnChallenge(xPA_ClientConnection * Connectio
 }
 
 size_t xPA_ClientConnectionManager::OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
+    X_DEBUG_PRINTF("");
 
     auto R = xStreamReader(DataPtr);
     R.Skip(1);  // skip type check bytes
@@ -124,24 +126,245 @@ size_t xPA_ClientConnectionManager::OnS5Challenge(xPA_ClientConnection * Connect
         return 0;
     }
     bool UserPassSupport = false;
+    bool NoAuthSupport   = false;
+    Touch(NoAuthSupport);
     for (size_t i = 0; i < NM; ++i) {
         uint8_t Method = R.R1();
         if (Method == 0x02) {
             UserPassSupport = true;
-            break;
+            continue;
+        }
+        if (Method == 0x00) {
+            NoAuthSupport = true;
+            continue;
         }
     }
-    if (!UserPassSupport) {
-        Kill(*ConnectionPtr);
-        return 0;
+    if (UserPassSupport) {
+        ubyte Socks5Auth[2] = { 0x05, 0x02 };
+        ConnectionPtr->PostData(Socks5Auth, sizeof(Socks5Auth));
+    } else if (NoAuthSupport) {
+        ubyte Socks5Auth[2] = { 0x05, 0x00 };
+        ConnectionPtr->PostData(Socks5Auth, sizeof(Socks5Auth));
+    } else {
+        X_DEBUG_PRINTF("Unsupported auth method");
+        ubyte Socks5Auth[2] = { 0x05, 0xFF };
+        ConnectionPtr->PostData(Socks5Auth, sizeof(Socks5Auth));
+        LingerKill(*ConnectionPtr);
     }
-    ubyte Socks5Auth[2] = { 0x05, 0x02 };
-    ConnectionPtr->PostData(Socks5Auth, sizeof(Socks5Auth));
 
     ConnectionPtr->Phase = xPA_ClientConnection::eS5WaitForAuthInfo;
+    X_DEBUG_PRINTF("eS5WaitForAuthInfo");
     return HeaderSize;
 }
 
 size_t xPA_ClientConnectionManager::OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
+
+    std::string_view HostnameView;
+    uint16_t         Port = 0;
+
+    std::string_view DataView   = { (const char *)DataPtr, DataSize };
+    auto             LineStart  = DataView.data();
+    auto             LineLength = DataView.find("\r\n");
+    if (LineLength == 0) {
+        X_DEBUG_PRINTF("Invalid Http challenge, new line at beginning");
+        Kill(*ConnectionPtr);
+        return 0;
+    } else if (LineLength == DataView.npos) {
+        return 0;
+    }
+    if (0 == strncasecmp("CONNECT ", LineStart, 8)) {
+        auto LineEnd = LineStart + LineLength;
+        LineStart   += 8;  // skip CONNECT & space
+        for (auto Curr = LineStart; Curr < LineEnd; ++Curr) {
+            char C = *Curr;
+            if (C == ':') {
+                HostnameView = { LineStart, (size_t)(Curr - LineStart) };
+                Port         = atoi(++Curr);
+                break;
+            } else if (C == ' ') {
+                HostnameView = { LineStart, (size_t)(Curr - LineStart) };
+                Port         = 80;
+                break;
+            }
+        }
+        if (!HostnameView.length()) {
+            X_DEBUG_PRINTF("Invalid HttpProxy Target");
+            Kill(*ConnectionPtr);
+            return 0;
+        }
+        ConnectionPtr->Http.TargetHost = std::string(HostnameView);
+        ConnectionPtr->Http.TargetPort = Port;
+        ConnectionPtr->Phase           = xPA_ClientConnection::eHttpRawChallenge;
+        return LineLength + 2;
+    }
+
+    auto LineView      = std::string_view{ LineStart, LineLength };
+    auto URLStartIndex = LineView.find(' ');
+    if (URLStartIndex == LineView.npos) {
+        X_DEBUG_PRINTF("Invalid Http Target Line");
+        Kill(*ConnectionPtr);
+        return 0;
+    }
+    ++URLStartIndex;
+    ConnectionPtr->Http.RebuiltHttpHeader.append(LineStart, URLStartIndex);
+
+    auto URLEndIndex = LineView.find(' ', URLStartIndex);
+    if (URLEndIndex == LineView.npos) {
+        X_DEBUG_PRINTF("Invalid Http Target Line");
+        Kill(*ConnectionPtr);
+        return 0;
+    }
+    auto URLStart = LineView.data() + URLStartIndex;
+    if (0 == strncasecmp(URLStart, "http://", 7)) {
+        URLStart      += 7;
+        URLStartIndex += 7;
+    } else if (0 == strncasecmp(URLStart, "https://", 8)) {
+        URLStart      += 8;
+        URLStartIndex += 7;
+    }
+
+    auto PathStartIndex = LineView.find('/', URLStartIndex);
+    if (PathStartIndex == LineView.npos) {
+        X_DEBUG_PRINTF("Invalid Http Target Line (No Path)");
+        Kill(*ConnectionPtr);
+        return 0;
+    }
+    // get host:port
+    for (auto Curr = URLStart; Curr <= LineStart + PathStartIndex; ++Curr) {
+        char C = *Curr;
+        if (C == ':') {
+            HostnameView = { URLStart, (size_t)(Curr - URLStart) };
+            Port         = atoi(++Curr);
+            break;
+        } else if (C == '/') {
+            HostnameView = { URLStart, (size_t)(Curr - URLStart) };
+            Port         = 80;
+            break;
+        }
+    }
+
+    ConnectionPtr->Http.TargetHost = std::string(HostnameView);
+    ConnectionPtr->Http.TargetPort = Port;
+    ConnectionPtr->Http.RebuiltHttpHeader.append(LineStart + PathStartIndex, LineLength - PathStartIndex + 2);
+    ConnectionPtr->Phase = xPA_ClientConnection::eHttpNormalChallenge;
+    return LineLength + 2;
+}
+
+size_t xPA_ClientConnectionManager::OnS5ClientAuth(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize) {
+    X_DEBUG_PRINTF("");
+    if (DataSize < 3) {
+        return 0;
+    }
+
+    xStreamReader R(DataPtr);
+    auto          Ver = R.R1();
+    auto          NP  = ConnectionPtr->GetRemoteAddress().IpToString();
+    if (Ver == 0x01) {  // only version for user pass
+        size_t NameLen = R.R1();
+        if (DataSize < 3 + NameLen) {
+            return 0;
+        }
+        // auto   NameView = std::string_view((const char *)R(), NameLen);
+        char * KeyStart = (char *)DataPtr + R.Offset();
+        R.Skip(NameLen);
+
+        size_t PassLen = R.R1();
+        if (DataSize < 3 + NameLen + PassLen) {
+            X_DEBUG_PRINTF("Wait for auth data");
+            return 0;
+        }
+        // auto PassView                     = std::string_view((const char *)R(), PassLen);
+        ((char *)DataPtr)[R.Offset() - 1] = ':';  // make quick user/pass key
+        R.Skip(PassLen);
+        if (NameLen || PassLen) {
+            NP = std::string{ KeyStart, NameLen + PassLen + 1 };
+        } else {
+            X_DEBUG_PRINTF("Empty user:pass found, using IP");
+        }
+    } else if (Ver == 0x00) {  // No Auth
+        X_DEBUG_PRINTF("Empty S5 AuthInfo, using IP");
+    } else {
+        X_DEBUG_PRINTF("AuthMethod: %u", (unsigned)Ver);
+    }
+    X_DEBUG_PRINTF("AuthInfo : NP=%s", NP.c_str());
+    // size_t KeyLength = NameLen + 1 + PassLen;
+    // auto   KeyView   = std::string_view{ KeyStart, KeyLength };
+    // if (auto AuthQueryPtr = ProxyService.MakeAsyncAccountQuery(KeyView, NameView, PassView, ConnectionPtr)) {
+    //     ConnectionPtr->Phase = xProxyClientConnection::eS5WaitForAccountExchange;
+    //     X_DEBUG_PRINTF(
+    //         "OnS5ClientAuth: ConnectioIndex=%" PRIu64 ", Account=%s, Pass=%s", ConnectionPtr->ConnectionId, AuthQueryPtr->GetNameStr(),
+    //         AuthQueryPtr->GetPasswordStr()
+    //     );
+    // } else {
+    //     X_DEBUG_PRINTF("AsyncAccountQueryFailed, Account/Password=%s", std::string(KeyView).c_str());
+    //     Kill(ConnectionPtr);
+    //     return 0;
+    // }
+    return R.Offset();
+}
+
+size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
+    // auto   HeaderView   = std::string_view{ (const char *)DataPtr, DataSize };
+    // auto   AuthNameView = std::string_view{};
+    // auto   AuthPassView = std::string_view{};
+    // size_t ConsumedSize = 0;
+    // while (true) {
+    //     auto LineEndIndex = HeaderView.find("\r\n");
+    //     if (LineEndIndex == 0) {
+    //         if (AuthNameView.empty() || AuthPassView.empty()) {
+    //             X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
+    //             ConnectionPtr->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+    //             LingerKill(ConnectionPtr);
+    //             return 0;
+    //         }
+    //         ConsumedSize += 2;
+
+    //         auto Key = std::string(AuthNameView) + '\0' + std::string(AuthPassView);
+    //         if (auto AuthQueryPtr = ProxyService.MakeAsyncAccountQuery(Key, AuthNameView, AuthPassView, ConnectionPtr); !AuthQueryPtr) {
+    //             X_DEBUG_PRINTF("Failed to query account auth");
+    //             Kill(ConnectionPtr);
+    //             return 0;
+    //         }
+    //         ConnectionPtr->SuspendReading();
+    //         ConnectionPtr->Phase = xProxyClientConnection::eHttpRawWaitForAccountExchange;
+    //         return ConsumedSize;
+    //     }
+    //     if (LineEndIndex == HeaderView.npos) {
+    //         return ConsumedSize;
+    //     };
+    //     auto LineLength = LineEndIndex + 2;
+    //     ConsumedSize   += LineLength;
+
+    //     auto LineStart = HeaderView.data();
+    //     if (LineEndIndex > 21 && 0 == strncasecmp(LineStart, "Proxy-Authorization: ", 21)) {
+    //         auto AuthStart  = LineStart + 21;
+    //         auto AuthLength = LineEndIndex - 21;
+    //         if (AuthLength < 6 && 0 != strncasecmp(AuthStart, "Basic ", 6)) {
+    //             X_DEBUG_PRINTF("Invalid Proxy-Authorization Request");
+    //             Kill(ConnectionPtr);
+    //             return 0;
+    //         }
+    //         auto   Base64Start = AuthStart + 6;
+    //         auto   Base64Size  = AuthLength - 6;
+    //         char   Buffer[1024 + 1];
+    //         size_t OLen = 0;
+    //         if (mbedtls_base64_decode((unsigned char *)Buffer, 1024, &OLen, (unsigned char *)Base64Start, Base64Size)) {
+    //             X_DEBUG_PRINTF("Invalid Proxy-Authorization Request");
+    //             Kill(ConnectionPtr);
+    //             return 0;
+    //         }
+    //         Buffer[OLen]   = '\0';
+    //         auto PassStart = strchr(Buffer, ':');
+    //         if (!PassStart) {
+    //             X_DEBUG_PRINTF("HttpReqeust AuthInfo Not Found!");
+    //             return {};
+    //         }
+    //         size_t NameLen = PassStart - Buffer;
+    //         AuthNameView   = { Buffer, NameLen };
+    //         AuthPassView   = { ++PassStart, OLen - NameLen - 1 };
+    //     }
+    //     HeaderView = HeaderView.substr(LineLength);
+    // }
+    // X_DEBUG_PRINTF("BUG: Impossible loop exit");
     return InvalidDataSize;
 }

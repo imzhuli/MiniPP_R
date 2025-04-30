@@ -21,13 +21,14 @@ int main(int argc, char ** argv) {
     auto CAMG  = xResourceGuard(GlobalAuthCacheManager, &IC, ConfigCenterAddressList[0]);
     auto RCMG  = xResourceGuard(GlobalRelayConnectionManager, &IC);
     auto RSLMG = xResourceGuard(GlobalRelayServerListManager, &IC, ConfigCenterAddressList);
+    auto CCMG  = xResourceGuard(GlobalClientConnectionManager, &IC, ConfigTcpBindAddress, 10'0000);
 
     GlobalRunState.Start();
 
     while (GlobalRunState) {
         GlobalTicker.Update();
         IC.LoopOnce();
-        TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager);
+        TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager, GlobalClientConnectionManager);
     }
     GlobalRunState.Finish();
 
