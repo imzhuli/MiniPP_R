@@ -76,23 +76,26 @@ public:
 
 protected:
     void OnTick();
-    void LingerKillConnection(xPA_KillClientConnectionNode & Conn) {
+    void LingerKill(xPA_KillClientConnectionNode & Conn) {
         Conn.LingerKillTimestamp = Ticker();
         LingerKillConnectionList.GrabTail(Conn);
     }
-    void KillConnection(xPA_KillClientConnectionNode & Conn) {
+    void Kill(xPA_KillClientConnectionNode & Conn) {
         KillConnectionList.GrabTail(Conn);
     }
     void CleanupConnection(xPA_ClientConnection & Conn);
 
 protected:
     void   OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
-    size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override {
-        return DataSize;
-    }
-    void OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
+    size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
+    void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
         Pure();
     }
+
+protected:
+    size_t OnChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    size_t OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     //
 protected:
     xTicker                               Ticker;
