@@ -1,19 +1,19 @@
 #include "./relay_connection_manager.hpp"
 
-bool xRelayConnectionManager::Init(size_t MaxConnectionSize) {
+bool xRD_RelayConnectionManager::Init(size_t MaxConnectionSize) {
     Ticker.Update();
     return ContextPool.Init(MaxConnectionSize);
 }
 
-void xRelayConnectionManager::Clean() {
+void xRD_RelayConnectionManager::Clean() {
     ContextPool.Clean();
 }
 
-void xRelayConnectionManager::Tick(uint64_t NowMS) {
+void xRD_RelayConnectionManager::Tick(uint64_t NowMS) {
     Ticker.Update(NowMS);
 }
 
-auto xRelayConnectionManager::Create() -> xRelayConnectionContext * {
+auto xRD_RelayConnectionManager::Create() -> xRD_RelayConnectionContext * {
     auto Id = ContextPool.Acquire();
     if (!Id) {
         return nullptr;
@@ -23,10 +23,10 @@ auto xRelayConnectionManager::Create() -> xRelayConnectionContext * {
     return &Ref;
 }
 
-auto xRelayConnectionManager::GetConnectionById(uint64_t RelaySideConnectionId) -> xRelayConnectionContext * {
+auto xRD_RelayConnectionManager::GetConnectionById(uint64_t RelaySideConnectionId) -> xRD_RelayConnectionContext * {
     return ContextPool.CheckAndGet(RelaySideConnectionId);
 }
 
-void xRelayConnectionManager::Destroy(xRelayConnectionContext * RCC) {
+void xRD_RelayConnectionManager::Destroy(xRD_RelayConnectionContext * RCC) {
     ContextPool.CheckAndRelease(RCC->RelaySideConnectionId);
 }

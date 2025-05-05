@@ -2,14 +2,17 @@
 
 static constexpr const int64_t IpDbReloadInterval = 60'000;
 
-bool xCC_IpLocationManager::Init(const std::string & DbName) {
+bool xCC_IpLocationManager::Init(const std::string & RegionMapFile, const std::string & DbName) {
     IpDbName = DbName;
+    RuntimeAssert(IpDb.Init(RegionMapFile.c_str(), DbName.c_str()));
+
     ReloadIpDB();
     return true;
 }
 
 void xCC_IpLocationManager::Clean() {
     // TODO: cleanup ipdb
+    IpDb.Clean();
 }
 
 void xCC_IpLocationManager::Tick(uint64_t NowMS) {
@@ -23,12 +26,14 @@ void xCC_IpLocationManager::Tick(uint64_t NowMS) {
 
 void xCC_IpLocationManager::ReloadIpDB() {
     assert(IpDbName.size());
-
-    //
 }
 
-xRegionId xCC_IpLocationManager::GetRegionByIp(const char * IpString) {
-    return xRegionId();
+xGeoInfo xCC_IpLocationManager::GetRegionByIp(const char * IpString) {
+    auto Opt = IpDb.Get(IpString);
+    if (!Opt()) {
+        return xGeoInfo();
+    }
+    return *Opt;
 }
 
 xContinentId xCC_IpLocationManager::GetContinentIdByCountry(xCountryId CountryId) {

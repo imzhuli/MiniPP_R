@@ -1,5 +1,5 @@
 #pragma once
-#include "./base.hpp"
+#include "../base.hpp"
 
 struct xPPI_DeviceInfoUpdate : public xBinaryMessage {  // from proxy_access to relay server
 public:
@@ -27,4 +27,4 @@ public:
     bool SpeedLimitEnabled;
 
     //
-}
+};

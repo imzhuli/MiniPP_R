@@ -131,15 +131,21 @@ struct xChallengeChennelReactor : xUdpChannel::iListener {
         }
 
         X_DEBUG_PRINTF("Challenge accepted, checking relay server nodes");
-        auto RID = IpLocationManager.GetRegionByIp(RemoteAddress.ToString().c_str());
+        auto RID = IpLocationManager.GetRegionByIp(RemoteAddress.IpToString().c_str());
         auto RSI = RelayServerManager.GetRelayServerByRegion(RID);
 
         auto Resp            = xCC_DeviceChallengeResp();
         Resp.TerminalAddress = RemoteAddress.Ip();
+
+        ubyte RegionBuffer[64];
+        auto  RegionWriter = xStreamWriter(RegionBuffer);
+        RegionWriter.W4(RID.CountryId);
+        RegionWriter.W4(RID.StateId);
+        RegionWriter.W4(RID.CityId);
         if (RSI) {
             Resp.CtrlAddress = RSI->CtrlAddress;
             Resp.DataAddress = RSI->DataAddress;
-            Resp.CheckKey    = "TLMPP-FOR-TEST";
+            Resp.CheckKey    = "TLMPP-FOR-TEST:" + StrToHex(RegionWriter.Origin(), RegionWriter.Offset());
         }
 
         ubyte Buffer[MaxPacketSize];
@@ -180,7 +186,7 @@ int main(int argc, char ** argv) {
 
     LoadConfig(ConfigFileOpt->c_str());
 
-    auto ILG   = xResourceGuard(IpLocationManager, IpLocationDbFilename);
+    auto ILG   = xResourceGuard(IpLocationManager, GeoInfoMapFilename, IpLocationDbFilename);
     auto RSMG  = xResourceGuard(RelayServerManager);
     auto CCMG  = xResourceGuard(ChallengeContextManager);
     auto PACMG = xResourceGuard(PAConfigManager, &GlobalIoContext, BindAddressForProxyAccess);

@@ -28,7 +28,7 @@ const xCC_RelayServerBase * xCC_RelayServerManager::GetAnyRelayServer() {
     return &H->Base;
 }
 
-const xCC_RelayServerBase * xCC_RelayServerManager::GetRelayServerByRegion(const xRegionId & Rid) {
+const xCC_RelayServerBase * xCC_RelayServerManager::GetRelayServerByRegion(const xGeoInfo & Rid) {
     return GetAnyRelayServer();
 }
 

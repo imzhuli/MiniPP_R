@@ -100,8 +100,19 @@ size_t xDeviceRelayService::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Da
         }
         if (Header.IsRequestKeepAlive()) {
             Conn->PostKeepAlive();
-            if (Conn->IsType_Ctrl() || Conn->IsType_Data()) {
-                DeviceConnectionManager.KeepAlive(static_cast<xRD_DeviceConnection *>(Conn));
+            if (Conn->IsType_Ctrl()) {
+                auto PDC = static_cast<xRD_DeviceConnection *>(Conn);
+                DeviceConnectionManager.KeepAlive(PDC);
+                if (PDC->DeviceId) {
+                    X_DEBUG_PRINTF("DeviceCtrl:KeepAlive %" PRIx64 "", PDC->DeviceId);
+                    DeviceManager.ReportDeviceState(PDC->DeviceId);
+                }
+            } else if (Conn->IsType_Data()) {
+                auto PDC = static_cast<xRD_DeviceConnection *>(Conn);
+                DeviceConnectionManager.KeepAlive(PDC);
+                if (PDC->DeviceId) {
+                    X_DEBUG_PRINTF("DeviceData:KeepAlive %" PRIx64 "", PDC->DeviceId);
+                }
             } else {
                 assert(Conn->IsType_ProxyClient());
                 ProxyConnectionManager.KeepAlive(static_cast<xRD_ProxyConnection *>(Conn));

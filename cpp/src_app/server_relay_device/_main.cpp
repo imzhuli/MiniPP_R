@@ -21,11 +21,14 @@ int main(int argc, char ** argv) {
     RuntimeAssert(LoadConfig(ConfigFileOpt->c_str()));
 
     RuntimeAssert(GlobalIoContext.Init());
+    RuntimeAssert(DeviceReporter.Init(&GlobalIoContext));
     RuntimeAssert(DeviceManager.Init(MaxDeviceCount));
     RuntimeAssert(DeviceConnectionManager.Init(&GlobalIoContext, MaxDeviceCount * 2));
     RuntimeAssert(DeviceRelayService.Init(&GlobalIoContext, BindCtrlAddress, BindDataAddress, BindProxyAddress));
     RuntimeAssert(ProxyConnectionManager.Init(&GlobalIoContext, MaxProxyCount));
     RuntimeAssert(RelayConnectionManager.Init(MaxRelayConnectionCount));
+
+    DeviceReporter.AddServer(DeviceAuditAddress);
 
     while (true) {
         auto NowMS = GetTimestampMS();
@@ -35,6 +38,7 @@ int main(int argc, char ** argv) {
         DeviceRelayService.Tick(NowMS);
         ProxyConnectionManager.Tick(NowMS);
         RelayConnectionManager.Tick(NowMS);
+        DeviceReporter.Tick(NowMS);
     }
 
     RelayConnectionManager.Clean();
@@ -42,6 +46,7 @@ int main(int argc, char ** argv) {
     DeviceRelayService.Clean();
     DeviceConnectionManager.Clean();
     DeviceManager.Clean();
+    DeviceReporter.Clean();
     GlobalIoContext.Clean();
 
     return 0;

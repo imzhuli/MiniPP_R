@@ -69,6 +69,8 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     NewDevice->DeviceLocalIdString = S.DeviceLocalIdString;
     DeviceConnectionManager.KeepAlive(Conn);
 
+    X_DEBUG_PRINTF("DataKey: %s", S.DataKey.c_str());
+
     // test: send dns query:
     // auto DQ     = xDnsQuery();
     // DQ.Hostname = "www.163.com";

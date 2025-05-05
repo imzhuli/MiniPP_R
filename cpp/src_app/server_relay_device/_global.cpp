@@ -1,6 +1,7 @@
 #include "./_global.hpp"
 
-xIoContext GlobalIoContext;
+std::string ServerUuid;
+xIoContext  GlobalIoContext;
 
 xNetAddress BindCtrlAddress;
 xNetAddress BindDataAddress;
@@ -10,8 +11,11 @@ xNetAddress ExportCtrlAddress;
 xNetAddress ExportDataAddress;
 xNetAddress ExportProxyAddress;
 
+xNetAddress        DeviceAuditAddress;
+xRD_DeviceReporter DeviceReporter;
+
 xRD_DeviceConnectionManager DeviceConnectionManager;
 xDeviceManager              DeviceManager;
 xRD_ProxyConnectionManager  ProxyConnectionManager;
 xDeviceRelayService         DeviceRelayService;
-xRelayConnectionManager     RelayConnectionManager;
+xRD_RelayConnectionManager  RelayConnectionManager;

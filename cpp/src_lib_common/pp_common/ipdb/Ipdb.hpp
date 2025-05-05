@@ -1,17 +1,12 @@
 #pragma once
 #include "../base.hpp"
+#include "../region.hpp"
 
 #include <netinet/in.h>
 
 #include <mutex>
 
 #define ZEC_USE_IP2LOC_DB
-
-struct xGeoInfo {
-    xCountryId CountryId = 0;
-    xStateId   StateId   = 0;
-    xCityId    CityId    = 0;
-};
 
 class xIpDb : xNonCopyable {
 public:

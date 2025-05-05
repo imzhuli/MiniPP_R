@@ -2,8 +2,10 @@
 #include <pp_common/base.hpp>
 #include <unordered_map>
 
+static constexpr const uint64_t DEVICE_KEEPALIVE_TIMEOUT_MS = 11'000;  // normally device is removed by request from dispatcher
+
 struct xDR_TimeoutNode : xListNode {
-    uint32_t TimestampMS;
+    uint64_t TimestampMS;
 };
 struct xDR_CountryNode : xListNode {};
 struct xDR_StateNode : xListNode {};
@@ -13,6 +15,10 @@ struct xDR_DeviceInfoBase {
     uint64_t    ReleayServerAddress;
     uint64_t    DeviceRelaySideKey;
     std::string DeviceId;
+
+    xCountryId CountryId;
+    xStateId   StateId;
+    xCityId    CityId;
 };
 
 struct xDR_DeviceContext
@@ -20,18 +26,20 @@ struct xDR_DeviceContext
     , xDR_CountryNode
     , xDR_StateNode
     , xDR_CityNode {
-    xDR_DeviceInfoBase BaseInfo;
+    xDR_DeviceInfoBase InfoBase;
 };
 
 class xDR_DeviceContextManager {
 public:
     bool Init();
     void Clean();
-    void Tick();
+    void Tick(uint64_t NowMS);
 
     void UpdateDevice(const xDR_DeviceInfoBase & InfoBase);
     void RemoveDevice(xDR_DeviceContext * Device);
     void RemoveDeviceById(const std::string & DeviceId);
+
+    void KeepAlive(xDR_DeviceContext * Device);
 
 private:
     xTicker                                              Ticker;

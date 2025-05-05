@@ -17,6 +17,7 @@ extern xNetAddress BindAddressForGetBackendServerList;
 extern xUdpChannel Ipv6TestChennel;
 extern xUdpChannel ChallengeChannel;
 
+extern std::string GeoInfoMapFilename;
 extern std::string IpLocationDbFilename;
 extern std::string BackendServerListFilename;
 

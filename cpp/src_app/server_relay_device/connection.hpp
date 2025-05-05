@@ -17,6 +17,7 @@ public:
     uint64_t  ConnectionId   = 0;
     uint64_t  Flags          = FLAG_NONE;
     uint64_t  IdleTimestamMS = 0;
+    uint64_t  TickCount      = 0;
     xVariable UserContext    = {};
     xVariable UserContextEx  = {};
 

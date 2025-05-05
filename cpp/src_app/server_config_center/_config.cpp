@@ -49,6 +49,7 @@ bool LoadConfig(const char * filename) {
     Loader.Require(BindAddressForProxyAccess, "BindAddressForProxyAccess");
     Loader.Require(BindAddressForGetBackendServerList, "BindAddressForGetBackendServerList");
 
+    Loader.Require(GeoInfoMapFilename, "GeoInfoMapFilename");
     Loader.Require(IpLocationDbFilename, "IpLocationDbFilename");
     Loader.Require(BackendServerListFilename, "BackendServerListFilename");
 

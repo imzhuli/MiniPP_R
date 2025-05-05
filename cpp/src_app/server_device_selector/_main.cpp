@@ -1,39 +1,29 @@
+#include "../lib_server_util/all.hpp"
 #include "./_global.hpp"
 #include "./device_context_manager.hpp"
 
-#include <server_arch/service.hpp>
+#include <pp_protocol/command.hpp>
 
-auto IC  = xIoContext();
-auto ICG = xResourceGuard(IC);
-
-struct xDR_Service : public xService {
-
-    void OnClientConnected(xServiceClientConnection & Connection) {
-    }
-    void OnClientClose(xServiceClientConnection & Connection) {
-    }
-    bool OnPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
-        return true;
-    }
-    void OnCleanupConnection(const xServiceClientConnection & Connection) {
-    }
-};
-auto DRService = xDR_Service();
+static auto IC     = xIoContext();
+static auto ICG    = xResourceGuard(IC);
+static auto Ticker = xTicker();
 
 int main(int argc, char ** argv) {
-    auto CL = xCommandLine(
-        argc, argv,
-        {
-            { 'c', "config", "config-file", true },
-        }
-    );
+    auto C = GetConfigFile(argc, argv);
+    LoadConfig(C.c_str());
 
-    auto DRSG = xResourceGuard(DRService, &IC, BindAddress, MAX_RELAY_DEVICE_SERVER_SUPPORTED, true);
-    RuntimeAssert(DRSG);
+    auto DSSG = xResourceGuard(DeviceSelectorService, &IC, BindAddress, MAX_RELAY_DEVICE_SERVER_SUPPORTED, true);
+    RuntimeAssert(DSSG);
+
+    auto DSDOG = xResourceGuard(DeviceObserver, &IC);
+    RuntimeAssert(DSDOG);
+    RuntimeAssert(DeviceObserver.AddServer(DeviceDispatcherAddress));
 
     while (true) {
         IC.LoopOnce();
-        DRService.Tick();
+        DeviceSelectorService.Tick(Ticker());
+        DeviceObserver.Tick(Ticker());
+        DeviceContextManager.Tick(Ticker());
     }
     return 0;
 }

@@ -42,7 +42,7 @@ public:
 
     //
     const xCC_RelayServerBase * GetAnyRelayServer();
-    const xCC_RelayServerBase * GetRelayServerByRegion(const xRegionId & Rid);
+    const xCC_RelayServerBase * GetRelayServerByRegion(const xGeoInfo & Rid);
 
 private:
     xList<xCC_RelayServerInfo_RegionAllNode>                               RelayServerListAll;

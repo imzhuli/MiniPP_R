@@ -2,6 +2,9 @@
 
 #include "./_global.hpp"
 
+#include <pp_protocol/command.hpp>
+#include <pp_protocol/internal/device_state.hpp>
+
 bool xDeviceManager::Init(size_t MaxDevice) {
     if (!DevicePool.Init(MaxDevice)) {
         return false;
@@ -40,7 +43,17 @@ void xDeviceManager::DestroyDevice(xDevice * DC) {
     DevicePool.Release(DC->DeviceRuntimeId);
 }
 
-void xDeviceManager::ReportDeviceState(xDevice * Device) {
-    Todo("");
+void xDeviceManager::ReportDeviceState(xDevice * Device, bool Offline) {
+    assert(Device);
+    auto A      = xPPI_DeviceInfoUpdate();
+    A.CountryId = Device->GeoInfo.CountryId;
+    A.StateId   = Device->GeoInfo.StateId;
+    A.CityId    = Device->GeoInfo.CityId;
+
+    A.DeviceUuid = Device->DeviceLocalIdString + ":" + std::to_string(Device->DeviceRuntimeId);
+    A.IsOffline  = Offline;
+
+    DeviceReporter.PostMessage(Cmd_DSR_DS_DeviceOnline, 0, A);
 }
+
 //

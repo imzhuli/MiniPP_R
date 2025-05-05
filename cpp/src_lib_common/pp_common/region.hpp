@@ -3,14 +3,14 @@
 
 static constexpr const xContinentId WildContinentId = xContinentId(-1);
 
-struct xRegionId {
+struct xGeoInfo {
     xCountryId CountryId;
     xStateId   StateId;
     xCityId    CityId;
 };
 
-struct xRegionInfo {
-    xRegionId RegionId;
+struct xGeoInfoEx {
+    xGeoInfo RegionId;
 
     std::string CountryName;
     std::string CityName;

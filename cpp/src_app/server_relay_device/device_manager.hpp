@@ -1,5 +1,6 @@
 #pragma once
 #include <pp_common/_.hpp>
+#include <pp_common/region.hpp>
 
 class xRD_DeviceConnection;
 
@@ -8,11 +9,13 @@ struct xDevice : xListNode {
     static constexpr uint32_t FLAG_BOUND  = 0x01;
     static constexpr uint32_t FLAG_DELETE = 0x80;
 
-    xIndexId               DeviceRuntimeId = 0;
-    uint32_t               Flags           = FLAG_INIT;
-    xRD_DeviceConnection * CtrlConnection  = 0;
-    xRD_DeviceConnection * DataConnection  = 0;
-    std::string            DeviceLocalIdString;
+    xIndexId               DeviceRuntimeId     = 0;
+    uint32_t               Flags               = FLAG_INIT;
+    xRD_DeviceConnection * CtrlConnection      = 0;
+    xRD_DeviceConnection * DataConnection      = 0;
+    std::string            DeviceLocalIdString = {};
+    xGeoInfo               GeoInfo             = {};
+    size_t                 ReportCounter       = 0;
 
     void MarkDelete() {
         Flags |= FLAG_DELETE;
@@ -48,6 +51,20 @@ public:
     void ReleaseDevice(xDevice * DC) {
         DeferDestroyDevice(DC);
     }
+    void ReportDeviceState(uint64_t DeviceId) {
+        auto PD = DevicePool.CheckAndGet(DeviceId);
+        if (!PD || (PD->ReportCounter++) % 5) {
+            return;
+        }
+        ReportDeviceState(PD);
+    }
+    void ReportDeviceOfflineState(uint64_t DeviceId) {
+        auto PD = DevicePool.CheckAndGet(DeviceId);
+        if (!PD) {
+            return;
+        }
+        ReportDeviceState(PD, true);
+    }
 
 protected:
     auto CreateDevice() -> xDevice *;
@@ -56,7 +73,7 @@ protected:
         DeviceKillList.GrabTail(*DC);
     }
     void DestroyDevice(xDevice * DC);
-    void ReportDeviceState(xDevice * Device);
+    void ReportDeviceState(xDevice * Device, bool Offline = false);
 
 private:
     xTicker                  Ticker;
