@@ -6,7 +6,7 @@ bool xDeviceManager::Init(size_t MaxDevice) {
     if (!DevicePool.Init(MaxDevice)) {
         return false;
     }
-    auto DPC = MakeResourceCleaner(DevicePool);
+    auto DPC = xScopeCleaner(DevicePool);
 
     DPC.Dismiss();
     return true;
@@ -19,7 +19,7 @@ void xDeviceManager::Clean() {
     while (auto DC = DeviceKillList.PopHead()) {
         DestroyDevice(DC);
     }
-    auto DPC = MakeResourceCleaner(DevicePool);
+    auto DPC = xScopeCleaner(DevicePool);
 }
 
 void xDeviceManager::Tick(uint64_t NowMS) {

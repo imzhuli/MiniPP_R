@@ -53,20 +53,22 @@ void xCC_BackendServerManager::ReloadServerList() {
     ServerList = std::move(NewList);
 }
 
-bool xCC_BackendServerManager::OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
-    switch (Header.CommandId) {
+bool xCC_BackendServerManager::OnClientPacket(
+    xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
+) {
+    switch (CommandId) {
         case Cmd_ALL_CC_DownloadBackendServerList:
-            return OnDownloadBackendServerList(Connection, Header);
+            return OnDownloadBackendServerList(Connection, CommandId, RequestId);
         default:
             break;
     }
     return true;
 }
 
-bool xCC_BackendServerManager::OnDownloadBackendServerList(xServiceClientConnection & Connection, const xPacketHeader & Header) {
+bool xCC_BackendServerManager::OnDownloadBackendServerList(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId) {
     auto Resp           = xCC_ALL_GetBackendServerListResp{};
     Resp.AddressListPtr = &ServerList;
 
-    PostMessage(Connection, Cmd_ALL_CC_DownloadBackendServerListResp, Header.RequestId, Resp);
+    PostMessage(Connection, Cmd_ALL_CC_DownloadBackendServerListResp, RequestId, Resp);
     return true;
 }

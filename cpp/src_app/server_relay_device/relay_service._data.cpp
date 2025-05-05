@@ -13,17 +13,19 @@
 #include <pp_protocol/proxy_relay/challenge.hpp>
 #include <pp_protocol/proxy_relay/connection.hpp>
 
-bool xDeviceRelayService::OnDataPacket(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
-    X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", Header.CommandId, HexShow(Payload, PayloadSize).c_str());
-    switch (Header.CommandId) {
+bool xDeviceRelayService::OnDataPacket(
+    xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize
+) {
+    X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", CommandId, HexShow(Payload, PayloadSize).c_str());
+    switch (CommandId) {
         case Cmd_DV_RL_InitDataStream: {
-            return OnTerminalInitDataStream(Conn, Header, Payload, PayloadSize);
+            return OnTerminalInitDataStream(Conn, RequestId, Payload, PayloadSize);
         }
         case Cmd_DV_RL_NotifyConnectionState: {
-            return OnTerminalTargetConnectionUpdate(Conn, Header, Payload, PayloadSize);
+            return OnTerminalTargetConnectionUpdate(Conn, RequestId, Payload, PayloadSize);
         }
         case Cmd_DV_RL_PostData: {
-            return OnTerminalPostData(Conn, Header, Payload, PayloadSize);
+            return OnTerminalPostData(Conn, RequestId, Payload, PayloadSize);
         }
         default:
             break;
@@ -31,7 +33,7 @@ bool xDeviceRelayService::OnDataPacket(xRD_DeviceConnection * Conn, xPacketHeade
     return false;
 }
 
-bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     auto S = xInitDataStream();
     if (!S.Deserialize(Payload, PayloadSize)) {
         return false;
@@ -57,7 +59,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     R.Accepted = true;
 
     // accept data stream and move it to long idle list
-    Conn->PostPacket(Cmd_DV_RL_InitDataStreamResp, Header.RequestId, R);
+    Conn->PostPacket(Cmd_DV_RL_InitDataStreamResp, RequestId, R);
 
     X_DEBUG_PRINTF("device accepted, DeviceRuntimeId:%" PRIu64 ", DevicdLocalIdString=%s", NewDevice->DeviceRuntimeId, S.DeviceLocalIdString.c_str());
     Conn->DeviceId                 = NewDevice->DeviceRuntimeId;
@@ -75,7 +77,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     return true;
 }
 
-bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     auto S = xTR_ConnectionStateNotify();
     if (!S.Deserialize(Payload, PayloadSize)) {
         return false;
@@ -122,7 +124,7 @@ bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection 
     return true;
 }
 
-bool xDeviceRelayService::OnTerminalPostData(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnTerminalPostData(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     auto S = xTR_PostData();
     if (!S.Deserialize(Payload, PayloadSize)) {
         return false;

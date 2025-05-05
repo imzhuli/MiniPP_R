@@ -1,4 +1,4 @@
 #include "./_global.hpp"
 
-xNetAddress BindInputAddress;
+xNetAddress BindProducerAddress;
 xNetAddress BindObserverAddress;

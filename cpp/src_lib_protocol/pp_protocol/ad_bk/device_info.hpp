@@ -8,6 +8,7 @@ struct xAD_BK_DeviceInfo {
     std::string RelayServerUuid;
     xNetAddress PrimaryIpv4Address;
     xNetAddress PrimaryIpv6Address;
+
     bool IsOffline;  // 下线时会设置这个标志位. 但考虑到服务器的变更, 不是所有设备都有上/下线标志, 后台服务器应当将30分钟未发统计的设备设为下线.
     bool SupportUdpChannel;
     bool SupportDnsRequests;

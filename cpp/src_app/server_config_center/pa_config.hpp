@@ -8,11 +8,12 @@ public:
     bool Init(xIoContext * ICP, const xNetAddress & BindAddress);
     void Clean();
 
-    bool OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
+    bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize)
+        override;
 
 public:
-    bool OnQueryRelayServerListVersion(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
-    bool OnDownloadRelayServerList(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
+    bool OnQueryRelayServerListVersion(xServiceClientConnection & Connection, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
+    bool OnDownloadRelayServerList(xServiceClientConnection & Connection, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
     bool BuildTotalList();
 
 private:

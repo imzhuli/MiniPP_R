@@ -12,7 +12,7 @@ struct xDR_Service : public xService {
     }
     void OnClientClose(xServiceClientConnection & Connection) {
     }
-    bool OnPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+    bool OnPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
         return true;
     }
     void OnCleanupConnection(const xServiceClientConnection & Connection) {

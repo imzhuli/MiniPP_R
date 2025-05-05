@@ -32,6 +32,8 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif()
 
 aux_source_directory("./lib_backend_connection"    LIB_SRC)
+aux_source_directory("./lib_server_util"           LIB_SRC)
+
 add_library(server ${LIB_SRC})
 target_compile_definitions(server PRIVATE X_OPTION_STATIC)
 
@@ -54,6 +56,7 @@ endfunction()
 
 
 set(target_list
+	observer_device_info
 	server_auth_cache
 	server_auth_dispatcher
 	server_config_center

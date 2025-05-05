@@ -91,7 +91,7 @@ void xBackendConnection::OnConnected(xTcpConnection * TcpConnectionPtr) {
     challenge.TimestampMS    = xel::GetTimestampMS();
     challenge.ChallengeValue = challenge.GenerateChallengeString(AppSecret);
     ubyte Buffer[xel::MaxPacketSize];
-    auto  RSize = xel::WritePacket(Cmd_BackendChallenge, 0, Buffer, sizeof(Buffer), challenge);
+    auto  RSize = xel::WriteMessage(Cmd_BackendChallenge, 0, Buffer, sizeof(Buffer), challenge);
     Connection.PostData(Buffer, RSize);
 
     X_DEBUG_PRINTF("Sending:\n%s", HexShow(Buffer, RSize).c_str());
@@ -124,7 +124,7 @@ size_t xBackendConnection::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Dat
         } else {
             auto PayloadPtr  = xPacket::GetPayloadPtr(DataPtr);
             auto PayloadSize = Header.GetPayloadSize();
-            if (!OnPacket(Header, PayloadPtr, PayloadSize)) { /* packet error */
+            if (!OnPacket(Header.CommandId, Header.RequestId, PayloadPtr, PayloadSize)) { /* packet error */
                 X_DEBUG_PRINTF("Invalid packet");
                 return InvalidDataSize;
             }
@@ -135,18 +135,18 @@ size_t xBackendConnection::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Dat
     return DataSize - RemainSize;
 }
 
-bool xBackendConnection::OnPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
-    X_DEBUG_PRINTF("CommandId: %" PRIu32 ", RequestId:%" PRIx64 ": \n%s", Header.CommandId, Header.RequestId, HexShow(PayloadPtr, PayloadSize).c_str());
+bool xBackendConnection::OnPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    X_DEBUG_PRINTF("CommandId: %" PRIu32 ", RequestId:%" PRIx64 ": \n%s", CommandId, RequestId, HexShow(PayloadPtr, PayloadSize).c_str());
     if (State == eState::Ready) {
-        return OnBackendPacket(Header, PayloadPtr, PayloadSize);
+        return OnBackendPacket(CommandId, RequestId, PayloadPtr, PayloadSize);
     }
-    if (Header.CommandId != Cmd_BackendChallengeResp) {
+    if (CommandId != Cmd_BackendChallengeResp) {
         return false;
     }
-    return OnCmdBackendChallengeResp(Header, PayloadPtr, PayloadSize);
+    return OnCmdBackendChallengeResp(CommandId, RequestId, PayloadPtr, PayloadSize);
 }
 
-bool xBackendConnection::OnCmdBackendChallengeResp(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+bool xBackendConnection::OnCmdBackendChallengeResp(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     if (State != eState::Challenging) {
         return false;
     }
@@ -178,7 +178,7 @@ bool xBackendConnection::PostData(const void * Data, size_t DataSize) {
 
 bool xBackendConnection::PostMessage(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message) {
     ubyte Buffer[MaxPacketSize];
-    auto  PSize = WritePacket(CmdId, RequestId, Buffer, Message);
+    auto  PSize = WriteMessage(CmdId, RequestId, Buffer, Message);
     if (!PSize) {
         X_DEBUG_PRINTF("");
         return false;

@@ -15,12 +15,14 @@ void xCC_AuthCacheServerManager::Clean() {
     xService::Clean();
 }
 
-bool xCC_AuthCacheServerManager::OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
-    switch (Header.CommandId) {
+bool xCC_AuthCacheServerManager::OnClientPacket(
+    xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
+) {
+    switch (CommandId) {
         case Cmd_AC_CC_AllocServerId:
-            return OnAllocAuthCacheServerId(Connection, Header.RequestId, PayloadPtr, PayloadSize);
+            return OnAllocAuthCacheServerId(Connection, RequestId, PayloadPtr, PayloadSize);
         case Cmd_AC_CC_DownloadDispatcherList:
-            return OnAllocDownloadDispatcherList(Connection, Header.RequestId, PayloadPtr, PayloadSize);
+            return OnAllocDownloadDispatcherList(Connection, RequestId, PayloadPtr, PayloadSize);
     }
     return false;
 }

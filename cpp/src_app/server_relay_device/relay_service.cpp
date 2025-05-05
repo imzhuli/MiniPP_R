@@ -111,16 +111,16 @@ size_t xDeviceRelayService::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Da
             auto PayloadSize = Header.GetPayloadSize();
             // dispatch packet
             if (Conn->IsType_Ctrl()) {
-                if (!OnCtrlPacket(static_cast<xRD_DeviceConnection *>(Conn), Header, PayloadPtr, PayloadSize)) { /* packet error */
+                if (!OnCtrlPacket(static_cast<xRD_DeviceConnection *>(Conn), Header.CommandId, Header.RequestId, PayloadPtr, PayloadSize)) { /* packet error */
                     return InvalidDataSize;
                 }
             } else if (Conn->IsType_Data()) {
-                if (!OnDataPacket(static_cast<xRD_DeviceConnection *>(Conn), Header, PayloadPtr, PayloadSize)) { /* packet error */
+                if (!OnDataPacket(static_cast<xRD_DeviceConnection *>(Conn), Header.CommandId, Header.RequestId, PayloadPtr, PayloadSize)) { /* packet error */
                     return InvalidDataSize;
                 }
             } else {
                 assert(Conn->IsType_ProxyClient());
-                if (!OnProxyPacket(static_cast<xRD_ProxyConnection *>(Conn), Header, PayloadPtr, PayloadSize)) { /* packet error */
+                if (!OnProxyPacket(static_cast<xRD_ProxyConnection *>(Conn), Header.CommandId, Header.RequestId, PayloadPtr, PayloadSize)) { /* packet error */
                     X_DEBUG_PRINTF("?? ");
                     return InvalidDataSize;
                 }

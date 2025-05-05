@@ -12,20 +12,22 @@
 #include <pp_protocol/dv_rl/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 
-bool xDeviceRelayService::OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
-    X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", Header.CommandId, HexShow(Payload, PayloadSize).c_str());
-    switch (Header.CommandId) {
+bool xDeviceRelayService::OnCtrlPacket(
+    xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize
+) {
+    X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", CommandId, HexShow(Payload, PayloadSize).c_str());
+    switch (CommandId) {
         case Cmd_DV_RL_InitCtrlStream: {
-            return OnTerminalInitCtrlStream(Conn, Header, Payload, PayloadSize);
+            return OnTerminalInitCtrlStream(Conn, RequestId, Payload, PayloadSize);
         }
         case Cmd_DV_RL_DnsQueryResp: {
-            return OnTerminalDnsQueryResp(Conn, Header, Payload, PayloadSize);
+            return OnTerminalDnsQueryResp(Conn, RequestId, Payload, PayloadSize);
         }
     }
     return false;
 }
 
-bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     auto S = xInitCtrlStream();
     if (!S.Deserialize(Payload, PayloadSize)) {
         return false;
@@ -38,12 +40,12 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
     R.CtrlId     = Conn->ConnectionId;
     R.DeviceKey  = "hello world!";
     R.EnableIpv6 = S.Resolved3rdIpv6 || S.Ipv6Address;
-    Conn->PostPacket(Cmd_DV_RL_InitCtrlStreamResp, Header.RequestId, R);
+    Conn->PostPacket(Cmd_DV_RL_InitCtrlStreamResp, RequestId, R);
     DeviceConnectionManager.KeepAlive(Conn);
     return true;
 }
 
-bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     auto Resp = xDnsQueryResp();
     //
     X_DEBUG_PRINTF("DnsQueryResp: \n%s", HexShow(Payload, PayloadSize).c_str());

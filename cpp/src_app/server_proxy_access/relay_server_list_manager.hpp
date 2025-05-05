@@ -24,7 +24,7 @@ public:
 protected:
     void OnServerConnected(xClientConnection & CC) override;
     void OnServerClose(xClientConnection & CC) override;
-    bool OnServerPacket(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
+    bool OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override;
 
 private:
     std::vector<uint64_t>            ConfigCenterConnectionIdList;

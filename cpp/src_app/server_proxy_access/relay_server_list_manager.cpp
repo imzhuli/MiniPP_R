@@ -44,9 +44,11 @@ void xPA_RelayServerListManager::OnServerClose(xClientConnection & CC) {
     --AvailableServerCount;
 }
 
-bool xPA_RelayServerListManager::OnServerPacket(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+bool xPA_RelayServerListManager::OnServerPacket(
+    xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
+) {
     X_DEBUG_PRINTF(
-        "ConnectionId=%" PRIx64 ", TargetAddress=%s, CommandId=%" PRIx32 "", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str(), Header.CommandId
+        "ConnectionId=%" PRIx64 ", TargetAddress=%s, CommandId=%" PRIx32 "", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str(), CommandId
     );
     return true;
 }

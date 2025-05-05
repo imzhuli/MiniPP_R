@@ -25,12 +25,12 @@ private:
     void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override;
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
 
-    bool OnPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
-    bool OnCmdBackendChallengeResp(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
+    bool OnPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
+    bool OnCmdBackendChallengeResp(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
 
 protected:
     virtual bool OnConnectionReady();
-    virtual bool OnBackendPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+    virtual bool OnBackendPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
         X_DEBUG_PRINTF("");
         return true;
     }

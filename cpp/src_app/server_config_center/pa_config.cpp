@@ -11,15 +11,17 @@ bool xCC_PAConfigManager::Init(xIoContext * ICP, const xNetAddress & BindAddress
 void xCC_PAConfigManager::Clean() {
 }
 
-bool xCC_PAConfigManager::OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
-    switch (Header.CommandId) {
+bool xCC_PAConfigManager::OnClientPacket(
+    xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
+) {
+    switch (CommandId) {
         case Cmd_CC_PA_GetRelayServerListVersion:
-            return OnQueryRelayServerListVersion(Connection, Header, PayloadPtr, PayloadSize);
+            return OnQueryRelayServerListVersion(Connection, RequestId, PayloadPtr, PayloadSize);
         case Cmd_CC_PA_DownloadRelayServerList:
-            return OnDownloadRelayServerList(Connection, Header, PayloadPtr, PayloadSize);
+            return OnDownloadRelayServerList(Connection, RequestId, PayloadPtr, PayloadSize);
 
         default:
-            X_DEBUG_PRINTF("Unknonw request, CmdId=%" PRIx32 ", Payload=\n%s", Header.CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
+            X_DEBUG_PRINTF("Unknonw request, CmdId=%" PRIx32 ", Payload=\n%s", CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
             break;
     }
 
@@ -27,7 +29,7 @@ bool xCC_PAConfigManager::OnClientPacket(xServiceClientConnection & Connection, 
 }
 
 bool xCC_PAConfigManager::OnQueryRelayServerListVersion(
-    xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize
+    xServiceClientConnection & Connection, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
 ) {
     auto R = xCC_PA_GetRelayServerListVersion();
     if (!R.Deserialize(PayloadPtr, PayloadSize)) {
@@ -37,13 +39,11 @@ bool xCC_PAConfigManager::OnQueryRelayServerListVersion(
 
     auto Resp    = xCC_PA_GetRelayServerListVersionResp();
     Resp.Version = 1;
-    PostMessage(Connection, Cmd_CC_PA_GetRelayServerListVersionResp, Header.RequestId, Resp);
+    PostMessage(Connection, Cmd_CC_PA_GetRelayServerListVersionResp, RequestId, Resp);
     return true;
 }
 
-bool xCC_PAConfigManager::OnDownloadRelayServerList(
-    xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize
-) {
+bool xCC_PAConfigManager::OnDownloadRelayServerList(xServiceClientConnection & Connection, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     if (!BuildTotalList()) {
         X_DEBUG_PRINTF("Failed to build local relay server protocol list");
         return true;

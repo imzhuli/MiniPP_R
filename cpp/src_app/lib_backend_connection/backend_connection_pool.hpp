@@ -16,13 +16,13 @@ public:
     using xClientPool::PostMessage;
 
 protected:
-    virtual bool OnBackendPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) = 0;
+    virtual bool OnBackendPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) = 0;
 
 private:
     void OnServerConnected(xClientConnection & CC) override;
-    bool OnServerPacket(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
+    bool OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override;
     void OnServerClose(xClientConnection & CC) override;
-    bool OnCmdBackendChallengeResp(xClientConnection & CC, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
+    bool OnCmdBackendChallengeResp(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
 
     //
     struct xBackendConnectionContext {

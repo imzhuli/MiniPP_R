@@ -22,25 +22,25 @@ public:
     void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override;
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
 
-    bool OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnTerminalInitDataStream(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnTerminalTargetConnectionUpdate(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnTerminalPostData(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
+    bool OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
+    bool OnTerminalInitDataStream(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
+    bool OnTerminalTargetConnectionUpdate(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
+    bool OnTerminalPostData(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
+    bool OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
 
-    bool OnProxyChallenge(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnProxyCreateConnection(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnProxyDestroyConnection(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnProxyPushData(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
+    bool OnProxyChallenge(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
+    bool OnProxyCreateConnection(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
+    bool OnProxyDestroyConnection(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
+    bool OnProxyPushData(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
 
 protected:
     void RemoveDeviceFromConnection(xRD_DeviceConnection * Conn);
     void RemoveDevice(xDevice * Device);  // TODO
     bool PostConnectionData(xDevice * Device, uint32_t DeviceSideConnectionId, uint64_t LocalConnectionId, const ubyte * PayloadPtr, size_t PayloadSize);
 
-    bool OnDataPacket(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
-    bool OnProxyPacket(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize);
+    bool OnDataPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
+    bool OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
+    bool OnProxyPacket(xRD_ProxyConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
 
     //
     xIoContext * IoContext = nullptr;

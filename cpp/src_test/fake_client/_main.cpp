@@ -42,7 +42,7 @@ struct xPA_Listener : xTcpConnection::iListener {
         C.ChallengeKey  = "Hello";
         C.ChallengeHash = "World";
         ubyte Buffer[MaxPacketSize];
-        auto  RSize = WritePacket(Cmd_PA_RL_Challenge, 0, Buffer, C);
+        auto  RSize = WriteMessage(Cmd_PA_RL_Challenge, 0, Buffer, C);
         TcpConnectionPtr->PostData(Buffer, RSize);
 
         Connected = true;
@@ -66,7 +66,7 @@ struct xPA_Listener : xTcpConnection::iListener {
             R.ProxySideConnectionId = ProxySideConnectionId;
 
             ubyte Buffer[MaxPacketSize];
-            auto  RSize = WritePacket(Cmd_PA_RL_CreateConnection, 0, Buffer, R);
+            auto  RSize = WriteMessage(Cmd_PA_RL_CreateConnection, 0, Buffer, R);
             Connection.PostData(Buffer, RSize);
             RequireConnection = true;
             return;
@@ -81,7 +81,7 @@ struct xPA_Listener : xTcpConnection::iListener {
             R.ProxySideConnectionId = ProxySideConnectionId;
 
             ubyte Buffer[MaxPacketSize];
-            auto  RSize = WritePacket(Cmd_PA_RL_DestroyConnection, 0, Buffer, R);
+            auto  RSize = WriteMessage(Cmd_PA_RL_DestroyConnection, 0, Buffer, R);
             Connection.PostData(Buffer, RSize);
 
             ConnectionClosed = true;
@@ -104,7 +104,7 @@ struct xPA_Listener : xTcpConnection::iListener {
             } else {
                 auto PayloadPtr  = xPacket::GetPayloadPtr(DataPtr);
                 auto PayloadSize = Header.GetPayloadSize();
-                if (!OnPacket(TcpConnectionPtr, Header, PayloadPtr, PayloadSize)) {
+                if (!OnPacket(TcpConnectionPtr, Header.CommandId, Header.RequestId, PayloadPtr, PayloadSize)) {
                     return InvalidDataSize;
                 }
             }
@@ -114,25 +114,25 @@ struct xPA_Listener : xTcpConnection::iListener {
         return DataSize - RemainSize;
     }
 
-    bool OnPacket(xTcpConnection * Conn, const xPacketHeader & Header, ubyte * Payload, size_t PayloadSize) {
-        switch (Header.CommandId) {
+    bool OnPacket(xTcpConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * Payload, size_t PayloadSize) {
+        switch (CommandId) {
             case Cmd_PA_RL_ChallengeResp:
                 X_DEBUG_PRINTF("Cmd_PA_RL_ChallengeResp");
                 return true;
             case Cmd_PA_RL_NotifyConnectionState:
                 X_DEBUG_PRINTF("Cmd_PA_RL_NotifyConnectionState");
-                return OnConnectionNotify(Conn, Header, Payload, PayloadSize);
+                return OnConnectionNotify(Conn, CommandId, RequestId, Payload, PayloadSize);
             case Cmd_PA_RL_PostData:
                 X_DEBUG_PRINTF("Cmd_PA_RL_PostData");
-                return OnConnectionData(Conn, Header, Payload, PayloadSize);
+                return OnConnectionData(Conn, CommandId, RequestId, Payload, PayloadSize);
             default:
-                X_DEBUG_PRINTF("Unrecognized CommandId=%" PRIx32 "", Header.CommandId);
+                X_DEBUG_PRINTF("Unrecognized CommandId=%" PRIx32 "", CommandId);
                 break;
         }
         return false;
     }
 
-    bool OnConnectionNotify(xTcpConnection * Conn, const xPacketHeader & Header, ubyte * Payload, size_t PayloadSize) {
+    bool OnConnectionNotify(xTcpConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * Payload, size_t PayloadSize) {
         auto R = xPR_ConnectionStateNotify();
         if (!R.Deserialize(Payload, PayloadSize)) {
             X_DEBUG_PRINTF("invalid data");
@@ -162,7 +162,7 @@ struct xPA_Listener : xTcpConnection::iListener {
         return false;
     }
 
-    bool OnConnectionData(xTcpConnection * Conn, const xPacketHeader & Header, ubyte * Payload, size_t PayloadSize) {
+    bool OnConnectionData(xTcpConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * Payload, size_t PayloadSize) {
         auto R = xPR_PushData();
         if (!R.Deserialize(Payload, PayloadSize)) {
             X_DEBUG_PRINTF("invalid protocol");
@@ -174,7 +174,7 @@ struct xPA_Listener : xTcpConnection::iListener {
 
     void PostMessage(uint32_t CmdId, uint64_t RequestId, xBinaryMessage & M) {
         ubyte Buffer[MaxPacketSize];
-        auto  RSize = WritePacket(CmdId, RequestId, Buffer, M);
+        auto  RSize = WriteMessage(CmdId, RequestId, Buffer, M);
         if (!RSize) {
             X_DEBUG_PRINTF("Failed to serialize message");
             return;

@@ -11,7 +11,9 @@
 #include <network/tcp_server.hpp>
 #include <network/udp_channel.hpp>
 #include <object/object.hpp>
+#include <server_arch/client_pool.hpp>
 #include <server_arch/message.hpp>
+#include <server_arch/service.hpp>
 
 //
 #include <cinttypes>
@@ -28,6 +30,7 @@ using xel::PacketHeaderSize;
 // type-defs
 using xel::xAbstract;
 using xel::xBinaryMessage;
+using xel::xClientPool;
 using xel::xCommandLine;
 using xel::xIndexedStorage;
 using xel::xIndexId;
@@ -43,7 +46,9 @@ using xel::xPacketCommandId;
 using xel::xPacketHeader;
 using xel::xPacketRequestId;
 using xel::xResourceGuard;
+using xel::xScopeCleaner;
 using xel::xScopeGuard;
+using xel::xService;
 using xel::xSocket;
 using xel::xStreamReader;
 using xel::xStreamWriter;
@@ -53,10 +58,10 @@ using xel::xTicker;
 using xel::xUdpChannel;
 
 // functions
+using xel::BuildPacket;
 using xel::GetTimestampMS;
 using xel::HexShow;
 using xel::HexToStr;
-using xel::MakeResourceCleaner;
 using xel::Pure;
 using xel::RuntimeAssert;
 using xel::Split;
@@ -64,7 +69,7 @@ using xel::Steal;
 using xel::StrToHex;
 using xel::Todo;
 using xel::Unreachable;
-using xel::WritePacket;
+using xel::WriteMessage;
 
 // std-lib:
 #include <iostream>

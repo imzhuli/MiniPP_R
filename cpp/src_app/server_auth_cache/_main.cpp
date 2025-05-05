@@ -8,10 +8,10 @@ struct xAuthTest : public xBackendConnectionPool {
     using xBackendConnectionPool::Clean;
     using xBackendConnectionPool::Init;
 
-    bool OnBackendPacket(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override {
-        switch (Header.CommandId) {
+    bool OnBackendPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override {
+        switch (CommandId) {
             case Cmd_AuthByUserPassResp:
-                return OnCmdAuthByUserPassResp(Header, PayloadPtr, PayloadSize);
+                return OnCmdAuthByUserPassResp(CommandId, RequestId, PayloadPtr, PayloadSize);
 
             default:
                 X_DEBUG_PRINTF("unsupported protocol command");
@@ -20,7 +20,7 @@ struct xAuthTest : public xBackendConnectionPool {
         return true;
     }
 
-    bool OnCmdAuthByUserPassResp(const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
+    bool OnCmdAuthByUserPassResp(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
         auto P = xPPB_AuthByUserPassResp();
         if (!P.Deserialize(PayloadPtr, PayloadSize)) {
             X_DEBUG_PRINTF("invalid protocol");

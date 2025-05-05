@@ -82,7 +82,7 @@ size_t xPA_RelayConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, uby
         } else {
             auto PayloadPtr  = xPacket::GetPayloadPtr(DataPtr);
             auto PayloadSize = Header.GetPayloadSize();
-            if (!OnPacket(RCP, Header, PayloadPtr, PayloadSize)) { /* packet error */
+            if (!OnPacket(RCP, Header.CommandId, Header.RequestId, PayloadPtr, PayloadSize)) { /* packet error */
                 return InvalidDataSize;
             }
         }
@@ -159,7 +159,9 @@ void xPA_RelayConnectionManager::DoReconnectAndKeepAlive() {
     IdleList.GrabListTail(TempList);
 }
 
-bool xPA_RelayConnectionManager::OnPacket(xPA_RelayConnection * RCP, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) {
-    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", CommandId=%" PRIx32 "\n%s\n", RCP->ConnectionId, Header.CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
+bool xPA_RelayConnectionManager::OnPacket(
+    xPA_RelayConnection * RCP, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
+) {
+    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", CommandId=%" PRIx32 "\n%s\n", RCP->ConnectionId, CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
     return true;
 }

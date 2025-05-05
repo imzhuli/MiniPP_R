@@ -10,24 +10,26 @@
 #include <pp_protocol/proxy_relay/challenge.hpp>
 #include <pp_protocol/proxy_relay/connection.hpp>
 
-bool xDeviceRelayService::OnProxyPacket(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
-    switch (Header.CommandId) {
+bool xDeviceRelayService::OnProxyPacket(
+    xRD_ProxyConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize
+) {
+    switch (CommandId) {
         case Cmd_PA_RL_Challenge:
-            return OnProxyChallenge(Conn, Header, Payload, PayloadSize);
+            return OnProxyChallenge(Conn, Payload, PayloadSize);
         case Cmd_PA_RL_CreateConnection:
-            return OnProxyCreateConnection(Conn, Header, Payload, PayloadSize);
+            return OnProxyCreateConnection(Conn, Payload, PayloadSize);
         case Cmd_PA_RL_DestroyConnection:
-            return OnProxyDestroyConnection(Conn, Header, Payload, PayloadSize);
+            return OnProxyDestroyConnection(Conn, Payload, PayloadSize);
         case Cmd_PA_RL_PostData:
-            return OnProxyPushData(Conn, Header, Payload, PayloadSize);
+            return OnProxyPushData(Conn, Payload, PayloadSize);
         default:
-            X_DEBUG_PRINTF("unrecognized protocol %" PRIx32 "", Header.CommandId);
+            X_DEBUG_PRINTF("unrecognized protocol %" PRIx32 "", CommandId);
             break;
     }
     return false;
 }
 
-bool xDeviceRelayService::OnProxyChallenge(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnProxyChallenge(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize) {
     auto R = xPR_Challenge();
     if (!R.Deserialize(Payload, PayloadSize)) {
         return false;
@@ -38,12 +40,12 @@ bool xDeviceRelayService::OnProxyChallenge(xRD_ProxyConnection * Conn, xPacketHe
 
     auto Resp     = xPR_ChallengeResp();
     Resp.Accepted = true;
-    Conn->PostPacket(Cmd_PA_RL_ChallengeResp, Header.RequestId, Resp);
+    Conn->PostPacket(Cmd_PA_RL_ChallengeResp, 0, Resp);
 
     return true;
 }
 
-bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize) {
     auto R = xPR_CreateConnection();
     if (!R.Deserialize(Payload, PayloadSize)) {
         X_DEBUG_PRINTF("invalid protocol");
@@ -80,7 +82,7 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, xP
     return true;
 }
 
-bool xDeviceRelayService::OnProxyDestroyConnection(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnProxyDestroyConnection(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize) {
     auto R = xPR_DestroyConnection();
     if (!R.Deserialize(Payload, PayloadSize)) {
         X_DEBUG_PRINTF("invalid protocol");
@@ -108,7 +110,7 @@ bool xDeviceRelayService::OnProxyDestroyConnection(xRD_ProxyConnection * Conn, x
     return true;
 }
 
-bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, xPacketHeader & Header, const ubyte * Payload, size_t PayloadSize) {
+bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize) {
     X_DEBUG_PRINTF("");
     auto R = xPR_PushData();
     if (!R.Deserialize(Payload, PayloadSize)) {

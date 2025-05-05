@@ -14,9 +14,10 @@ public:
 
 protected:
     void ReloadServerList();
-    bool OnClientPacket(xServiceClientConnection & Connection, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize) override;
+    bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize)
+        override;
 
-    bool OnDownloadBackendServerList(xServiceClientConnection & Connection, const xPacketHeader & Header);
+    bool OnDownloadBackendServerList(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId);
 
 public:
     uint64_t                 LastReloadTimestamp;

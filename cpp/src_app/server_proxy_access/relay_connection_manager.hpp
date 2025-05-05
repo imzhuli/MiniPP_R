@@ -65,7 +65,7 @@ protected:
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
 
 protected:
-    virtual bool OnPacket(xPA_RelayConnection * RCP, const xPacketHeader & Header, ubyte * PayloadPtr, size_t PayloadSize);
+    virtual bool OnPacket(xPA_RelayConnection * RCP, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
 
 private:
     xIoContext *                           ICP = nullptr;
