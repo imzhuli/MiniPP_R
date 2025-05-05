@@ -1,7 +1,7 @@
 #pragma once
 #include "../base.hpp"
 
-struct xPPI_DeviceInfoUpdate : public xBinaryMessage {  // from proxy_access to relay server
+struct xPP_DeviceInfoUpdate : public xBinaryMessage {  // from proxy_access to relay server
 public:
     void SerializeMembers() override {
         W(DeviceUuid, Version, RelayServerUuid, PrimaryIpv4Address, PrimaryIpv6Address);

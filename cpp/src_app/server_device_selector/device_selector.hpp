@@ -12,4 +12,7 @@ struct xDS_DeviceSelectorService : public xService {
 
 struct xDS_DeviceObserver : public xClientPool {
     bool OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override;
+
+protected:
+    bool OnSelectDevice(xClientConnection & CC, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize);
 };

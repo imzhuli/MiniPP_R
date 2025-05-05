@@ -5,16 +5,14 @@
 
 #include <algorithm>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/dv_rl/connection.hpp>
-#include <pp_protocol/dv_rl/dns_query.hpp>
-#include <pp_protocol/dv_rl/init_ctrl_stream.hpp>
-#include <pp_protocol/dv_rl/init_data_stream.hpp>
-#include <pp_protocol/dv_rl/post_data.hpp>
+#include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/dns_query.hpp>
+#include <pp_protocol/device_relay/init_ctrl_stream.hpp>
+#include <pp_protocol/device_relay/init_data_stream.hpp>
+#include <pp_protocol/device_relay/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 
-bool xDeviceRelayService::OnCtrlPacket(
-    xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize
-) {
+bool xDeviceRelayService::OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", CommandId, HexShow(Payload, PayloadSize).c_str());
     switch (CommandId) {
         case Cmd_DV_RL_InitCtrlStream: {
@@ -53,9 +51,7 @@ bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xP
     if (!Resp.Deserialize(Payload, PayloadSize)) {
         return false;
     }
-    X_DEBUG_PRINTF(
-        "New Terminal Device: Hostname:%s Ipv4:%s, Ipv6:%s", Resp.Hostname.c_str(), Resp.PrimaryIpv4.IpToString().c_str(), Resp.PrimaryIpv6.IpToString().c_str()
-    );
+    X_DEBUG_PRINTF("New Terminal Device: Hostname:%s Ipv4:%s, Ipv6:%s", Resp.Hostname.c_str(), Resp.PrimaryIpv4.IpToString().c_str(), Resp.PrimaryIpv6.IpToString().c_str());
 
     return true;
 }

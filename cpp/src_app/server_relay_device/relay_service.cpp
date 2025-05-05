@@ -5,10 +5,10 @@
 
 #include <algorithm>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/dv_rl/connection.hpp>
-#include <pp_protocol/dv_rl/init_ctrl_stream.hpp>
-#include <pp_protocol/dv_rl/init_data_stream.hpp>
-#include <pp_protocol/dv_rl/post_data.hpp>
+#include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/init_ctrl_stream.hpp>
+#include <pp_protocol/device_relay/init_data_stream.hpp>
+#include <pp_protocol/device_relay/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 
 bool xDeviceRelayService::Init(xIoContext * CP, xNetAddress ControllerBindAddress, xNetAddress DataBindAddress, xNetAddress ProxyBindAddress) {
@@ -162,9 +162,7 @@ void xDeviceRelayService::RemoveDevice(xDevice * Device) {
     DeviceManager.ReleaseDevice(Device);
 }
 
-bool xDeviceRelayService::PostConnectionData(
-    xDevice * Device, uint32_t DeviceSideConnectionId, uint64_t LocalConnectionId, const ubyte * PayloadPtr, size_t TotalPayloadSize
-) {
+bool xDeviceRelayService::PostConnectionData(xDevice * Device, uint32_t DeviceSideConnectionId, uint64_t LocalConnectionId, const ubyte * PayloadPtr, size_t TotalPayloadSize) {
     while (TotalPayloadSize) {
         auto PayloadSize          = std::min((size32_t)TotalPayloadSize, xTR_PostData::MAX_PAYLOAD_SIZE);
         auto PP                   = xTR_PostData();

@@ -5,17 +5,15 @@
 
 #include <algorithm>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/dv_rl/connection.hpp>
-#include <pp_protocol/dv_rl/dns_query.hpp>
-#include <pp_protocol/dv_rl/init_ctrl_stream.hpp>
-#include <pp_protocol/dv_rl/init_data_stream.hpp>
-#include <pp_protocol/dv_rl/post_data.hpp>
+#include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/dns_query.hpp>
+#include <pp_protocol/device_relay/init_ctrl_stream.hpp>
+#include <pp_protocol/device_relay/init_data_stream.hpp>
+#include <pp_protocol/device_relay/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 #include <pp_protocol/proxy_relay/connection.hpp>
 
-bool xDeviceRelayService::OnDataPacket(
-    xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize
-) {
+bool xDeviceRelayService::OnDataPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", CommandId, HexShow(Payload, PayloadSize).c_str());
     switch (CommandId) {
         case Cmd_DV_RL_InitDataStream: {
@@ -86,8 +84,8 @@ bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection 
     }
 
     X_DEBUG_PRINTF(
-        "New ConnectionState: %s terminalSideCid=%" PRIx32 ", relaySideCid=%" PRIx64 ", tR=%" PRIu64 ", tW=%" PRIu64 "",
-        xTR_ConnectionStateNotify::GetStateName(S.NewState), S.DeviceSideConnectionId, S.RelaySideConnectionId, S.TotalReadBytes, S.TotalWrittenBytes
+        "New ConnectionState: %s terminalSideCid=%" PRIx32 ", relaySideCid=%" PRIx64 ", tR=%" PRIu64 ", tW=%" PRIu64 "", xTR_ConnectionStateNotify::GetStateName(S.NewState),
+        S.DeviceSideConnectionId, S.RelaySideConnectionId, S.TotalReadBytes, S.TotalWrittenBytes
     );
 
     auto CR = RelayConnectionManager.GetConnectionById(S.RelaySideConnectionId);

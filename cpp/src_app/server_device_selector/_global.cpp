@@ -5,7 +5,7 @@
 xNetAddress BindAddress;
 xNetAddress DeviceDispatcherAddress;
 
-xDR_DeviceContextManager  DeviceContextManager;
+xDS_DeviceContextManager  DeviceContextManager;
 xDS_DeviceSelectorService DeviceSelectorService;
 xDS_DeviceObserver        DeviceObserver;
 

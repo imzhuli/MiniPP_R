@@ -7,7 +7,7 @@
 extern xNetAddress BindAddress;
 extern xNetAddress DeviceDispatcherAddress;
 
-extern xDR_DeviceContextManager  DeviceContextManager;
+extern xDS_DeviceContextManager  DeviceContextManager;
 extern xDS_DeviceSelectorService DeviceSelectorService;
 extern xDS_DeviceObserver        DeviceObserver;
 

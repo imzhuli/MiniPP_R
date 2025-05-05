@@ -5,14 +5,12 @@
 
 #include <algorithm>
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/dv_rl/connection.hpp>
-#include <pp_protocol/dv_rl/post_data.hpp>
+#include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 #include <pp_protocol/proxy_relay/connection.hpp>
 
-bool xDeviceRelayService::OnProxyPacket(
-    xRD_ProxyConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize
-) {
+bool xDeviceRelayService::OnProxyPacket(xRD_ProxyConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
     switch (CommandId) {
         case Cmd_PA_RL_Challenge:
             return OnProxyChallenge(Conn, Payload, PayloadSize);
@@ -118,8 +116,7 @@ bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, const ubyt
         return false;
     }
     X_DEBUG_PRINTF(
-        "RelaySideConnectionId=%" PRIx64 ", ProxySideConnectionId=%" PRIx64 ", Data=\n%s", R.RelaySideConnectionId, R.ProxySideConnectionId,
-        HexShow(R.PayloadView).c_str()
+        "RelaySideConnectionId=%" PRIx64 ", ProxySideConnectionId=%" PRIx64 ", Data=\n%s", R.RelaySideConnectionId, R.ProxySideConnectionId, HexShow(R.PayloadView).c_str()
     );
 
     auto RC = RelayConnectionManager.GetConnectionById(R.RelaySideConnectionId);

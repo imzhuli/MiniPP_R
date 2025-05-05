@@ -45,7 +45,7 @@ void xDeviceManager::DestroyDevice(xDevice * DC) {
 
 void xDeviceManager::ReportDeviceState(xDevice * Device, bool Offline) {
     assert(Device);
-    auto A      = xPPI_DeviceInfoUpdate();
+    auto A      = xPP_DeviceInfoUpdate();
     A.CountryId = Device->GeoInfo.CountryId;
     A.StateId   = Device->GeoInfo.StateId;
     A.CityId    = Device->GeoInfo.CityId;

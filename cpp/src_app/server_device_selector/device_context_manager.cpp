@@ -1,25 +1,25 @@
 #include "./device_context_manager.hpp"
 
-bool xDR_DeviceContextManager::Init() {
+bool xDS_DeviceContextManager::Init() {
     return true;
 }
 
-void xDR_DeviceContextManager::Clean() {
+void xDS_DeviceContextManager::Clean() {
     for (auto & N : DeviceMap) {
         delete N.second;
     }
     Renew(DeviceMap);
 }
 
-void xDR_DeviceContextManager::Tick(uint64_t NowMS) {
+void xDS_DeviceContextManager::Tick(uint64_t NowMS) {
     Ticker.Update(NowMS);
     auto KP = NowMS - DEVICE_KEEPALIVE_TIMEOUT_MS;
-    while (auto PD = static_cast<xDR_DeviceContext *>(TimeoutDeviceList.PopHead([KP](const xDR_TimeoutNode & N) mutable { return N.TimestampMS <= KP++; }))) {
+    while (auto PD = static_cast<xDS_DeviceContext *>(TimeoutDeviceList.PopHead([KP](const xDR_TimeoutNode & N) mutable { return N.TimestampMS <= KP++; }))) {
         RemoveDevice(PD);
     }
 }
 
-void xDR_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase) {
+void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase) {
     auto Iter = DeviceMap.find(InfoBase.DeviceId);
     if (Iter != DeviceMap.end()) {
         KeepAlive(Iter->second);
@@ -27,7 +27,7 @@ void xDR_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
     }
 
     // add new device:
-    auto PD      = new xDR_DeviceContext;
+    auto PD      = new xDS_DeviceContext;
     PD->InfoBase = InfoBase;
 
     CountryDeviceList[InfoBase.CountryId].AddTail(*PD);
@@ -37,11 +37,11 @@ void xDR_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
     KeepAlive(Iter->second);
 }
 
-void xDR_DeviceContextManager::RemoveDevice(xDR_DeviceContext * Device) {
+void xDS_DeviceContextManager::RemoveDevice(xDS_DeviceContext * Device) {
     RemoveDeviceById(Device->InfoBase.DeviceId);
 }
 
-void xDR_DeviceContextManager::RemoveDeviceById(const std::string & DeviceId) {
+void xDS_DeviceContextManager::RemoveDeviceById(const std::string & DeviceId) {
     auto Iter = DeviceMap.find(DeviceId);
     if (Iter == DeviceMap.end()) {
         return;
@@ -50,7 +50,43 @@ void xDR_DeviceContextManager::RemoveDeviceById(const std::string & DeviceId) {
     DeviceMap.erase(Iter);
 }
 
-void xDR_DeviceContextManager::KeepAlive(xDR_DeviceContext * Device) {
+void xDS_DeviceContextManager::KeepAlive(xDS_DeviceContext * Device) {
     Device->TimestampMS = Ticker();
     TimeoutDeviceList.GrabTail(*Device);
+}
+
+const xDS_DeviceContext * xDS_DeviceContextManager::SelectDeviceByCountryId(xCountryId Id) {
+    auto Iter = CountryDeviceList.find(Id);
+    if (Iter == CountryDeviceList.end()) {
+        return nullptr;
+    }
+    auto PD = static_cast<xDS_DeviceContext *>(Iter->second.PopHead());
+    if (PD) {
+        Iter->second.AddTail(*PD);
+    }
+    return PD;
+}
+
+const xDS_DeviceContext * xDS_DeviceContextManager::SelectDeviceByStateId(xStateId Id) {
+    auto Iter = StateDeviceList.find(Id);
+    if (Iter == StateDeviceList.end()) {
+        return nullptr;
+    }
+    auto PD = static_cast<xDS_DeviceContext *>(Iter->second.PopHead());
+    if (PD) {
+        Iter->second.AddTail(*PD);
+    }
+    return PD;
+}
+
+const xDS_DeviceContext * xDS_DeviceContextManager::SelectDeviceByCityId(xCityId Id) {
+    auto Iter = CityDeviceList.find(Id);
+    if (Iter == CityDeviceList.end()) {
+        return nullptr;
+    }
+    auto PD = static_cast<xDS_DeviceContext *>(Iter->second.PopHead());
+    if (PD) {
+        Iter->second.AddTail(*PD);
+    }
+    return PD;
 }

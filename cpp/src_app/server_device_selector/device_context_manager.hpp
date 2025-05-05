@@ -12,7 +12,7 @@ struct xDR_StateNode : xListNode {};
 struct xDR_CityNode : xListNode {};
 
 struct xDR_DeviceInfoBase {
-    uint64_t    ReleayServerAddress;
+    uint64_t    ReleayServerRuntimeId;
     uint64_t    DeviceRelaySideKey;
     std::string DeviceId;
 
@@ -21,7 +21,7 @@ struct xDR_DeviceInfoBase {
     xCityId    CityId;
 };
 
-struct xDR_DeviceContext
+struct xDS_DeviceContext
     : xDR_TimeoutNode
     , xDR_CountryNode
     , xDR_StateNode
@@ -29,17 +29,22 @@ struct xDR_DeviceContext
     xDR_DeviceInfoBase InfoBase;
 };
 
-class xDR_DeviceContextManager {
+class xDS_DeviceContextManager {
 public:
     bool Init();
     void Clean();
     void Tick(uint64_t NowMS);
 
     void UpdateDevice(const xDR_DeviceInfoBase & InfoBase);
-    void RemoveDevice(xDR_DeviceContext * Device);
+    void RemoveDevice(xDS_DeviceContext * Device);
     void RemoveDeviceById(const std::string & DeviceId);
 
-    void KeepAlive(xDR_DeviceContext * Device);
+    const xDS_DeviceContext * SelectDeviceByCountryId(xCountryId Id);
+    const xDS_DeviceContext * SelectDeviceByStateId(xStateId Id);
+    const xDS_DeviceContext * SelectDeviceByCityId(xCityId Id);
+
+protected:
+    void KeepAlive(xDS_DeviceContext * Device);
 
 private:
     xTicker                                              Ticker;
@@ -47,5 +52,5 @@ private:
     std::unordered_map<uint32_t, xList<xDR_CountryNode>> CountryDeviceList;
     std::unordered_map<uint32_t, xList<xDR_StateNode>>   StateDeviceList;
     std::unordered_map<uint32_t, xList<xDR_CityNode>>    CityDeviceList;
-    std::unordered_map<std::string, xDR_DeviceContext *> DeviceMap;
+    std::unordered_map<std::string, xDS_DeviceContext *> DeviceMap;
 };
