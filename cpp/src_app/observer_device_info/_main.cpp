@@ -18,9 +18,6 @@ struct xODI : public xClientPool {
             case Cmd_DSR_DS_DeviceOffline:
                 cout << "Cmd_DSR_DS_DeviceOffline" << endl;
                 break;
-            case Cmd_DSR_DS_DeviceKeepAlive:
-                cout << "Cmd_DSR_DS_DeviceKeepAlive" << endl;
-                break;
         }
 
         return true;

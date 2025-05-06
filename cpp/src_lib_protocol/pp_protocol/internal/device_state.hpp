@@ -4,15 +4,18 @@
 struct xPP_DeviceInfoUpdate : public xBinaryMessage {  // from proxy_access to relay server
 public:
     void SerializeMembers() override {
-        W(DeviceUuid, Version, RelayServerUuid, PrimaryIpv4Address, PrimaryIpv6Address);
+        W(DeviceUuid, Version, RelayServerRuntimeId, RelaySideDeviceKey, PrimaryIpv4Address, PrimaryIpv6Address);
         W(IsOffline, SupportUdpChannel, SupportDnsRequests, SpeedLimitEnabled);
     }
     void DeserializeMembers() override {
+        R(DeviceUuid, Version, RelayServerRuntimeId, RelaySideDeviceKey, PrimaryIpv4Address, PrimaryIpv6Address);
+        R(IsOffline, SupportUdpChannel, SupportDnsRequests, SpeedLimitEnabled);
     }
 
     std::string DeviceUuid;
     uint32_t    Version;
-    std::string RelayServerUuid;
+    uint64_t    RelayServerRuntimeId;
+    uint64_t    RelaySideDeviceKey;
     xNetAddress PrimaryIpv4Address;
     xNetAddress PrimaryIpv6Address;
 

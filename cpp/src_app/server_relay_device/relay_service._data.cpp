@@ -74,6 +74,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     // DQ.Hostname = "www.163.com";
     // CtrlConn->PostPacket(Cmd_DV_RL_DnsQuery, 1024, DQ);
 
+    DeviceManager.ReportDeviceState(NewDevice);
     return true;
 }
 

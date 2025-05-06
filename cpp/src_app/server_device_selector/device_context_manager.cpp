@@ -20,15 +20,21 @@ void xDS_DeviceContextManager::Tick(uint64_t NowMS) {
 }
 
 void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase) {
+    X_DEBUG_PRINTF("");
+
     auto Iter = DeviceMap.find(InfoBase.DeviceId);
     if (Iter != DeviceMap.end()) {
-        KeepAlive(Iter->second);
+        auto PD = Iter->second;
+        X_DEBUG_PRINTF("UpdateDevice: %s, %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
+        KeepAlive(PD);
         return;
     }
 
     // add new device:
-    auto PD      = new xDS_DeviceContext;
+    auto PD      = new xDS_DeviceContext();
     PD->InfoBase = InfoBase;
+
+    X_DEBUG_PRINTF("UpdateDevice: %s, %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
 
     CountryDeviceList[InfoBase.CountryId].AddTail(*PD);
     StateDeviceList[InfoBase.StateId].AddTail(*PD);

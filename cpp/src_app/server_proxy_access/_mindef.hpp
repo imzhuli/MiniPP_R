@@ -28,6 +28,9 @@ struct xPA_DeviceRequestResp {
 };
 
 struct xPA_AuthResult {
+
+    bool Ready;
+
     xCountryId CountryId;
     xStateId   StateId;
     xCityId    CityId;
@@ -36,5 +39,4 @@ struct xPA_AuthResult {
     bool       RequireUdp;
     bool       RequireRemoteDns;
     bool       AutoChangeIp;
-    bool       Ready;
 };

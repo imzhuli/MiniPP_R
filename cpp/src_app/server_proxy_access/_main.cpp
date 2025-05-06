@@ -32,7 +32,7 @@ int main(int argc, char ** argv) {
         TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager, GlobalClientConnectionManager);
 
         if (AuditTimer.TestAndTag(std::chrono::seconds(2))) {
-            cout << "PA LocalAudit: " << endl;
+            cout << "PA_LocalAudit: " << endl;
             cout << GlobalLocalAudit.ToString() << endl;
         }
     }

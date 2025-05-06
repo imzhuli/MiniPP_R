@@ -60,8 +60,7 @@ public:
         X_DEBUG_PRINTF("CommandId: %" PRIx32 ", RequestId:%" PRIx64 ":  \n%s", CommandId, RequestId, HexShow(PayloadPtr, PayloadSize).c_str());
         switch (CommandId) {
             case Cmd_DSR_DS_DeviceOnline:
-            case Cmd_DSR_DS_DeviceOffline:
-            case Cmd_DSR_DS_DeviceKeepAlive: {
+            case Cmd_DSR_DS_DeviceOffline: {
                 ubyte  B[MaxPacketSize];
                 size_t RS = BuildPacket(B, CommandId, 0, PayloadPtr, PayloadSize);
                 assert(RS);
@@ -96,6 +95,7 @@ int main(int argc, char ** argv) {
     RuntimeAssert(PS.Init(&IC, BindProducerAddress));
 
     while (true) {
+        Ticker.Update();
         IC.LoopOnce();
         OS.Tick(Ticker());
         PS.Tick(Ticker());

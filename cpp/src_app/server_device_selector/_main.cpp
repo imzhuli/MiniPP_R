@@ -20,6 +20,7 @@ int main(int argc, char ** argv) {
     RuntimeAssert(DeviceObserver.AddServer(DeviceDispatcherAddress));
 
     while (true) {
+        Ticker.Update();
         IC.LoopOnce();
         DeviceSelectorService.Tick(Ticker());
         DeviceObserver.Tick(Ticker());

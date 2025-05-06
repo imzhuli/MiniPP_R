@@ -44,6 +44,7 @@ void xDeviceManager::DestroyDevice(xDevice * DC) {
 }
 
 void xDeviceManager::ReportDeviceState(xDevice * Device, bool Offline) {
+    X_DEBUG_PRINTF(" DeviceRuntimeId: %" PRIx64 "", Device->DeviceRuntimeId);
     assert(Device);
     auto A      = xPP_DeviceInfoUpdate();
     A.CountryId = Device->GeoInfo.CountryId;

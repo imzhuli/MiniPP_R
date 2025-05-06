@@ -3,7 +3,7 @@
 #include "./_global.hpp"
 
 #include <pp_protocol/command.hpp>
-#include <pp_protocol/internal/device_selector.hpp>
+#include <pp_protocol/internal/all.hpp>
 
 void xDS_DeviceSelectorService::OnClientConnected(xServiceClientConnection & Connection) {
 }
@@ -15,6 +15,32 @@ bool xDS_DeviceSelectorService::OnClientPacket(
     xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
 ) {
     X_DEBUG_PRINTF("CommandId: %" PRIx64 ", \n%s", CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
+
+    switch (CommandId) {
+        case Cmd_DSR_DS_DeviceOnline: {
+            X_DEBUG_PRINTF("");
+            auto PP = xPP_DeviceInfoUpdate();
+            if (!PP.Deserialize(PayloadPtr, PayloadSize)) {
+                X_DEBUG_PRINTF("Invalid device info");
+                return true;
+            }
+
+            auto LocalDevInfo                  = xDR_DeviceInfoBase{};
+            LocalDevInfo.DeviceId              = PP.DeviceUuid;
+            LocalDevInfo.ReleayServerRuntimeId = PP.RelayServerRuntimeId;
+            LocalDevInfo.DeviceRelaySideKey    = PP.RelaySideDeviceKey;
+
+            LocalDevInfo.CountryId = PP.CountryId;
+            LocalDevInfo.StateId   = PP.StateId;
+            LocalDevInfo.CityId    = PP.CityId;
+
+            DeviceContextManager.UpdateDevice(LocalDevInfo);
+            break;
+        }
+        default:
+            X_DEBUG_PRINTF("Invalid command id");
+            return true;
+    }
     return true;
 }
 

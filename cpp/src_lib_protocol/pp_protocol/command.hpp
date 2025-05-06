@@ -104,10 +104,9 @@ static constexpr const xPacketCommandId Cmd_DV_RL_DnsQuery     = Cmd_DV_RL_Base 
 static constexpr const xPacketCommandId Cmd_DV_RL_DnsQueryResp = Cmd_DV_RL_Base + 0x21;
 
 // device-state-relay(dsr) / device-selector
-static constexpr const xPacketCommandId Cmd_DSR_DS_Base            = 0x09'000;
-static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOnline    = Cmd_DSR_DS_Base + 0x01;
-static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOffline   = Cmd_DSR_DS_Base + 0x02;
-static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceKeepAlive = Cmd_DSR_DS_Base + 0x03;
+static constexpr const xPacketCommandId Cmd_DSR_DS_Base          = 0x09'000;
+static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOnline  = Cmd_DSR_DS_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOffline = Cmd_DSR_DS_Base + 0x02;
 
 // ac-cc
 static constexpr const xPacketCommandId Cmd_AC_CC_Base                       = 0x0A'000;
@@ -134,6 +133,11 @@ static constexpr const xPacketCommandId Cmd_ALL_CC_DownloadBackendServerListResp
 static constexpr const xPacketCommandId Cmd_DeviceSelector_Base              = 0x0D'000;
 static constexpr const xPacketCommandId Cmd_DeviceSelector_AcquireDevice     = Cmd_DeviceSelector_Base + 0x01;
 static constexpr const xPacketCommandId Cmd_DeviceSelector_AcquireDeviceResp = Cmd_DeviceSelector_Base + 0x02;
+
+// auth-service
+static constexpr const xPacketCommandId Cmd_AuthService_Base               = 0x0E'000;
+static constexpr const xPacketCommandId Cmd_AuthService_QueryAuthCache     = Cmd_AuthService_Base + 0x01;
+static constexpr const xPacketCommandId Cmd_AuthService_QueryAuthCacheResp = Cmd_AuthService_Base + 0x02;
 
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey);
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey);
