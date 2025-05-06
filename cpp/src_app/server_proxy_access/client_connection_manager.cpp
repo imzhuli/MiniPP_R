@@ -80,20 +80,20 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
             return OnChallenge(CP, DataPtr, DataSize);
         case xPA_ClientConnection::eS5WaitForAuthInfo:
             return OnS5ClientAuth(CP, DataPtr, DataSize);
-            // case xProxyClientConnection::eS5WaitForConnectionRequest:
-            //     return OnS5ConnectionRequest(ConnectionPtr, DataPtr, DataSize);
-            // case xProxyClientConnection::eS5ConnectionReady:
-            //     return OnS5UploadData(ConnectionPtr, DataPtr, DataSize);
+        case xPA_ClientConnection::eS5WaitForConnectionRequest:
+            return OnS5ConnectionRequest(CP, DataPtr, DataSize);
+            // case xPA_ClientConnection::eS5ConnectionReady:
+            //     return OnS5UploadData(CP, DataPtr, DataSize);
 
-            // case xProxyClientConnection::eHttpRawChallenge:
-            //     return OnHttpRawChallenge(ConnectionPtr, DataPtr, DataSize);
-            // case xProxyClientConnection::eHttpRawReady:
-            //     return OnHttpRawUploadData(ConnectionPtr, DataPtr, DataSize);
+            // case xPA_ClientConnection::eHttpRawChallenge:
+            //     return OnHttpRawChallenge(CP, DataPtr, DataSize);
+            // case xPA_ClientConnection::eHttpRawReady:
+            //     return OnHttpRawUploadData(CP, DataPtr, DataSize);
 
-            // case xProxyClientConnection::eHttpNormalChallenge:
-            //     return OnHttpNormalChallenge(ConnectionPtr, DataPtr, DataSize);
-            // case xProxyClientConnection::eHttpNormalReady:
-            //     return OnHttpNormalUploadData(ConnectionPtr, DataPtr, DataSize);
+            // case xPA_ClientConnection::eHttpNormalChallenge:
+            //     return OnHttpNormalChallenge(CP, DataPtr, DataSize);
+            // case xPA_ClientConnection::eHttpNormalReady:
+            //     return OnHttpNormalUploadData(CP, DataPtr, DataSize);
 
         default:
             X_DEBUG_PRINTF("Unknown processed phase, closing connection");
@@ -293,21 +293,93 @@ size_t xPA_ClientConnectionManager::OnS5ClientAuth(xPA_ClientConnection * Connec
     X_DEBUG_PRINTF("AuthInfo : NP=%s", NP.c_str());
 
     GlobalAuthCacheManager.RequestAuth(ConnectionPtr->ConnectionId, NP);
-
-    // size_t KeyLength = NameLen + 1 + PassLen;
-    // auto   KeyView   = std::string_view{ KeyStart, KeyLength };
-    // if (auto AuthQueryPtr = ProxyService.MakeAsyncAccountQuery(KeyView, NameView, PassView, ConnectionPtr)) {
-    //     ConnectionPtr->Phase = xProxyClientConnection::eS5WaitForAccountExchange;
-    //     X_DEBUG_PRINTF(
-    //         "OnS5ClientAuth: ConnectioIndex=%" PRIu64 ", Account=%s, Pass=%s", ConnectionPtr->ConnectionId, AuthQueryPtr->GetNameStr(),
-    //         AuthQueryPtr->GetPasswordStr()
-    //     );
-    // } else {
-    //     X_DEBUG_PRINTF("AsyncAccountQueryFailed, Account/Password=%s", std::string(KeyView).c_str());
-    //     Kill(ConnectionPtr);
-    //     return 0;
-    // }
+    ConnectionPtr->Phase = xPA_ClientConnection::eS5WaitForAccountExchange;
     return R.Offset();
+}
+
+void xPA_ClientConnectionManager::OnS5ClientAuthFinished(xPA_ClientConnection * CCP, const xPA_AuthResult * ARP) {
+    if (!ARP) {
+        X_DEBUG_PRINTF("Invalid Auth Result, check connection");
+        CCP->PostData("\x01\x01", 2);  // S5 auth failure
+        LingerKill(*CCP);
+        return;
+    }
+
+    // Select device:
+    auto R               = xPA_DeviceRequest();
+    R.ClientConnectionId = CCP->ConnectionId;
+    R.CountryId          = ARP->CountryId;
+    R.StateId            = ARP->StateId;
+    R.CityId             = ARP->CityId;
+
+    GlobalDeviceSelectorManager.PostDeviceRequest(R);
+    CCP->Phase = xPA_ClientConnection::eS5WaitForDeviceSelection;
+}
+
+size_t xPA_ClientConnectionManager::OnS5ConnectionRequest(xPA_ClientConnection * CCP, void * DataPtr, size_t DataSize) {
+
+    if (DataSize < 10) {
+        return 0;
+    }
+    if (DataSize >= 6 + 256) {
+        X_DEBUG_PRINTF("Very big connection request, which is obviously wrong");
+        Kill(*CCP);
+        return 0;
+    }
+    xStreamReader R(DataPtr);
+    uint8_t       Version   = R.R();
+    uint8_t       Operation = R.R();
+    uint8_t       Reserved  = R.R();
+    uint8_t       AddrType  = R.R();
+    if (Version != 0x05 || Reserved != 0x00) {
+        X_DEBUG_PRINTF("Non Socks5 connection request");
+        Kill(*CCP);
+        return 0;
+    }
+    xNetAddress Address;
+    char        DomainName[256]  = {};
+    size_t      DomainNameLength = 0;
+    if (AddrType == 0x01) {  // ipv4
+        Address.Type = xNetAddress::IPV4;
+        R.R(Address.SA4, 4);
+        Address.Port = R.R2();
+    } else if (AddrType == 0x03) {  // domain
+        DomainNameLength = R.R();
+        if (DataSize < 4 + 1 + DomainNameLength + 2) {
+            return 0;
+        }
+        R.R(DomainName, DomainNameLength);
+        DomainName[DomainNameLength] = '\0';
+        Address.Port                 = R.R2();
+    } else if (AddrType == 0x04) {  // ipv6
+        if (DataSize < 4 + 16 + 2) {
+            return 0;
+        }
+        Address.Type = xNetAddress::IPV6;
+        R.R(Address.SA6, 16);
+        Address.Port = R.R2();
+    } else {
+        X_DEBUG_PRINTF("Invalid connection request");
+        Kill(*CCP);
+        return 0;
+    }
+    size_t AddressLength = R.Offset() - 3;
+    if (Operation != 0x01 && AddrType != 0x03 && AddrType != 0x04) {
+        X_DEBUG_PRINTF("Operation other than tcp ipv4/ipv6/domain connection");
+        ubyte         Buffer[512];
+        xStreamWriter W(Buffer);
+        W.W(0x05);
+        W.W(0x01);
+        W.W(0x00);
+        W.W((ubyte *)DataPtr + 3, AddressLength);
+        CCP->PostData(Buffer, W.Offset());
+        LingerKill(*CCP);
+        return 0;
+    }
+
+    X_DEBUG_PRINTF("AddressType: %u, Domain(if exists): %s", (unsigned)AddrType, DomainName);
+
+    return DataSize;
 }
 
 size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
@@ -333,7 +405,7 @@ size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * Co
     //             return 0;
     //         }
     //         ConnectionPtr->SuspendReading();
-    //         ConnectionPtr->Phase = xProxyClientConnection::eHttpRawWaitForAccountExchange;
+    //         ConnectionPtr->Phase = xPA_ClientConnection::eHttpRawWaitForAccountExchange;
     //         return ConsumedSize;
     //     }
     //     if (LineEndIndex == HeaderView.npos) {
@@ -382,14 +454,44 @@ void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId
         X_DEBUG_PRINTF("Connection lost");
         return;
     }
-    if (PR) X_DEBUG_PRINTF("");
+
+    switch (PC->Phase) {
+        case xPA_ClientConnection::eS5WaitForAccountExchange:
+            OnS5ClientAuthFinished(PC, PR);
+            return;
+
+        default: {
+            X_DEBUG_PRINTF("Invalid connection state");
+            Kill(*PC);
+            return;
+        }
+    }
 }
 
 void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp & Result) {
-    auto PC = GetConnectionById(Result.ClientConnectionId);
-    if (!PC) {
+    auto CCP = GetConnectionById(Result.ClientConnectionId);
+    if (!CCP) {
         X_DEBUG_PRINTF("ClientConnection Not Found: id=%" PRIx64 "", Result.ClientConnectionId);
         return;
     }
-    X_DEBUG_PRINTF("");
+
+    switch (CCP->Phase) {
+        case xPA_ClientConnection::eS5WaitForDeviceSelection: {
+            if (!Result.RelayServerRuntimeId || !Result.DeviceRelaySideId) {
+                CCP->PostData("\x01\x01", 2);  // S5 auth failure
+                LingerKill(*CCP);
+                return;
+            }
+            // auth done and device selected
+            CCP->PostData("\x01\x00", 2);
+            CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionRequest;
+            return;
+        }
+
+        default: {
+            X_DEBUG_PRINTF("Invalid connection state");
+            Kill(*CCP);
+            return;
+        }
+    }
 }

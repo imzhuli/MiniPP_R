@@ -3,10 +3,15 @@
 #include <pp_protocol/command.hpp>
 #include <pp_protocol/internal/all.hpp>
 
-auto IC  = xIoContext();
-auto ICG = xResourceGuard(IC);
+using namespace xel;
+using namespace std;
 
-static constexpr const xCountryId CN = 17230;
+static auto IC     = xIoContext();
+static auto ICG    = xResourceGuard(IC);
+static auto Ticker = xTicker();
+
+static const xCountryId  CN          = 17230;
+static const xNetAddress BindAddress = xNetAddress::Parse("0.0.0.0:17201");
 
 struct xFakeAuthService : xService {
 
@@ -32,6 +37,14 @@ struct xFakeAuthService : xService {
 xFakeAuthService FAS;
 
 int main(int argc, char ** argv) {
+
+    FAS.Init(&IC, BindAddress);
+
+    while (true) {
+        Ticker.Update();
+        IC.LoopOnce();
+        FAS.Tick(Ticker());
+    }
 
     return 0;
 }

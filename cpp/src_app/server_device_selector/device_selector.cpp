@@ -35,20 +35,29 @@ bool xDS_DeviceSelectorService::OnSelectDevice(xServiceClientConnection & CC, xP
         X_DEBUG_PRINTF("Invalid protocol");
         return true;
     }
+    X_DEBUG_PRINTF("RequestGeoInfo: %u/%u/%u", (unsigned)Req.CountryId, (unsigned)Req.StateId, (unsigned)Req.CityId);
 
     auto PD = (const xDS_DeviceContext *)nullptr;
     if (Req.CityId) {
+        X_DEBUG_PRINTF("by CityId");
         PD = DeviceContextManager.SelectDeviceByCityId(Req.CityId);
     } else if (Req.StateId) {
+        X_DEBUG_PRINTF("by StateId");
         PD = DeviceContextManager.SelectDeviceByStateId(Req.StateId);
     } else if (Req.CountryId) {
+        X_DEBUG_PRINTF("by CountryId");
         PD = DeviceContextManager.SelectDeviceByCountryId(Req.CountryId);
+    } else {
+        X_DEBUG_PRINTF("no device select condition");
     }
 
     auto Resp = xPP_AcquireDeviceResp();
     if (PD) {
         Resp.DeviceRelayServerRuntimeId = PD->InfoBase.ReleayServerRuntimeId;
         Resp.DeviceRelaySideId          = PD->InfoBase.DeviceRelaySideKey;
+        X_DEBUG_PRINTF("DeviceSelected: ServerId=%" PRIx64 ", DeviceId=%" PRIx64 "", Resp.DeviceRelayServerRuntimeId, Resp.DeviceRelaySideId);
+    } else {
+        X_DEBUG_PRINTF("No device found!");
     }
 
     PostMessage(CC, Cmd_DeviceSelector_AcquireDeviceResp, RequestId, Resp);

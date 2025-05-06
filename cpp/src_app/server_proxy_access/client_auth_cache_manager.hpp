@@ -29,9 +29,9 @@ struct xPA_AuthCacheNode
     xList<xPA_AuthRequestNode> RequestList = {};
 };
 
-class xPA_AuthCacheManager {
+class xPA_AuthCacheManager : xClientPool {
 public:
-    bool Init(xIoContext * ICP, const xNetAddress & CCAddress, size_t CachePoolSize = DEFAULT_AUTH_CACHE_POOL_SIZE);
+    bool Init(xIoContext * ICP, const xNetAddress & CacheServerAddress, size_t CachePoolSize = DEFAULT_AUTH_CACHE_POOL_SIZE);
     void Clean();
     void Tick();
     void Tick(uint64_t NowMS);
@@ -45,6 +45,8 @@ protected:
     void PerformAuthRequest(xPA_AuthCacheNode * CNP, const std::string & UserPass);
     auto AcquireCacheNode(const std::string & UserPass) -> xPA_AuthCacheNode *;
     void ReleaseCacheNode(xPA_AuthCacheNode * P);
+
+    bool OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override;
 
 private:
     xTicker  Ticker;

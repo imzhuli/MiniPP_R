@@ -53,11 +53,15 @@ void xDS_DeviceContextManager::RemoveDeviceById(const std::string & DeviceId) {
     if (Iter == DeviceMap.end()) {
         return;
     }
-    delete Iter->second;
+    auto DP = Iter->second;
+    X_DEBUG_PRINTF("Removing Device: %s", DP->InfoBase.DeviceId.c_str());
+
+    delete DP;
     DeviceMap.erase(Iter);
 }
 
 void xDS_DeviceContextManager::KeepAlive(xDS_DeviceContext * Device) {
+    X_DEBUG_PRINTF("%s", Device->InfoBase.DeviceId.c_str());
     Device->TimestampMS = Ticker();
     TimeoutDeviceList.GrabTail(*Device);
 }

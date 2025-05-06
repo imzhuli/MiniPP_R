@@ -19,7 +19,7 @@ struct xPA_ClientConnection
 
         eS5WaitForAuthInfo,
         eS5WaitForAccountExchange,
-        eS5WaitForRelayCheckResult,
+        eS5WaitForDeviceSelection,
         eS5WaitForConnectionRequest,
         eS5WaitForConnectionEstablish,
         eS5ConnectionReady,
@@ -77,7 +77,7 @@ public:
 
 protected:
     void OnTick();
-    auto GetConnectionById(uint64_t Id) const {
+    auto GetConnectionById(uint64_t Id) {
         return ConnectionPool.CheckAndGet(Id);
     }
     void LingerKill(xPA_KillClientConnectionNode & Conn) {
@@ -100,6 +100,9 @@ protected:
     size_t OnChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnS5ClientAuth(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
+    size_t OnS5ConnectionRequest(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
+
+    void OnS5ClientAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 
     size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);

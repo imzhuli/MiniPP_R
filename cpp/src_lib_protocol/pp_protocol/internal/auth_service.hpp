@@ -10,7 +10,7 @@ struct xQueryAuthCache : xBinaryMessage {
         R(UserPass);
     }
 
-    std::string UserPass;
+    std::string_view UserPass;
     //
 };
 

@@ -6,6 +6,7 @@
 #include <pp_protocol/internal/device_selector.hpp>
 
 void xPA_DeviceSelectorManager::PostDeviceRequest(const xPA_DeviceRequest & Request) {
+    X_DEBUG_PRINTF("");
     auto M = xPP_AcquireDevice();
 
     M.CountryId        = Request.CountryId;
@@ -19,6 +20,7 @@ void xPA_DeviceSelectorManager::PostDeviceRequest(const xPA_DeviceRequest & Requ
 }
 
 bool xPA_DeviceSelectorManager::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    X_DEBUG_PRINTF("");
     switch (CommandId) {
         case Cmd_DeviceSelector_AcquireDeviceResp:
             OnDeviceSelectorResult(RequestId, PayloadPtr, PayloadSize);
@@ -32,6 +34,7 @@ bool xPA_DeviceSelectorManager::OnServerPacket(xClientConnection & CC, xPacketCo
 }
 
 void xPA_DeviceSelectorManager::OnDeviceSelectorResult(xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    X_DEBUG_PRINTF("");
     auto M = xPP_AcquireDeviceResp();
     if (!M.Deserialize(PayloadPtr, PayloadSize)) {
         return;

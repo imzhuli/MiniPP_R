@@ -2,7 +2,7 @@
 #include <pp_common/base.hpp>
 #include <unordered_map>
 
-static constexpr const uint64_t DEVICE_KEEPALIVE_TIMEOUT_MS = 11'000;  // normally device is removed by request from dispatcher
+static constexpr const uint64_t DEVICE_KEEPALIVE_TIMEOUT_MS = 180'000;  // normally device is removed by request from dispatcher
 
 struct xDR_TimeoutNode : xListNode {
     uint64_t TimestampMS;

@@ -10,6 +10,7 @@
 extern xNetAddress              ConfigExportBindAddress;
 extern xNetAddress              ConfigTcpBindAddress;
 extern xNetAddress              ConfigUdpBindAddress;
+extern xNetAddress              ConfigAuthServerAddress;
 extern xNetAddress              ConfigDeviceSelectorAddress;
 extern std::vector<xNetAddress> ConfigCenterAddressList;
 

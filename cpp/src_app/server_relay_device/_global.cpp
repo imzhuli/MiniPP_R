@@ -1,7 +1,8 @@
 #include "./_global.hpp"
 
-std::string ServerUuid;
-xIoContext  GlobalIoContext;
+std::string ServerUuid      = {};
+uint64_t    ServerRuntimeId = {};
+xIoContext  GlobalIoContext = {};
 
 xNetAddress BindCtrlAddress;
 xNetAddress BindDataAddress;

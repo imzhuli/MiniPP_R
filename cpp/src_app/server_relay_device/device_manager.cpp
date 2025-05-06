@@ -46,12 +46,16 @@ void xDeviceManager::DestroyDevice(xDevice * DC) {
 void xDeviceManager::ReportDeviceState(xDevice * Device, bool Offline) {
     X_DEBUG_PRINTF(" DeviceRuntimeId: %" PRIx64 "", Device->DeviceRuntimeId);
     assert(Device);
-    auto A      = xPP_DeviceInfoUpdate();
+    auto A = xPP_DeviceInfoUpdate();
+
+    A.RelayServerRuntimeId = ServerRuntimeId;
+    A.RelaySideDeviceKey   = Device->DeviceRuntimeId;
+
     A.CountryId = Device->GeoInfo.CountryId;
     A.StateId   = Device->GeoInfo.StateId;
     A.CityId    = Device->GeoInfo.CityId;
 
-    A.DeviceUuid = Device->DeviceLocalIdString + ":" + std::to_string(Device->DeviceRuntimeId);
+    A.DeviceUuid = Device->DeviceLocalIdString;
     A.IsOffline  = Offline;
 
     DeviceReporter.PostMessage(Cmd_DSR_DS_DeviceOnline, 0, A);

@@ -6,6 +6,7 @@ xNetAddress              ConfigExportBindAddress;
 xNetAddress              ConfigTcpBindAddress;
 xNetAddress              ConfigExportUdpBindAddress;
 xNetAddress              ConfigUdpBindAddress;
+xNetAddress              ConfigAuthServerAddress;
 xNetAddress              ConfigDeviceSelectorAddress;
 std::vector<xNetAddress> ConfigCenterAddressList;
 
@@ -26,6 +27,7 @@ void LoadConfig(const std::string & filename) {
     Loader.Require(ConfigTcpBindAddress, "TcpBindAddress");
     Loader.Require(ConfigCenterAddressListStr, "ConfigCenterAddressList");
     Loader.Require(ConfigDeviceSelectorAddress, "ConfigDeviceSelectorAddress");
+    Loader.Require(ConfigAuthServerAddress, "ConfigAuthServerAddress");
 
     //
     auto CCList = Split(ConfigCenterAddressListStr, ",");

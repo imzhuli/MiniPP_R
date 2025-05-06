@@ -7,6 +7,7 @@
 #include <pp_common/_.hpp>
 
 extern std::string ServerUuid;
+extern uint64_t    ServerRuntimeId;
 extern xIoContext  GlobalIoContext;
 
 extern xNetAddress BindCtrlAddress;

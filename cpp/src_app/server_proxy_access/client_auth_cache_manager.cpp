@@ -2,11 +2,16 @@
 
 #include "./_global.hpp"
 
-bool xPA_AuthCacheManager::Init(xIoContext * ICP, const xNetAddress & CCAddress, size_t CachePoolSize) {
+#include <pp_protocol/command.hpp>
+#include <pp_protocol/internal/all.hpp>
+
+bool xPA_AuthCacheManager::Init(xIoContext * ICP, const xNetAddress & CacheServerAddress, size_t CachePoolSize) {
+    RuntimeAssert(xClientPool::Init(ICP));
     RuntimeAssert(RequestPool.Init(REQUEST_POOL_SIZE));
     RuntimeAssert(AuthCacheNodePool.Init(CachePoolSize));
 
     ReconfirmTimePointMS = Ticker() - AUTH_CACHE_RECONFIRM_TIMEOUT_MS;
+    AddServer(CacheServerAddress);
     return true;
 }
 
@@ -14,6 +19,7 @@ void xPA_AuthCacheManager::Clean() {
     Reset(AuthMap);
     AuthCacheNodePool.Clean();
     RequestPool.Clean();
+    xClientPool::Clean();
 }
 
 void xPA_AuthCacheManager::Tick() {
@@ -21,6 +27,7 @@ void xPA_AuthCacheManager::Tick() {
 }
 void xPA_AuthCacheManager::Tick(uint64_t NowMS) {
     Ticker.Update(NowMS);
+    xClientPool::Tick(NowMS);
     OnTick();
 }
 
@@ -68,6 +75,8 @@ xPA_AuthCacheNode * xPA_AuthCacheManager::AcquireCacheNode(const std::string & U
 }
 
 void xPA_AuthCacheManager::ReleaseCacheNode(xPA_AuthCacheNode * P) {
+    X_DEBUG_PRINTF("Removing cached node: %s", P->UserPass.c_str());
+
     auto Iter = AuthMap.find(P->UserPass);
     assert(Iter != AuthMap.end());
     assert(Iter->second == P);
@@ -130,8 +139,47 @@ void xPA_AuthCacheManager::HitCache(xPA_AuthCacheNode * CNP) {
 
 void xPA_AuthCacheManager::PerformAuthRequest(xPA_AuthCacheNode * CNP, const std::string & UserPass) {
     X_DEBUG_PRINTF("");
-    // TODO: Post Request
+
+    auto Cmd     = Cmd_AuthService_QueryAuthCache;
+    auto Req     = xQueryAuthCache();
+    Req.UserPass = UserPass;
+
+    PostMessage(Cmd, CNP->CacheNodeId, Req);
 
     CNP->LastUpdateTimestampMS = Ticker();
     AuthCacheUpdateList.GrabTail(*CNP);
+}
+
+bool xPA_AuthCacheManager::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+
+    auto PCacheNode = AuthCacheNodePool.CheckAndGet(RequestId);
+    if (!PCacheNode) {
+        X_DEBUG_PRINTF("Missing cache node: Id=%" PRIx64 "", RequestId);
+        return true;
+    }
+    auto Resp = xQueryAuthCacheResp();
+    if (!Resp.Deserialize(PayloadPtr, PayloadSize)) {
+        X_DEBUG_PRINTF("Invalid protocol");
+        return true;
+    }
+
+    auto & Result = PCacheNode->Result;
+
+    Result.CountryId        = Resp.CountryId;
+    Result.StateId          = Resp.StateId;
+    Result.CityId           = Resp.CityId;
+    Result.IsBlocked        = Resp.IsBlocked;
+    Result.RequireIpv6      = Resp.RequireIpv6;
+    Result.RequireUdp       = Resp.RequireUdp;
+    Result.RequireRemoteDns = Resp.RequireRemoteDns;
+    Result.AutoChangeIp     = Resp.AutoChangeIp;
+
+    Result.Ready = true;
+
+    X_DEBUG_PRINTF("CacheNodeResult: CacheNodeId=%" PRIx64 ", Region=%u/%u/%u", PCacheNode->CacheNodeId, (unsigned)Resp.CountryId, (unsigned)Resp.StateId, (unsigned)Resp.CityId);
+    DispatchResultList.GrabListTail(PCacheNode->RequestList);
+
+    HitCache(PCacheNode);
+    AuthCacheUpdateList.Remove(*PCacheNode);
+    return true;
 }
