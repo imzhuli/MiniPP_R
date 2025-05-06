@@ -17,26 +17,8 @@ bool xDS_DeviceSelectorService::OnClientPacket(
     X_DEBUG_PRINTF("CommandId: %" PRIx64 ", \n%s", CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
 
     switch (CommandId) {
-        case Cmd_DSR_DS_DeviceOnline: {
-            X_DEBUG_PRINTF("");
-            auto PP = xPP_DeviceInfoUpdate();
-            if (!PP.Deserialize(PayloadPtr, PayloadSize)) {
-                X_DEBUG_PRINTF("Invalid device info");
-                return true;
-            }
-
-            auto LocalDevInfo                  = xDR_DeviceInfoBase{};
-            LocalDevInfo.DeviceId              = PP.DeviceUuid;
-            LocalDevInfo.ReleayServerRuntimeId = PP.RelayServerRuntimeId;
-            LocalDevInfo.DeviceRelaySideKey    = PP.RelaySideDeviceKey;
-
-            LocalDevInfo.CountryId = PP.CountryId;
-            LocalDevInfo.StateId   = PP.StateId;
-            LocalDevInfo.CityId    = PP.CityId;
-
-            DeviceContextManager.UpdateDevice(LocalDevInfo);
-            break;
-        }
+        case Cmd_DeviceSelector_AcquireDevice:
+            return OnSelectDevice(Connection, RequestId, PayloadPtr, PayloadSize);
         default:
             X_DEBUG_PRINTF("Invalid command id");
             return true;
@@ -47,26 +29,7 @@ bool xDS_DeviceSelectorService::OnClientPacket(
 void xDS_DeviceSelectorService::OnCleanupClientConnection(const xServiceClientConnection & Connection) {
 }
 
-/***
- *
- *
- *
- *
- */
-
-bool xDS_DeviceObserver::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
-    switch (CommandId) {
-        case Cmd_DeviceSelector_AcquireDevice:
-            return OnSelectDevice(CC, RequestId, PayloadPtr, PayloadSize);
-
-        default:
-            break;
-    }
-    X_DEBUG_PRINTF("CommandId: %" PRIx64 ", \n%s", CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
-    return true;
-}
-
-bool xDS_DeviceObserver::OnSelectDevice(xClientConnection & CC, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+bool xDS_DeviceSelectorService::OnSelectDevice(xServiceClientConnection & CC, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     auto Req = xPP_AcquireDevice();
     if (!Req.Deserialize(PayloadPtr, PayloadSize)) {
         X_DEBUG_PRINTF("Invalid protocol");
@@ -89,5 +52,42 @@ bool xDS_DeviceObserver::OnSelectDevice(xClientConnection & CC, xPacketRequestId
     }
 
     PostMessage(CC, Cmd_DeviceSelector_AcquireDeviceResp, RequestId, Resp);
+    return true;
+}
+
+/***
+ *
+ *
+ *
+ *
+ */
+
+bool xDS_DeviceObserver::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    switch (CommandId) {
+        case Cmd_DSR_DS_DeviceOnline: {
+            X_DEBUG_PRINTF("");
+            auto PP = xPP_DeviceInfoUpdate();
+            if (!PP.Deserialize(PayloadPtr, PayloadSize)) {
+                X_DEBUG_PRINTF("Invalid device info");
+                return true;
+            }
+
+            auto LocalDevInfo                  = xDR_DeviceInfoBase{};
+            LocalDevInfo.DeviceId              = PP.DeviceUuid;
+            LocalDevInfo.ReleayServerRuntimeId = PP.RelayServerRuntimeId;
+            LocalDevInfo.DeviceRelaySideKey    = PP.RelaySideDeviceKey;
+
+            LocalDevInfo.CountryId = PP.CountryId;
+            LocalDevInfo.StateId   = PP.StateId;
+            LocalDevInfo.CityId    = PP.CityId;
+
+            DeviceContextManager.UpdateDevice(LocalDevInfo);
+            break;
+        }
+
+        default:
+            break;
+    }
+    X_DEBUG_PRINTF("CommandId: %" PRIx64 ", \n%s", CommandId, HexShow(PayloadPtr, PayloadSize).c_str());
     return true;
 }

@@ -53,6 +53,14 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
         return false;
     }
 
+    X_DEBUG_PRINTF("DataKey: %s", S.DataKey.c_str());
+    auto Segs = Split(S.DataKey, ":");
+    if (Segs.size() != 2 || Segs[1].size() != 24) {
+        X_DEBUG_PRINTF("Invalid DataKey (missing geo info)");
+        return false;
+    }
+    auto RawGeo = HexToStr(Segs[1]);
+
     auto R     = xInitDataStreamResp();
     R.Accepted = true;
 
@@ -65,9 +73,13 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     NewDevice->CtrlConnection      = CtrlConn;
     NewDevice->DataConnection      = Conn;
     NewDevice->DeviceLocalIdString = S.DeviceLocalIdString;
-    DeviceConnectionManager.KeepAlive(Conn);
 
-    X_DEBUG_PRINTF("DataKey: %s", S.DataKey.c_str());
+    auto GeoReader               = xStreamReader(RawGeo.data());
+    NewDevice->GeoInfo.CountryId = GeoReader.R4();
+    NewDevice->GeoInfo.StateId   = GeoReader.R4();
+    NewDevice->GeoInfo.CityId    = GeoReader.R4();
+
+    DeviceConnectionManager.KeepAlive(Conn);
 
     // test: send dns query:
     // auto DQ     = xDnsQuery();

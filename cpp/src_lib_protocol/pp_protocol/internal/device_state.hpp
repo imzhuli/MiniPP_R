@@ -5,10 +5,12 @@ struct xPP_DeviceInfoUpdate : public xBinaryMessage {  // from proxy_access to r
 public:
     void SerializeMembers() override {
         W(DeviceUuid, Version, RelayServerRuntimeId, RelaySideDeviceKey, PrimaryIpv4Address, PrimaryIpv6Address);
+        W(CountryId, StateId, CityId);
         W(IsOffline, SupportUdpChannel, SupportDnsRequests, SpeedLimitEnabled);
     }
     void DeserializeMembers() override {
         R(DeviceUuid, Version, RelayServerRuntimeId, RelaySideDeviceKey, PrimaryIpv4Address, PrimaryIpv6Address);
+        R(CountryId, StateId, CityId);
         R(IsOffline, SupportUdpChannel, SupportDnsRequests, SpeedLimitEnabled);
     }
 

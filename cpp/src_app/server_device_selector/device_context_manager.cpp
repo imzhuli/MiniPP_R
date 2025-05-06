@@ -34,13 +34,14 @@ void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
     auto PD      = new xDS_DeviceContext();
     PD->InfoBase = InfoBase;
 
-    X_DEBUG_PRINTF("UpdateDevice: %s, %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
-
     CountryDeviceList[InfoBase.CountryId].AddTail(*PD);
     StateDeviceList[InfoBase.StateId].AddTail(*PD);
     CityDeviceList[InfoBase.CityId].AddTail(*PD);
 
-    KeepAlive(Iter->second);
+    DeviceMap[InfoBase.DeviceId] = PD;
+    KeepAlive(PD);
+
+    X_DEBUG_PRINTF("UpdateDevice: %s, %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
 }
 
 void xDS_DeviceContextManager::RemoveDevice(xDS_DeviceContext * Device) {
