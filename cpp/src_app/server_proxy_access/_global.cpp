@@ -6,8 +6,7 @@ xNetAddress              ConfigExportBindAddress;
 xNetAddress              ConfigTcpBindAddress;
 xNetAddress              ConfigExportUdpBindAddress;
 xNetAddress              ConfigUdpBindAddress;
-xNetAddress              ConfigConfigCenterAddress;
-std::vector<uint32_t>    ConfigLocalTagHashList;
+xNetAddress              ConfigDeviceSelectorAddress;
 std::vector<xNetAddress> ConfigCenterAddressList;
 
 xRunState                   GlobalRunState;
@@ -16,6 +15,9 @@ xPA_AuthCacheManager        GlobalAuthCacheManager;
 xPA_RelayConnectionManager  GlobalRelayConnectionManager;
 xPA_ClientConnectionManager GlobalClientConnectionManager;
 xPA_RelayServerListManager  GlobalRelayServerListManager;
+xPA_DeviceSelectorManager   GlobalDeviceSelectorManager;
+
+xPA_LocalAudit GlobalLocalAudit = {};
 
 void LoadConfig(const std::string & filename) {
     auto Loader                     = xel::xConfigLoader(filename.c_str());
@@ -23,6 +25,8 @@ void LoadConfig(const std::string & filename) {
 
     Loader.Require(ConfigTcpBindAddress, "TcpBindAddress");
     Loader.Require(ConfigCenterAddressListStr, "ConfigCenterAddressList");
+    Loader.Require(ConfigDeviceSelectorAddress, "ConfigDeviceSelectorAddress");
+
     //
     auto CCList = Split(ConfigCenterAddressListStr, ",");
     for (auto & CC : CCList) {

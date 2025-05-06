@@ -1,9 +1,6 @@
 #pragma once
-#include <pp_common/base.hpp>
+#include "./_mindef.hpp"
 
-struct xPA_AccountCheckNode : xListNode {
-    uint64_t CheckAccountTimestampMS = 0;
-};
 struct xPA_KillClientConnectionNode : xListNode {
     uint64_t LingerKillTimestamp = 0;
 };
@@ -74,8 +71,15 @@ public:
     void Tick();
     void Tick(uint64_t NowMS);
 
+public:
+    void OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR);
+    void OnDeviceSelected(const xPA_DeviceRequestResp & Result);
+
 protected:
     void OnTick();
+    auto GetConnectionById(uint64_t Id) const {
+        return ConnectionPool.CheckAndGet(Id);
+    }
     void LingerKill(xPA_KillClientConnectionNode & Conn) {
         Conn.LingerKillTimestamp = Ticker();
         LingerKillConnectionList.GrabTail(Conn);
@@ -99,6 +103,7 @@ protected:
 
     size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+
     //
 protected:
     xTicker                               Ticker;

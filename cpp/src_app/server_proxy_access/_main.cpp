@@ -25,10 +25,16 @@ int main(int argc, char ** argv) {
 
     GlobalRunState.Start();
 
+    auto AuditTimer = xTimer();
     while (GlobalRunState) {
         GlobalTicker.Update();
         IC.LoopOnce();
         TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager, GlobalClientConnectionManager);
+
+        if (AuditTimer.TestAndTag(std::chrono::seconds(2))) {
+            cout << "PA LocalAudit: " << endl;
+            cout << GlobalLocalAudit.ToString() << endl;
+        }
     }
     GlobalRunState.Finish();
 

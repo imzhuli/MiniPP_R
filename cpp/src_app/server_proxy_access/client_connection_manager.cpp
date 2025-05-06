@@ -1,5 +1,7 @@
 #include "./client_connection_manager.hpp"
 
+#include "./_global.hpp"
+
 static constexpr const uint64_t MAX_ACCOUNT_CHECK_TIMEOUT          = 3'000;
 static constexpr const uint64_t MAX_CONNECTION_LIGNER_KILL_TIMEOUT = 10'000;
 
@@ -27,15 +29,17 @@ void xPA_ClientConnectionManager::Tick(uint64_t NowMS) {
 
 void xPA_ClientConnectionManager::OnTick() {
     // remove timeout account connections
-    while (auto PC = static_cast<xPA_ClientConnection *>(AccountTimeoutList.PopHead([KTP = Ticker() - MAX_ACCOUNT_CHECK_TIMEOUT](const xPA_AccountCheckNode & N
-                                                                                    ) { return N.CheckAccountTimestampMS < KTP; }))) {
+    while (auto PC = static_cast<xPA_ClientConnection *>(AccountTimeoutList.PopHead([KTP = Ticker() - MAX_ACCOUNT_CHECK_TIMEOUT](const xPA_AccountCheckNode & N) {
+               return N.CheckAccountTimestampMS < KTP;
+           }))) {
         CleanupConnection(*PC);
     }
 
     // remove linger killed connections
-    while (auto PC = static_cast<xPA_ClientConnection *>(LingerKillConnectionList.PopHead(
-               [KTP = Ticker() - MAX_CONNECTION_LIGNER_KILL_TIMEOUT](const xPA_KillClientConnectionNode & N) { return N.LingerKillTimestamp < KTP; }
-           ))) {
+    while (auto PC =
+               static_cast<xPA_ClientConnection *>(LingerKillConnectionList.PopHead([KTP = Ticker() - MAX_CONNECTION_LIGNER_KILL_TIMEOUT](const xPA_KillClientConnectionNode & N) {
+                   return N.LingerKillTimestamp < KTP;
+               }))) {
         CleanupConnection(*PC);
     }
 
@@ -287,6 +291,9 @@ size_t xPA_ClientConnectionManager::OnS5ClientAuth(xPA_ClientConnection * Connec
         X_DEBUG_PRINTF("AuthMethod: %u", (unsigned)Ver);
     }
     X_DEBUG_PRINTF("AuthInfo : NP=%s", NP.c_str());
+
+    GlobalAuthCacheManager.RequestAuth(ConnectionPtr->ConnectionId, NP);
+
     // size_t KeyLength = NameLen + 1 + PassLen;
     // auto   KeyView   = std::string_view{ KeyStart, KeyLength };
     // if (auto AuthQueryPtr = ProxyService.MakeAsyncAccountQuery(KeyView, NameView, PassView, ConnectionPtr)) {
@@ -367,4 +374,22 @@ size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * Co
     // }
     // X_DEBUG_PRINTF("BUG: Impossible loop exit");
     return InvalidDataSize;
+}
+
+void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR) {
+    auto PC = GetConnectionById(SourceClientConnectionId);
+    if (!PC) {
+        X_DEBUG_PRINTF("Connection lost");
+        return;
+    }
+    if (PR) X_DEBUG_PRINTF("");
+}
+
+void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp & Result) {
+    auto PC = GetConnectionById(Result.ClientConnectionId);
+    if (!PC) {
+        X_DEBUG_PRINTF("ClientConnection Not Found: id=%" PRIx64 "", Result.ClientConnectionId);
+        return;
+    }
+    X_DEBUG_PRINTF("");
 }
