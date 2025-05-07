@@ -41,7 +41,7 @@ void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
     DeviceMap[InfoBase.DeviceId] = PD;
     KeepAlive(PD);
 
-    X_DEBUG_PRINTF("UpdateDevice: %s, %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
+    X_DEBUG_PRINTF("UpdateDevice: %s,%" PRIx64 ": %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.DeviceRelaySideKey, InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
 }
 
 void xDS_DeviceContextManager::RemoveDevice(xDS_DeviceContext * Device) {

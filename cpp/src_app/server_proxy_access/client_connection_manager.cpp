@@ -2,6 +2,9 @@
 
 #include "./_global.hpp"
 
+#include <pp_protocol/command.hpp>
+#include <pp_protocol/proxy_relay/connection.hpp>
+
 static constexpr const uint64_t MAX_ACCOUNT_CHECK_TIMEOUT          = 3'000;
 static constexpr const uint64_t MAX_CONNECTION_LIGNER_KILL_TIMEOUT = 10'000;
 
@@ -499,7 +502,7 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
             }
 
             CCP->RelayConnectionId = Result.RelayServerRuntimeId;
-            CCP->RelayDeviceId     = Result.DeviceRelaySideId;
+            CCP->RelaySideDeviceId = Result.DeviceRelaySideId;
 
             // auth done and device selected
             CCP->PostData("\x01\x00", 2);  // S5
@@ -523,8 +526,72 @@ void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * 
     }
 
     X_DEBUG_PRINTF("Found RelayServer: @%s", RCP->GetTargetAddress().ToString().c_str());
-    // TODO:
+
     // build relay context
+    auto Cmd = Cmd_PA_RL_CreateConnection;
+    auto Req = xPR_CreateConnection();
+
+    Req.RelaySideDeviceId     = CCP->RelaySideDeviceId;
+    Req.ProxySideConnectionId = CCP->ConnectionId;
+    Req.TargetAddress         = Address;
 
     ///
+    RCP->PostMessage(Cmd, 0, Req);
+    CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionEstablish;
+}
+
+void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte * PayloadPtr, size_t PayloadSize) {
+    auto N = xPR_ConnectionStateNotify();
+    if (!N.Deserialize(PayloadPtr, PayloadSize)) {
+        X_DEBUG_PRINTF("Invalid protocol");
+        return;
+    }
+
+    X_DEBUG_PRINTF("%s", N.ToString().c_str());
+
+    /// TODO: react to client request
+}
+
+void xPA_ClientConnectionManager::OnDestroyConnection(const ubyte * PayloadPtr, size_t PayloadSize) {
+    X_DEBUG_PRINTF("%s", HexShow(PayloadPtr, PayloadSize).c_str());
+
+    auto N = xPR_DestroyConnection();
+    if (!N.Deserialize(PayloadPtr, PayloadSize)) {
+        X_DEBUG_PRINTF("Invalid protocol");
+        return;
+    }
+    auto CCP = GetConnectionById(N.ProxySideConnectionId);
+    if (!CCP) {
+        X_DEBUG_PRINTF("ClientConnection not found: %" PRIx64 "", N.ProxySideConnectionId);
+        return;
+    }
+    switch (CCP->Phase) {
+        case xPA_ClientConnection::eS5WaitForConnectionEstablish: {
+            static constexpr const ubyte Reply[] = {
+                '\x05', '\x03', '\x00',          // network unreachable
+                '\x01',                          // ipv4
+                '\x00', '\x00', '\x00', '\x00',  // ip: 0.0.0.0
+                '\x00', '\x00',                  // port 0:
+            };
+            CCP->PostData(Reply, sizeof(Reply));
+            CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionClosed;
+            LingerKill(*CCP);
+            break;
+        }
+
+        case xPA_ClientConnection::eS5ConnectionReady: {
+            CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionClosed;
+            if (CCP->HasPendingWrites()) {
+                LingerKill(*CCP);
+            } else {
+                Kill(*CCP);
+            }
+            break;
+        }
+
+        default:
+            X_DEBUG_PRINTF("invalid connection state");
+            break;
+    }
+    return;
 }

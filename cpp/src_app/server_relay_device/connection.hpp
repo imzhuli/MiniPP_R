@@ -57,5 +57,5 @@ public:
         Flags |= FLAG_MARK_DELETE;
     }
 
-    bool PostPacket(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message);
+    bool PostMessage(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message);
 };

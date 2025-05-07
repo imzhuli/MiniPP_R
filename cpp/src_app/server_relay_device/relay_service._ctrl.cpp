@@ -38,7 +38,7 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
     R.CtrlId     = Conn->ConnectionId;
     R.DeviceKey  = S.CheckKey;
     R.EnableIpv6 = S.Resolved3rdIpv6 || S.Ipv6Address;
-    Conn->PostPacket(Cmd_DV_RL_InitCtrlStreamResp, RequestId, R);
+    Conn->PostMessage(Cmd_DV_RL_InitCtrlStreamResp, RequestId, R);
     DeviceConnectionManager.KeepAlive(Conn);
     return true;
 }

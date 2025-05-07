@@ -23,6 +23,7 @@ struct xPA_ClientConnection
         eS5WaitForConnectionRequest,
         eS5WaitForConnectionEstablish,
         eS5ConnectionReady,
+        eS5WaitForConnectionClosed,
 
         eHttpChallenge,
         eHttpRawChallenge,
@@ -30,12 +31,14 @@ struct xPA_ClientConnection
         eHttpRawWaitForRelayCheckResult,
         eHttpRawWaitForConnectionEstablish,
         eHttpRawReady,
+        eHttpRawClosed,
 
         eHttpNormalChallenge,
         eHttpNormalWaitForAccountExchange,
         eHttpNormalWaitForRelayCheckResult,
         eHttpNormalForConnectionEstablish,
         eHttpNormalReady,
+        eHttpNormalClosed,
 
         eLingerKill,
         eError,
@@ -46,7 +49,7 @@ struct xPA_ClientConnection
     eProxyPhase Phase             = eUnknown;
     uint64_t    StartTimeMS       = 0;
     uint64_t    RelayConnectionId = 0;
-    uint64_t    RelayDeviceId     = 0;
+    uint64_t    RelaySideDeviceId = 0;
     uint64_t    RelaySessionId    = 0;
 
     std::string UserPass;
@@ -75,6 +78,8 @@ public:
     void OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR);
     void OnDeviceSelected(const xPA_DeviceRequestResp & Result);
     void OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address);
+    void OnRelaySideConnectionStateChange(const ubyte * PayloadPtr, size_t PayloadSize);
+    void OnDestroyConnection(const ubyte * PayloadPtr, size_t PayloadSize);
 
 protected:
     void OnTick();

@@ -65,9 +65,9 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     R.Accepted = true;
 
     // accept data stream and move it to long idle list
-    Conn->PostPacket(Cmd_DV_RL_InitDataStreamResp, RequestId, R);
+    Conn->PostMessage(Cmd_DV_RL_InitDataStreamResp, RequestId, R);
 
-    X_DEBUG_PRINTF("device accepted, DeviceRuntimeId:%" PRIu64 ", DevicdLocalIdString=%s", NewDevice->DeviceRuntimeId, S.DeviceLocalIdString.c_str());
+    X_DEBUG_PRINTF("device accepted, DeviceRuntimeId:%" PRIx64 ", DevicdLocalIdString=%s", NewDevice->DeviceRuntimeId, S.DeviceLocalIdString.c_str());
     Conn->DeviceId                 = NewDevice->DeviceRuntimeId;
     CtrlConn->DeviceId             = NewDevice->DeviceRuntimeId;
     NewDevice->CtrlConnection      = CtrlConn;
@@ -84,7 +84,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
     // test: send dns query:
     // auto DQ     = xDnsQuery();
     // DQ.Hostname = "www.163.com";
-    // CtrlConn->PostPacket(Cmd_DV_RL_DnsQuery, 1024, DQ);
+    // CtrlConn->PostMessage(Cmd_DV_RL_DnsQuery, 1024, DQ);
 
     DeviceManager.ReportDeviceState(NewDevice);
     return true;
@@ -124,6 +124,7 @@ bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection 
             X_DEBUG_PRINTF("Unrecognized state");
             return false;
     }
+    F.ProxySideConnectionId = CR->ProxySideConnectionId;
     F.RelaySideConnectionId = CR->RelaySideConnectionId;
     F.ProxySideConnectionId = CR->ProxySideConnectionId;
 
@@ -133,7 +134,7 @@ bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection 
         // TODO 删除此连接
         return true;
     }
-    PAConn->PostPacket(Cmd_PA_RL_NotifyConnectionState, 0, F);
+    PAConn->PostMessage(Cmd_PA_RL_NotifyConnectionState, 0, F);
     return true;
 }
 
@@ -160,7 +161,7 @@ bool xDeviceRelayService::OnTerminalPostData(xRD_DeviceConnection * Conn, xPacke
     Push.RelaySideConnectionId = CR->RelaySideConnectionId;
     Push.ProxySideConnectionId = CR->ProxySideConnectionId;
     Push.PayloadView           = S.PayloadView;
-    PAConn->PostPacket(Cmd_PA_RL_PostData, 0, Push);
+    PAConn->PostMessage(Cmd_PA_RL_PostData, 0, Push);
 
     return true;
 }

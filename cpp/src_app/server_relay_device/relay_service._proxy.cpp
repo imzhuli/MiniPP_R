@@ -38,7 +38,7 @@ bool xDeviceRelayService::OnProxyChallenge(xRD_ProxyConnection * Conn, const uby
 
     auto Resp     = xPR_ChallengeResp();
     Resp.Accepted = true;
-    Conn->PostPacket(Cmd_PA_RL_ChallengeResp, 0, Resp);
+    Conn->PostMessage(Cmd_PA_RL_ChallengeResp, 0, Resp);
 
     return true;
 }
@@ -54,6 +54,9 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
     auto D = DeviceManager.GetDeviceById(R.RelaySideDeviceId);
     if (!D) {
         X_DEBUG_PRINTF("Device not found");
+        auto Resp                  = xPR_DestroyConnection();
+        Resp.ProxySideConnectionId = R.ProxySideConnectionId;
+        Conn->PostMessage(Cmd_PA_RL_DestroyConnection, 0, Resp);
         return true;
     }
     assert(D->CtrlConnection);
@@ -63,7 +66,7 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
         auto F                  = xPR_ConnectionStateNotify();
         F.NewState              = xPR_ConnectionStateNotify::STATE_CLOSED;
         F.ProxySideConnectionId = R.ProxySideConnectionId;
-        Conn->PostPacket(Cmd_PA_RL_NotifyConnectionState, 0, F);
+        Conn->PostMessage(Cmd_PA_RL_NotifyConnectionState, 0, F);
         return true;
     }
     X_DEBUG_PRINTF("RelaySideConnectionId=%" PRIx64 "", RCC->RelaySideConnectionId);
@@ -75,7 +78,7 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
     auto CC                  = xTR_CreateConnection();
     CC.RelaySideConnectionId = RCC->RelaySideConnectionId;
     CC.TargetAddress         = R.TargetAddress;
-    D->CtrlConnection->PostPacket(Cmd_DV_RL_CreateConnection, 0, CC);
+    D->CtrlConnection->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
 
     return true;
 }
@@ -104,7 +107,7 @@ bool xDeviceRelayService::OnProxyDestroyConnection(xRD_ProxyConnection * Conn, c
     }
     assert(D->DataConnection);
 
-    D->DataConnection->PostPacket(Cmd_DV_RL_DestroyConnection, 0, RL);
+    D->DataConnection->PostMessage(Cmd_DV_RL_DestroyConnection, 0, RL);
     return true;
 }
 
@@ -140,6 +143,6 @@ bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, const ubyt
     Push.RelaySideConnectionId  = RC->RelaySideConnectionId;
     Push.PayloadView            = R.PayloadView;
 
-    DC->DataConnection->PostPacket(Cmd_DV_RL_PostData, 0, Push);
+    DC->DataConnection->PostMessage(Cmd_DV_RL_PostData, 0, Push);
     return true;
 }

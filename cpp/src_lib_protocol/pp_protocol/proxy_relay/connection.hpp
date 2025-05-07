@@ -26,7 +26,7 @@ public:
     }
 
 public:
-    uint32_t ProxySideConnectionId;
+    uint64_t ProxySideConnectionId;
     uint64_t RelaySideConnectionId;
 };
 
@@ -64,6 +64,8 @@ public:
         R(NewState);
         R(TotalUploadedBytes, TotalDumpedBytes);
     }
+
+    std::string ToString() const;
 
 public:
     uint32_t ProxySideConnectionId;

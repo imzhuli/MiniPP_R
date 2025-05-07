@@ -3,7 +3,7 @@
 /***************
  * Connection
  */
-bool xRD_ConnectionBase::PostPacket(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message) {
+bool xRD_ConnectionBase::PostMessage(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message) {
     ubyte Buffer[MaxPacketSize];
     auto  PSize = WriteMessage(CmdId, RequestId, Buffer, Message);
     if (!PSize) {
