@@ -3,9 +3,9 @@
 
 static constexpr const size_t   REQUEST_POOL_SIZE               = 5'0000;
 static constexpr const size_t   DEFAULT_AUTH_CACHE_POOL_SIZE    = 10'0000;
-static constexpr const uint64_t AUTH_CACHE_REQUEST_TIMEOUT_MS   = 5'000;
-static constexpr const uint64_t AUTH_CACHE_RECONFIRM_TIMEOUT_MS = 1 * 60 * 1000;
-static constexpr const uint64_t AUTH_CACHE_NODE_TIMEOUT_MS      = 2 * 60'000;
+static constexpr const uint64_t AUTH_CACHE_REQUEST_TIMEOUT_MS   = 15'000;
+static constexpr const uint64_t AUTH_CACHE_RECONFIRM_TIMEOUT_MS = 5 * 60 * 1000;
+static constexpr const uint64_t AUTH_CACHE_NODE_TIMEOUT_MS      = 8 * 60'000;
 
 struct xPA_AccountCheckNode : xListNode {
     uint64_t CheckAccountTimestampMS = 0;
