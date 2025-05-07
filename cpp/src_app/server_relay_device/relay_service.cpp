@@ -164,7 +164,7 @@ void xDeviceRelayService::RemoveDevice(xDevice * Device) {
 
 bool xDeviceRelayService::PostConnectionData(xDevice * Device, uint32_t DeviceSideConnectionId, uint64_t LocalConnectionId, const ubyte * PayloadPtr, size_t TotalPayloadSize) {
     while (TotalPayloadSize) {
-        auto PayloadSize          = std::min((size32_t)TotalPayloadSize, xTR_PostData::MAX_PAYLOAD_SIZE);
+        auto PayloadSize          = std::min(TotalPayloadSize, xTR_PostData::MAX_PAYLOAD_SIZE);
         auto PP                   = xTR_PostData();
         PP.DeviceSideConnectionId = DeviceSideConnectionId;
         PP.RelaySideConnectionId  = LocalConnectionId;

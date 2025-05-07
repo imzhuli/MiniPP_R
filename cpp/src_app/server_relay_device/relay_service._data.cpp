@@ -126,7 +126,6 @@ bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection 
     }
     F.ProxySideConnectionId = CR->ProxySideConnectionId;
     F.RelaySideConnectionId = CR->RelaySideConnectionId;
-    F.ProxySideConnectionId = CR->ProxySideConnectionId;
 
     auto PAConn = ProxyConnectionManager.GetConnectionById(CR->ProxyConnectionId);
     if (!PAConn) {

@@ -89,6 +89,6 @@ public:
     uint64_t         RelaySideConnectionId;
     std::string_view PayloadView;
 
-    static constexpr const size_t MAX_DATA_SIZE = 4096;
-    static_assert(MAX_DATA_SIZE < MaxPacketPayloadSize - 20);
+    static constexpr const size_t MAX_PAYLOAD_SIZE = 4096;
+    static_assert(MAX_PAYLOAD_SIZE <= MaxPacketPayloadSize - 32);
 };

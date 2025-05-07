@@ -108,6 +108,16 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
     return 0;
 }
 
+void xPA_ClientConnectionManager::OnPeerClose(xTcpConnection * TcpConnectionPtr) {
+    auto CCP = static_cast<xPA_ClientConnection *>(TcpConnectionPtr);
+    if (CCP->Phase == xPA_ClientConnection::eS5ConnectionReady) {
+        // TODO
+        X_DEBUG_PRINTF("TODO: Tell Relay Server To Close Relay Side Connection");
+        CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionClosed;
+    }
+    Kill(*static_cast<xPA_ClientConnection *>(TcpConnectionPtr));
+}
+
 size_t xPA_ClientConnectionManager::OnChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
     // minimal challenge header:
     if (DataSize < 3) {
@@ -411,7 +421,7 @@ size_t xPA_ClientConnectionManager::OnS5UploadData(xPA_ClientConnection * CCP, v
     PushRequest.ProxySideConnectionId = CCP->ConnectionId;
 
     while (RemainSize) {
-        size_t PostSize         = std::min(RemainSize, xPR_PushData::MAX_DATA_SIZE);
+        size_t PostSize         = std::min(RemainSize, xPR_PushData::MAX_PAYLOAD_SIZE);
         PushRequest.PayloadView = { (const char *)DataPtr, PostSize };
 
         X_DEBUG_PRINTF("%s", HexShow(DataPtr, PostSize).c_str());
@@ -581,6 +591,7 @@ void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte *
     }
     switch (CCP->Phase) {
         case xPA_ClientConnection::eS5WaitForConnectionEstablish: {
+            RuntimeAssert(N.NewState == xPR_ConnectionStateNotify::STATE_ESTABLISHED);
             static constexpr const ubyte Reply[] = {
                 '\x05', '\x00', '\x00',          // ok
                 '\x01',                          // ipv4
@@ -593,13 +604,33 @@ void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte *
             CCP->Phase                 = xPA_ClientConnection::eS5ConnectionReady;
             break;
         }
+        case xPA_ClientConnection::eS5ConnectionReady: {
+            switch (N.NewState) {
+                case xPR_ConnectionStateNotify::STATE_CLOSED: {
+                    CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionClosed;
+                    if (CCP->HasPendingWrites()) {
+                        LingerKill(*CCP);
+                    } else {
+                        Kill(*CCP);
+                    }
+                    break;
+                }
+                case xPR_ConnectionStateNotify::STATE_UPDATE_TRANSFER: {
+                    X_DEBUG_PRINTF("Unprocessed udpate");
+                    break;
+                }
+
+                default:
+                    X_DEBUG_PRINTF("Invalid data state");
+                    break;
+            }
+        }
         default:
+            X_DEBUG_PRINTF("Invalid connection state, Ignored");
             break;
     }
 
     X_DEBUG_PRINTF("%s", N.ToString().c_str());
-
-    /// TODO: react to client request
 }
 
 void xPA_ClientConnectionManager::OnDestroyConnection(const ubyte * PayloadPtr, size_t PayloadSize) {
@@ -644,4 +675,21 @@ void xPA_ClientConnectionManager::OnDestroyConnection(const ubyte * PayloadPtr, 
             break;
     }
     return;
+}
+
+void xPA_ClientConnectionManager::OnRelaySidePushData(const ubyte * PayloadPtr, size_t PayloadSize) {
+
+    auto Push = xPR_PushData();
+    if (!Push.Deserialize(PayloadPtr, PayloadSize)) {
+        X_DEBUG_PRINTF("invalid protocol");
+        return;
+    }
+
+    auto CCP = GetConnectionById(Push.ProxySideConnectionId);
+    if (!CCP) {
+        X_DEBUG_PRINTF("ClientConnection not found: %" PRIx64 "", Push.ProxySideConnectionId);
+        return;
+    }
+
+    CCP->PostData(Push.PayloadView.data(), Push.PayloadView.size());
 }

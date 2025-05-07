@@ -18,20 +18,15 @@ bool xPA_RelayClient::OnServerPacket(xPacketCommandId CommandId, xPacketRequestI
 
     X_DEBUG_PRINTF("RelayServer Command: %" PRIx32 "", CommandId);
 
-    // static constexpr const xPacketCommandId Cmd_PA_RL_Challenge             = Cmd_PA_RL_Base + 0x01;
-    // static constexpr const xPacketCommandId Cmd_PA_RL_ChallengeResp         = Cmd_PA_RL_Base + 0x02;
-    // static constexpr const xPacketCommandId Cmd_PA_RL_CreateConnection      = Cmd_PA_RL_Base + 0x03;
-    // static constexpr const xPacketCommandId Cmd_PA_RL_DestroyConnection     = Cmd_PA_RL_Base + 0x04;
-    // static constexpr const xPacketCommandId Cmd_PA_RL_NotifyConnectionState = Cmd_PA_RL_Base + 0x05;
-    // static constexpr const xPacketCommandId Cmd_PA_RL_PostData              = Cmd_PA_RL_Base + 0x06;
-    // static constexpr const xPacketCommandId Cmd_PA_RL_ProxyClientNotify     = Cmd_PA_RL_Base + 0x09;
-
     switch (CommandId) {
         case Cmd_PA_RL_NotifyConnectionState:
             GlobalClientConnectionManager.OnRelaySideConnectionStateChange(PayloadPtr, PayloadSize);
             break;
         case Cmd_PA_RL_DestroyConnection:
             GlobalClientConnectionManager.OnDestroyConnection(PayloadPtr, PayloadSize);
+            break;
+        case Cmd_PA_RL_PostData:
+            GlobalClientConnectionManager.OnRelaySidePushData(PayloadPtr, PayloadSize);
             break;
         default:
             X_DEBUG_PRINTF("Ignored Command: %" PRIx32 "", CommandId);

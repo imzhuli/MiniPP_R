@@ -74,7 +74,7 @@ static constexpr const xPacketCommandId Cmd_PA_RL_CreateConnection      = Cmd_PA
 static constexpr const xPacketCommandId Cmd_PA_RL_DestroyConnection     = Cmd_PA_RL_Base + 0x04;
 static constexpr const xPacketCommandId Cmd_PA_RL_NotifyConnectionState = Cmd_PA_RL_Base + 0x05;
 static constexpr const xPacketCommandId Cmd_PA_RL_PostData              = Cmd_PA_RL_Base + 0x06;
-static constexpr const xPacketCommandId Cmd_PA_RL_ProxyClientNotify     = Cmd_PA_RL_Base + 0x09;
+static constexpr const xPacketCommandId Cmd_PA_RL_ProxyClientNotify     = Cmd_PA_RL_Base + 0x09;  // ??
 
 // cc-device:
 static constexpr const xPacketCommandId Cmd_DV_CC_Base          = 0x07'000;

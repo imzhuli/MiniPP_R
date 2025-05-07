@@ -78,6 +78,7 @@ public:
     void OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address);
     void OnRelaySideConnectionStateChange(const ubyte * PayloadPtr, size_t PayloadSize);
     void OnDestroyConnection(const ubyte * PayloadPtr, size_t PayloadSize);
+    void OnRelaySidePushData(const ubyte * PayloadPtr, size_t PayloadSize);
 
 protected:
     void OnTick();
@@ -100,10 +101,7 @@ protected:
 protected:
     void   OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
-    void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
-        X_DEBUG_PRINTF("TODO: Tell Relay Server To Close Relay Side Connection");
-        Kill(*static_cast<xPA_ClientConnection *>(TcpConnectionPtr));
-    }
+    void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override;
 
 protected:
     size_t OnChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
