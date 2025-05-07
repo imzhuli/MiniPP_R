@@ -22,12 +22,22 @@ struct xPA_RelayConnection
     xPA_RelayGroup * GroupPtr;
     xIndexId         ConnectionId = 0;
     //
+
+    bool PostMessage(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message) {
+        ubyte Buffer[MaxPacketSize];
+        auto  PSize = WriteMessage(CmdId, RequestId, Buffer, Message);
+        if (!PSize) {
+            X_DEBUG_PRINTF("");
+            return false;
+        }
+        PostData(Buffer, PSize);
+        return true;
+    }
 };
 
 struct xPA_RelayGroupKillNode : xListNode {};
 
 struct xPA_RelayGroup : xPA_RelayGroupKillNode {
-
     xNetAddress         TargetAddress;
     int                 NextPickIndex = 0;
     xPA_RelayConnection Connections[CONNECTION_COUNT_PER_RELAY_GROUP];
@@ -40,13 +50,13 @@ public:
     void AddRelayGroup(uint64_t RuntimeRelayServerId, const xNetAddress & TargetAddress);
     void Tick(uint64_t NowMS);
 
-    inline xTcpConnection * GetConnectionById(uint64_t ConnectionId) {
+    inline xPA_RelayConnection * GetConnectionById(uint64_t ConnectionId) {
         if (auto TCPP = ConnectionIdPool.CheckAndGet(ConnectionId)) {
             return *TCPP;
         }
         return nullptr;
     }
-    xTcpConnection * GetConnectionByRelayServerAddress(const xNetAddress & TargetAddress);
+    // xPA_RelayConnection * GetConnectionByRelayServerAddress(const xNetAddress & TargetAddress);
 
 protected:
     void DoFreeKillList();

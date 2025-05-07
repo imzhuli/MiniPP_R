@@ -1,16 +1,14 @@
 #pragma once
 #include "./_mindef.hpp"
 
-struct xPA_KillClientConnectionNode : xListNode {
-    uint64_t LingerKillTimestamp = 0;
-};
-
 using xPA_AccountCheckList         = xList<xPA_AccountCheckNode>;
+using xPA_IdleClientConnectionList = xList<xPA_IdleClientConnectionNode>;
 using xPA_KIllClientConnectionList = xList<xPA_KillClientConnectionNode>;
 
 struct xPA_ClientConnection
     : xTcpConnection
     , xPA_AccountCheckNode
+    , xPA_IdleClientConnectionNode
     , xPA_KillClientConnectionNode {
     using xTcpConnection::Init;
 
@@ -46,11 +44,11 @@ struct xPA_ClientConnection
 
     uint64_t ConnectionId = 0;
 
-    eProxyPhase Phase             = eUnknown;
-    uint64_t    StartTimeMS       = 0;
-    uint64_t    RelayConnectionId = 0;
-    uint64_t    RelaySideDeviceId = 0;
-    uint64_t    RelaySessionId    = 0;
+    eProxyPhase Phase                 = eUnknown;
+    uint64_t    StartTimeMS           = 0;
+    uint64_t    RelayConnectionId     = 0;
+    uint64_t    RelaySideDeviceId     = 0;
+    uint64_t    RelaySideConnectionId = 0;
 
     std::string UserPass;
 
@@ -93,12 +91,17 @@ protected:
     void Kill(xPA_KillClientConnectionNode & Conn) {
         KillConnectionList.GrabTail(Conn);
     }
+    void KeepAlive(xPA_IdleClientConnectionNode & Node) {
+        Node.LastDataExchangeTimestampMS = Ticker();
+        IdleConnectionList.GrabTail(Node);
+    }
     void CleanupConnection(xPA_ClientConnection & Conn);
 
 protected:
     void   OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
     void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
+        X_DEBUG_PRINTF("TODO: Tell Relay Server To Close Relay Side Connection");
         Kill(*static_cast<xPA_ClientConnection *>(TcpConnectionPtr));
     }
 
@@ -107,6 +110,7 @@ protected:
     size_t OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnS5ClientAuth(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
     size_t OnS5ConnectionRequest(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
+    size_t OnS5UploadData(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
 
     void OnS5ClientAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 
@@ -120,6 +124,7 @@ protected:
     xIndexedStorage<xPA_ClientConnection> ConnectionPool;
 
     xPA_AccountCheckList         AccountTimeoutList;
+    xPA_IdleClientConnectionList IdleConnectionList;
     xPA_KIllClientConnectionList LingerKillConnectionList;
     xPA_KIllClientConnectionList KillConnectionList;
 };

@@ -11,6 +11,14 @@ struct xPA_AccountCheckNode : xListNode {
     uint64_t CheckAccountTimestampMS = 0;
 };
 
+struct xPA_IdleClientConnectionNode : xListNode {
+    uint64_t LastDataExchangeTimestampMS = 0;
+};
+
+struct xPA_KillClientConnectionNode : xListNode {
+    uint64_t LingerKillTimestamp = 0;
+};
+
 struct xPA_DeviceRequest {
     uint64_t   ClientConnectionId;
     xCountryId CountryId;

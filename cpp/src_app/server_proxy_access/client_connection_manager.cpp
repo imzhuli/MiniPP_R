@@ -87,8 +87,8 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
             return OnS5ClientAuth(CP, DataPtr, DataSize);
         case xPA_ClientConnection::eS5WaitForConnectionRequest:
             return OnS5ConnectionRequest(CP, DataPtr, DataSize);
-            // case xPA_ClientConnection::eS5ConnectionReady:
-            //     return OnS5UploadData(CP, DataPtr, DataSize);
+        case xPA_ClientConnection::eS5ConnectionReady:
+            return OnS5UploadData(CP, DataPtr, DataSize);
 
             // case xPA_ClientConnection::eHttpRawChallenge:
             //     return OnHttpRawChallenge(CP, DataPtr, DataSize);
@@ -397,6 +397,34 @@ size_t xPA_ClientConnectionManager::OnS5ConnectionRequest(xPA_ClientConnection *
     return DataSize;
 }
 
+size_t xPA_ClientConnectionManager::OnS5UploadData(xPA_ClientConnection * CCP, void * VoidDP, size_t DataSize) {
+    auto RCP = GlobalTestRCM.GetConnectionById(CCP->RelayConnectionId);
+    if (!RCP) {
+        X_DEBUG_PRINTF("Relay connection lost: RelayConnectionId:%" PRIx64 "", CCP->RelayConnectionId);
+        return InvalidDataSize;
+    }
+
+    auto DataPtr                      = (const char *)VoidDP;
+    auto RemainSize                   = DataSize;
+    auto PushRequest                  = xPR_PushData{};
+    PushRequest.RelaySideConnectionId = CCP->RelaySideConnectionId;
+    PushRequest.ProxySideConnectionId = CCP->ConnectionId;
+
+    while (RemainSize) {
+        size_t PostSize         = std::min(RemainSize, xPR_PushData::MAX_DATA_SIZE);
+        PushRequest.PayloadView = { (const char *)DataPtr, PostSize };
+
+        X_DEBUG_PRINTF("%s", HexShow(DataPtr, PostSize).c_str());
+        RCP->PostMessage(Cmd_PA_RL_PostData, 0, PushRequest);
+
+        DataPtr    += PostSize;
+        RemainSize -= PostSize;
+    }
+
+    KeepAlive(*CCP);
+    return DataSize;
+}
+
 size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
     // auto   HeaderView   = std::string_view{ (const char *)DataPtr, DataSize };
     // auto   AuthNameView = std::string_view{};
@@ -545,6 +573,28 @@ void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte *
     if (!N.Deserialize(PayloadPtr, PayloadSize)) {
         X_DEBUG_PRINTF("Invalid protocol");
         return;
+    }
+    auto CCP = GetConnectionById(N.ProxySideConnectionId);
+    if (!CCP) {
+        X_DEBUG_PRINTF("ClientConnection not found: %" PRIx64 "", N.ProxySideConnectionId);
+        return;
+    }
+    switch (CCP->Phase) {
+        case xPA_ClientConnection::eS5WaitForConnectionEstablish: {
+            static constexpr const ubyte Reply[] = {
+                '\x05', '\x00', '\x00',          // ok
+                '\x01',                          // ipv4
+                '\x00', '\x00', '\x00', '\x00',  // ip: 0.0.0.0
+                '\x00', '\x00',                  // port 0:
+            };
+            CCP->PostData(Reply, sizeof(Reply));
+
+            CCP->RelaySideConnectionId = N.RelaySideConnectionId;
+            CCP->Phase                 = xPA_ClientConnection::eS5ConnectionReady;
+            break;
+        }
+        default:
+            break;
     }
 
     X_DEBUG_PRINTF("%s", N.ToString().c_str());

@@ -68,9 +68,9 @@ public:
     std::string ToString() const;
 
 public:
-    uint32_t ProxySideConnectionId;
-    uint32_t NewState;
+    uint64_t ProxySideConnectionId;
     uint64_t RelaySideConnectionId;
+    uint32_t NewState;
     uint64_t TotalUploadedBytes = 0;
     uint64_t TotalDumpedBytes   = 0;
 };
@@ -85,7 +85,10 @@ public:
     }
 
 public:
-    uint32_t         ProxySideConnectionId;
+    uint64_t         ProxySideConnectionId;
     uint64_t         RelaySideConnectionId;
     std::string_view PayloadView;
+
+    static constexpr const size_t MAX_DATA_SIZE = 4096;
+    static_assert(MAX_DATA_SIZE < MaxPacketPayloadSize - 20);
 };

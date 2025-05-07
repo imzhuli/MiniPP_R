@@ -128,7 +128,7 @@ bool xDeviceRelayService::OnTerminalTargetConnectionUpdate(xRD_DeviceConnection 
     F.RelaySideConnectionId = CR->RelaySideConnectionId;
     F.ProxySideConnectionId = CR->ProxySideConnectionId;
 
-    auto PAConn = ProxyConnectionManager.GetConnectionById(CR->ProxyId);
+    auto PAConn = ProxyConnectionManager.GetConnectionById(CR->ProxyConnectionId);
     if (!PAConn) {
         X_DEBUG_PRINTF("proxy not found");
         // TODO 删除此连接
@@ -151,7 +151,7 @@ bool xDeviceRelayService::OnTerminalPostData(xRD_DeviceConnection * Conn, xPacke
         return true;
     }
 
-    auto PAConn = ProxyConnectionManager.GetConnectionById(CR->ProxyId);
+    auto PAConn = ProxyConnectionManager.GetConnectionById(CR->ProxyConnectionId);
     if (!PAConn) {
         X_DEBUG_PRINTF("proxy not found");
         return true;

@@ -72,7 +72,7 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
     X_DEBUG_PRINTF("RelaySideConnectionId=%" PRIx64 "", RCC->RelaySideConnectionId);
 
     RCC->DeviceId              = D->DeviceRuntimeId;
-    RCC->ProxyId               = Conn->ConnectionId;
+    RCC->ProxyConnectionId     = Conn->ConnectionId;
     RCC->ProxySideConnectionId = R.ProxySideConnectionId;
 
     auto CC                  = xTR_CreateConnection();
@@ -128,7 +128,7 @@ bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, const ubyt
         return true;
     }
     if (RC->ProxySideConnectionId != R.ProxySideConnectionId) {
-        X_DEBUG_PRINTF("Proxy side connection id not match");
+        X_DEBUG_PRINTF("Proxy side connection id not match: %" PRIx64 ", %" PRIx64 "", RC->ProxySideConnectionId, R.ProxySideConnectionId);
         return true;
     }
 

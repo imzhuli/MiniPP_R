@@ -41,7 +41,7 @@ void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
     DeviceMap[InfoBase.DeviceId] = PD;
     KeepAlive(PD);
 
-    X_DEBUG_PRINTF("UpdateDevice: %s,%" PRIx64 ": %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.DeviceRelaySideKey, InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
+    X_DEBUG_PRINTF("UpdateDevice: %s,%" PRIx64 ": %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.RelaySideDeviceId, InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
 }
 
 void xDS_DeviceContextManager::RemoveDevice(xDS_DeviceContext * Device) {
@@ -51,10 +51,11 @@ void xDS_DeviceContextManager::RemoveDevice(xDS_DeviceContext * Device) {
 void xDS_DeviceContextManager::RemoveDeviceById(const std::string & DeviceId) {
     auto Iter = DeviceMap.find(DeviceId);
     if (Iter == DeviceMap.end()) {
+        X_DEBUG_PRINTF("Device not found: %s", DeviceId.c_str());
         return;
     }
     auto DP = Iter->second;
-    X_DEBUG_PRINTF("Removing Device: %s", DP->InfoBase.DeviceId.c_str());
+    X_DEBUG_PRINTF("DeviceId=%s, DeviceRuntimeKey=%" PRIx64 "", DeviceId.c_str(), DP->InfoBase.RelaySideDeviceId);
 
     delete DP;
     DeviceMap.erase(Iter);

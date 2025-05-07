@@ -7,7 +7,7 @@ struct xRD_RelayConnectionContext : xListNode {
     uint64_t ProxySideConnectionId;
 
     uint64_t DeviceId;
-    uint64_t ProxyId;
+    uint64_t ProxyConnectionId;
 };
 
 class xRD_RelayConnectionManager {

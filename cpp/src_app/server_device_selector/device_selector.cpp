@@ -54,7 +54,7 @@ bool xDS_DeviceSelectorService::OnSelectDevice(xServiceClientConnection & CC, xP
     auto Resp = xPP_AcquireDeviceResp();
     if (PD) {
         Resp.DeviceRelayServerRuntimeId = PD->InfoBase.ReleayServerRuntimeId;
-        Resp.DeviceRelaySideId          = PD->InfoBase.DeviceRelaySideKey;
+        Resp.DeviceRelaySideId          = PD->InfoBase.RelaySideDeviceId;
         X_DEBUG_PRINTF("DeviceSelected: ServerId=%" PRIx64 ", DeviceId=%" PRIx64 "", Resp.DeviceRelayServerRuntimeId, Resp.DeviceRelaySideId);
     } else {
         X_DEBUG_PRINTF("No device found!");
@@ -84,7 +84,7 @@ bool xDS_DeviceObserver::OnServerPacket(xClientConnection & CC, xPacketCommandId
             auto LocalDevInfo                  = xDR_DeviceInfoBase{};
             LocalDevInfo.DeviceId              = PP.DeviceUuid;
             LocalDevInfo.ReleayServerRuntimeId = PP.RelayServerRuntimeId;
-            LocalDevInfo.DeviceRelaySideKey    = PP.RelaySideDeviceKey;
+            LocalDevInfo.RelaySideDeviceId     = PP.RelaySideDeviceKey;
 
             LocalDevInfo.CountryId = PP.CountryId;
             LocalDevInfo.StateId   = PP.StateId;

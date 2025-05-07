@@ -46,7 +46,6 @@ function(build_app sub_dir_name)
 endfunction()
 
 build_app(cpp)
-build_app(fake_client)
 build_app(ip2loc)
 build_app(protocol)
 build_app(request_id_pool)
