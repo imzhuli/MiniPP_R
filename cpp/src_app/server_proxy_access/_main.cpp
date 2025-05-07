@@ -26,6 +26,14 @@ int main(int argc, char ** argv) {
 
     GlobalDeviceSelectorManager.AddServer(ConfigDeviceSelectorAddress);
 
+    /***** Test */
+    auto TestG = xResourceGuard(GlobalTestRCM, &IC);
+    for (auto & [K, V] : ConfigRelayServerMapForTest) {
+        GlobalTestRCM.AddRelayServer(K, V);
+    }
+
+    /*** End of test */
+
     GlobalRunState.Start();
 
     auto AuditTimer = xTimer();
@@ -33,6 +41,7 @@ int main(int argc, char ** argv) {
         GlobalTicker.Update();
         IC.LoopOnce();
         TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager, GlobalClientConnectionManager, GlobalDeviceSelectorManager);
+        TickAll(GlobalTicker(), GlobalTestRCM);
 
         if (AuditTimer.TestAndTag(std::chrono::seconds(30))) {
             cout << "PA_LocalAudit: " << endl;

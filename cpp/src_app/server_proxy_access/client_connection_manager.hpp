@@ -74,6 +74,7 @@ public:
 public:
     void OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR);
     void OnDeviceSelected(const xPA_DeviceRequestResp & Result);
+    void OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address);
 
 protected:
     void OnTick();
@@ -93,7 +94,7 @@ protected:
     void   OnNewConnection(xTcpServer * TcpServerPtr, xSocket && NativeHandle) override;
     size_t OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) override;
     void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override {
-        X_DEBUG_PRINTF("");
+        Kill(*static_cast<xPA_ClientConnection *>(TcpConnectionPtr));
     }
 
 protected:

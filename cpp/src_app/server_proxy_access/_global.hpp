@@ -6,6 +6,7 @@
 #include "./device_selector_manager.hpp"
 #include "./relay_connection_manager.hpp"
 #include "./relay_server_list_manager.hpp"
+#include "./test_relay_connection_manager.hpp"
 
 extern xNetAddress              ConfigExportBindAddress;
 extern xNetAddress              ConfigTcpBindAddress;
@@ -23,5 +24,8 @@ extern xPA_RelayServerListManager  GlobalRelayServerListManager;
 extern xPA_DeviceSelectorManager   GlobalDeviceSelectorManager;
 
 extern xPA_LocalAudit GlobalLocalAudit;
+
+extern std::map<uint64_t, xNetAddress> ConfigRelayServerMapForTest;
+extern xPATest_RCM                     GlobalTestRCM;
 
 extern void LoadConfig(const std::string & filename);

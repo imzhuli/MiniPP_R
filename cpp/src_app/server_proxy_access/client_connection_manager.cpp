@@ -68,6 +68,8 @@ void xPA_ClientConnectionManager::OnNewConnection(xTcpServer * TcpServerPtr, xSo
 
 void xPA_ClientConnectionManager::CleanupConnection(xPA_ClientConnection & Conn) {
     assert(&Conn == ConnectionPool.CheckAndGet(Conn.ConnectionId));
+    // TODO: 检查并清理与中转服之间的状态
+
     Conn.Clean();
     ConnectionPool.Release(Conn.ConnectionId);
 }
@@ -289,8 +291,9 @@ size_t xPA_ClientConnectionManager::OnS5ClientAuth(xPA_ClientConnection * Connec
         X_DEBUG_PRINTF("Empty S5 AuthInfo, using IP");
     } else {
         X_DEBUG_PRINTF("AuthMethod: %u", (unsigned)Ver);
+        return InvalidDataSize;
     }
-    X_DEBUG_PRINTF("AuthInfo : NP=%s", NP.c_str());
+    X_DEBUG_PRINTF("AuthInfo AuthType=%u: NP=%s", (unsigned)Ver, NP.c_str());
 
     GlobalAuthCacheManager.RequestAuth(ConnectionPtr->ConnectionId, NP);
     ConnectionPtr->Phase = xPA_ClientConnection::eS5WaitForAccountExchange;
@@ -378,7 +381,16 @@ size_t xPA_ClientConnectionManager::OnS5ConnectionRequest(xPA_ClientConnection *
     }
 
     X_DEBUG_PRINTF("AddressType: %u, Domain(if exists): %s", (unsigned)AddrType, DomainName);
-
+    if (DomainNameLength) {
+        X_DEBUG_PRINTF("TODO: not supported remote domain resolving");
+        return InvalidDataSize;
+    }
+    if (AddrType == 0x01 || AddrType == 0x04) {
+        if (!Address || !Address.Port) {
+            X_DEBUG_PRINTF("Invalid type");
+        }
+        OnOpenRemoteConnection(CCP, Address);
+    }
     return DataSize;
 }
 
@@ -477,13 +489,20 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
 
     switch (CCP->Phase) {
         case xPA_ClientConnection::eS5WaitForDeviceSelection: {
-            if (!Result.RelayServerRuntimeId || !Result.DeviceRelaySideId) {
+            X_DEBUG_PRINTF("try using device : %" PRIx64 ", -> %" PRIx64 "", Result.RelayServerRuntimeId, Result.DeviceRelaySideId);
+
+            if (!Result.DeviceRelaySideId) {
+                X_DEBUG_PRINTF("invalid remote device");
                 CCP->PostData("\x01\x01", 2);  // S5 auth failure
                 LingerKill(*CCP);
                 return;
             }
+
+            CCP->RelayConnectionId = Result.RelayServerRuntimeId;
+            CCP->RelayDeviceId     = Result.DeviceRelaySideId;
+
             // auth done and device selected
-            CCP->PostData("\x01\x00", 2);
+            CCP->PostData("\x01\x00", 2);  // S5
             CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionRequest;
             return;
         }
@@ -494,4 +513,18 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
             return;
         }
     }
+}
+
+void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address) {
+    auto RCP = GlobalTestRCM.GetConnectionById(CCP->RelayConnectionId);
+    if (!RCP) {
+        X_DEBUG_PRINTF("Relay connection not found");
+        return;
+    }
+
+    X_DEBUG_PRINTF("Found RelayServer: @%s", RCP->GetTargetAddress().ToString().c_str());
+    // TODO:
+    // build relay context
+
+    ///
 }

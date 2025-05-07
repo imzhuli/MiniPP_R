@@ -20,6 +20,39 @@ xPA_DeviceSelectorManager   GlobalDeviceSelectorManager;
 
 xPA_LocalAudit GlobalLocalAudit = {};
 
+std::map<uint64_t, xNetAddress> ConfigRelayServerMapForTest;
+xPATest_RCM                     GlobalTestRCM;
+
+static void LoadRelayServerMapForTest(const std::string & RelayServerMapStr) {
+    Reset(ConfigRelayServerMapForTest);
+
+    auto Segs = Split(RelayServerMapStr, ",");
+    for (auto & S : Segs) {
+        S = Trim(S);
+        if (S.empty()) {
+            continue;
+        }
+        auto ISegs = Split(S, "@");
+        if (ISegs.size() != 2) {
+            continue;
+        }
+        auto & IdStr   = ISegs[0];
+        auto & AddrStr = ISegs[1];
+
+        X_DEBUG_PRINTF("RelayServerMapSeg: %s / %s", IdStr.c_str(), AddrStr.c_str());
+
+        uint64_t Id   = strtoumax(IdStr.c_str(), nullptr, 10);
+        auto     Addr = xNetAddress::Parse(AddrStr);
+
+        if (!Addr || !Addr.Port) {
+            continue;
+        }
+        X_DEBUG_PRINTF("EnabledServerAddress : %" PRIx64 ", @%s", Id, Addr.ToString().c_str());
+
+        ConfigRelayServerMapForTest.insert(std::make_pair(Id, Addr));
+    }
+}
+
 void LoadConfig(const std::string & filename) {
     auto Loader                     = xel::xConfigLoader(filename.c_str());
     auto ConfigCenterAddressListStr = std::string();
@@ -42,4 +75,8 @@ void LoadConfig(const std::string & filename) {
         cout << "Add ConfigCenterAddress: " << Addr.ToString() << endl;
         ConfigCenterAddressList.push_back(Addr);
     }
+
+    std::string RelayServerMapStr;
+    Loader.Optional(RelayServerMapStr, "RelayServerMapStr");
+    LoadRelayServerMapForTest(RelayServerMapStr);
 }

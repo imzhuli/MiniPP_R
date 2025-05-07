@@ -25,6 +25,7 @@ void xPA_AuthCacheManager::Clean() {
 void xPA_AuthCacheManager::Tick() {
     Tick(GetTimestampMS());
 }
+
 void xPA_AuthCacheManager::Tick(uint64_t NowMS) {
     Ticker.Update(NowMS);
     xClientPool::Tick(NowMS);
@@ -88,7 +89,7 @@ void xPA_AuthCacheManager::ReleaseCacheNode(xPA_AuthCacheNode * P) {
 }
 
 bool xPA_AuthCacheManager::RequestAuth(uint64_t RequestSourceId, const std::string & UserPass) {
-    X_DEBUG_PRINTF("");
+    X_DEBUG_PRINTF("SourceId: %" PRIx64 ", UserPass=%s", RequestSourceId, UserPass.c_str());
     auto Rid = RequestPool.Acquire();
     if (!Rid) {
         return false;
