@@ -32,6 +32,7 @@ public:
     bool OnProxyCreateConnection(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
     bool OnProxyDestroyConnection(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
     bool OnProxyPushData(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
+    bool OnProxyDnsQuery(xRD_ProxyConnection * Conn, const ubyte * Payload, size_t PayloadSize);
 
 protected:
     void RemoveDeviceFromConnection(xRD_DeviceConnection * Conn);

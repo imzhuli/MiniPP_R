@@ -44,14 +44,41 @@ bool xDeviceRelayService::OnTerminalInitCtrlStream(xRD_DeviceConnection * Conn, 
 }
 
 bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
-    auto Resp = xDnsQueryResp();
+    auto Resp = xTR_DnsQueryResp();
     //
     X_DEBUG_PRINTF("DnsQueryResp: \n%s", HexShow(Payload, PayloadSize).c_str());
 
-    if (!Resp.Deserialize(Payload, PayloadSize)) {
+    if (!Conn->IsType_Ctrl() || !Resp.Deserialize(Payload, PayloadSize)) {
         return false;
     }
-    X_DEBUG_PRINTF("New Terminal Device: Hostname:%s Ipv4:%s, Ipv6:%s", Resp.Hostname.c_str(), Resp.PrimaryIpv4.IpToString().c_str(), Resp.PrimaryIpv6.IpToString().c_str());
+    X_DEBUG_PRINTF(
+        "New Terminal Device: Hostname:%s Ipv4:%s, Ipv6:%s", std::string(Resp.HostnameView).c_str(), Resp.PrimaryIpv4.IpToString().c_str(), Resp.PrimaryIpv6.IpToString().c_str()
+    );
+
+    auto RCC = RelayConnectionManager.GetConnectionById(RequestId);
+    if (!RCC) {
+        X_DEBUG_PRINTF("Connection not found");
+        return true;
+    }
+
+    auto CC                  = xTR_CreateConnection();
+    CC.RelaySideConnectionId = RCC->RelaySideConnectionId;
+    if (Resp.PrimaryIpv6 && Resp.PrimaryIpv6.SA6[0]) {
+        X_DEBUG_PRINTF("using ipv6");
+        CC.TargetAddress = Resp.PrimaryIpv6;
+    } else if (Resp.PrimaryIpv4 && Resp.PrimaryIpv4.SA4[0]) {
+        X_DEBUG_PRINTF("using ipv4");
+        CC.TargetAddress = Resp.PrimaryIpv4;
+    } else {
+        // TODO: Notify and destroy connection
+        X_PERROR("TODO: Destroy and notify dns failure");
+        return true;
+    }
+    X_DEBUG_PRINTF("Select target address: %s", CC.TargetAddress.ToString().c_str());
+
+    X_PERROR("TEMP PROCESS: default port 443");
+    CC.TargetAddress.Port = 443;
+    Conn->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
 
     return true;
 }

@@ -394,16 +394,12 @@ size_t xPA_ClientConnectionManager::OnS5ConnectionRequest(xPA_ClientConnection *
     }
 
     X_DEBUG_PRINTF("AddressType: %u, Domain(if exists): %s", (unsigned)AddrType, DomainName);
-    if (DomainNameLength) {
-        X_DEBUG_PRINTF("TODO: not supported remote domain resolving");
-        return InvalidDataSize;
-    }
     if (AddrType == 0x01 || AddrType == 0x04) {
         if (!Address || !Address.Port) {
-            X_DEBUG_PRINTF("Invalid type");
+            X_DEBUG_PRINTF("Invalid address type");
         }
-        OnOpenRemoteConnection(CCP, Address);
     }
+    OnOpenRemoteConnection(CCP, Address, std::string_view(DomainName, DomainNameLength));
     return DataSize;
 }
 
@@ -556,7 +552,7 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
     }
 }
 
-void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address) {
+void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address, const std::string_view HostnameView) {
     auto RCP = GlobalTestRCM.GetConnectionById(CCP->RelayConnectionId);
     if (!RCP) {
         X_DEBUG_PRINTF("Relay connection not found");
@@ -572,6 +568,7 @@ void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * 
     Req.RelaySideDeviceId     = CCP->RelaySideDeviceId;
     Req.ProxySideConnectionId = CCP->ConnectionId;
     Req.TargetAddress         = Address;
+    Req.HostnameView          = HostnameView;
 
     ///
     RCP->PostMessage(Cmd, 0, Req);

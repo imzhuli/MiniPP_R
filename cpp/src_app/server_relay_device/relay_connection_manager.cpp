@@ -11,6 +11,7 @@ void xRD_RelayConnectionManager::Clean() {
 
 void xRD_RelayConnectionManager::Tick(uint64_t NowMS) {
     Ticker.Update(NowMS);
+    // TODO: timeout connections
 }
 
 auto xRD_RelayConnectionManager::Create() -> xRD_RelayConnectionContext * {

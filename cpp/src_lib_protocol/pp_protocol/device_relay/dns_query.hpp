@@ -1,30 +1,30 @@
 #pragma once
 #include <pp_common/base.hpp>
 
-class xDnsQuery : public xBinaryMessage {
+class xTR_DnsQuery : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(Hostname);
+        W(HostnameView);
     }
     void DeserializeMembers() override {
-        R(Hostname);
+        R(HostnameView);
     }
 
 public:
-    std::string Hostname;
+    std::string_view HostnameView;
 };
 
-class xDnsQueryResp : public xBinaryMessage {
+class xTR_DnsQueryResp : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(Hostname, PrimaryIpv4, PrimaryIpv6);
+        W(HostnameView, PrimaryIpv4, PrimaryIpv6);
     }
     void DeserializeMembers() override {
-        R(Hostname, PrimaryIpv4, PrimaryIpv6);
+        R(HostnameView, PrimaryIpv4, PrimaryIpv6);
     }
 
 public:
-    std::string Hostname;
-    xNetAddress PrimaryIpv4;
-    xNetAddress PrimaryIpv6;
+    std::string_view HostnameView;
+    xNetAddress      PrimaryIpv4;
+    xNetAddress      PrimaryIpv6;
 };

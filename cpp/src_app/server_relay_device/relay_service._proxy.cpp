@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <pp_protocol/command.hpp>
 #include <pp_protocol/device_relay/connection.hpp>
+#include <pp_protocol/device_relay/dns_query.hpp>
 #include <pp_protocol/device_relay/post_data.hpp>
 #include <pp_protocol/proxy_relay/challenge.hpp>
 #include <pp_protocol/proxy_relay/connection.hpp>
@@ -75,10 +76,19 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
     RCC->ProxyConnectionId     = Conn->ConnectionId;
     RCC->ProxySideConnectionId = R.ProxySideConnectionId;
 
-    auto CC                  = xTR_CreateConnection();
-    CC.RelaySideConnectionId = RCC->RelaySideConnectionId;
-    CC.TargetAddress         = R.TargetAddress;
-    D->CtrlConnection->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
+    if (R.TargetAddress) {
+        auto CC                  = xTR_CreateConnection();
+        CC.RelaySideConnectionId = RCC->RelaySideConnectionId;
+        CC.TargetAddress         = R.TargetAddress;
+        D->CtrlConnection->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
+    } else if (R.HostnameView.size()) {
+        auto DQ         = xTR_DnsQuery();
+        DQ.HostnameView = R.HostnameView;
+        D->CtrlConnection->PostMessage(Cmd_DV_RL_DnsQuery, RCC->RelaySideConnectionId, DQ);
+    } else {
+        X_DEBUG_PRINTF("Invalid create connection request");
+        return false;
+    }
 
     return true;
 }

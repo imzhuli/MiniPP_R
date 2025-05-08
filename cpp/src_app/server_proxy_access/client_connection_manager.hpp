@@ -29,7 +29,7 @@ struct xPA_ClientConnection
         eHttpRawWaitForRelayCheckResult,
         eHttpRawWaitForConnectionEstablish,
         eHttpRawReady,
-        eHttpRawClosed,
+        eHttpRawClosed,  // TODO
 
         eHttpNormalChallenge,
         eHttpNormalWaitForAccountExchange,
@@ -75,7 +75,7 @@ public:
 public:
     void OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR);
     void OnDeviceSelected(const xPA_DeviceRequestResp & Result);
-    void OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address);
+    void OnOpenRemoteConnection(xPA_ClientConnection * CCP, const xNetAddress & Address, const std::string_view HostnameView);
     void OnRelaySideConnectionStateChange(const ubyte * PayloadPtr, size_t PayloadSize);
     void OnDestroyConnection(const ubyte * PayloadPtr, size_t PayloadSize);
     void OnRelaySidePushData(const ubyte * PayloadPtr, size_t PayloadSize);

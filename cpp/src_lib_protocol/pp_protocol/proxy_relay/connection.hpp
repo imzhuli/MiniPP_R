@@ -4,16 +4,17 @@
 class xPR_CreateConnection : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(RelaySideDeviceId, ProxySideConnectionId, TargetAddress);
+        W(RelaySideDeviceId, ProxySideConnectionId, TargetAddress, HostnameView);
     }
     void DeserializeMembers() override {
-        R(RelaySideDeviceId, ProxySideConnectionId, TargetAddress);
+        R(RelaySideDeviceId, ProxySideConnectionId, TargetAddress, HostnameView);
     }
 
 public:
-    uint64_t    RelaySideDeviceId;
-    uint64_t    ProxySideConnectionId;
-    xNetAddress TargetAddress;
+    uint64_t         RelaySideDeviceId;
+    uint64_t         ProxySideConnectionId;
+    xNetAddress      TargetAddress;
+    std::string_view HostnameView;
 };
 
 class xPR_DestroyConnection : public xBinaryMessage {
