@@ -26,6 +26,17 @@ void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
     if (Iter != DeviceMap.end()) {
         auto PD = Iter->second;
         X_DEBUG_PRINTF("UpdateDevice: %s, %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
+
+        if (InfoBase.ReleayServerRuntimeId != PD->InfoBase.ReleayServerRuntimeId || InfoBase.RelaySideDeviceId != PD->InfoBase.RelaySideDeviceId) {
+            if (!--PD->ResisterCounter) {
+                X_DEBUG_PRINTF("ReplaceDevice with new info");
+                PD->InfoBase = InfoBase;
+                Reset(PD->ResisterCounter, DEVICE_INFO_RESIST_COUNTER);
+            }
+        } else {
+            Reset(PD->ResisterCounter, DEVICE_INFO_RESIST_COUNTER);
+        }
+
         KeepAlive(PD);
         return;
     }
