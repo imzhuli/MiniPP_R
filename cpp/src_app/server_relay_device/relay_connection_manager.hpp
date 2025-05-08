@@ -2,12 +2,15 @@
 #include <pp_common/_.hpp>
 
 struct xRD_RelayConnectionContext : xListNode {
+    union {
+        uint16_t TargetPort;
+        uint64_t DeviceSideConnectionId;
+    };
     uint64_t RelaySideConnectionId;
-    uint64_t DeviceSideConnectionId;
     uint64_t ProxySideConnectionId;
 
     uint64_t DeviceId;
-    uint64_t ProxyConnectionId;
+    uint64_t ProxyConnectionId;  // PA
 };
 
 class xRD_RelayConnectionManager {

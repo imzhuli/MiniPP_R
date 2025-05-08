@@ -15,6 +15,7 @@ public:
     uint64_t         ProxySideConnectionId;
     xNetAddress      TargetAddress;
     std::string_view HostnameView;
+    uint16_t         HostnamePort;
 };
 
 class xPR_DestroyConnection : public xBinaryMessage {

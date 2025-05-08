@@ -75,6 +75,7 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
     RCC->DeviceId              = D->DeviceRuntimeId;
     RCC->ProxyConnectionId     = Conn->ConnectionId;
     RCC->ProxySideConnectionId = R.ProxySideConnectionId;
+    RCC->TargetPort            = R.HostnamePort;
 
     if (R.TargetAddress) {
         auto CC                  = xTR_CreateConnection();

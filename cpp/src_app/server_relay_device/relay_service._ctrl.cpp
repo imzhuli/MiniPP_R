@@ -76,8 +76,7 @@ bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xP
     }
     X_DEBUG_PRINTF("Select target address: %s", CC.TargetAddress.ToString().c_str());
 
-    X_PERROR("TEMP PROCESS: default port 443");
-    CC.TargetAddress.Port = 443;
+    CC.TargetAddress.Port = RCC->TargetPort;
     Conn->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
 
     return true;

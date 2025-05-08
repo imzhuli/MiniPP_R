@@ -153,10 +153,10 @@ size_t xPA_ClientConnectionManager::OnS5Challenge(xPA_ClientConnection * Connect
             UserPassSupport = true;
             continue;
         }
-        if (Method == 0x00) {
-            NoAuthSupport = true;
-            continue;
-        }
+        // if (Method == 0x00) {
+        //     NoAuthSupport = true;
+        //     continue;
+        // }
     }
     if (UserPassSupport) {
         ubyte Socks5Auth[2] = { 0x05, 0x02 };
@@ -168,7 +168,7 @@ size_t xPA_ClientConnectionManager::OnS5Challenge(xPA_ClientConnection * Connect
         X_DEBUG_PRINTF("Unsupported auth method");
         ubyte Socks5Auth[2] = { 0x05, 0xFF };
         ConnectionPtr->PostData(Socks5Auth, sizeof(Socks5Auth));
-        LingerKill(*ConnectionPtr);
+        Kill(*ConnectionPtr);
     }
 
     ConnectionPtr->Phase = xPA_ClientConnection::eS5WaitForAuthInfo;
@@ -569,6 +569,7 @@ void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * 
     Req.ProxySideConnectionId = CCP->ConnectionId;
     Req.TargetAddress         = Address;
     Req.HostnameView          = HostnameView;
+    Req.HostnamePort          = Address.Port;
 
     ///
     RCP->PostMessage(Cmd, 0, Req);
