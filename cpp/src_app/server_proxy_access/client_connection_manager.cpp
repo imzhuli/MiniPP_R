@@ -505,6 +505,9 @@ void xPA_ClientConnectionManager::OnHttpRawAuthFinished(xPA_ClientConnection * C
         return;
     }
 
+    AccountTimeoutList.Remove(*CCP);
+    KeepAlive(*CCP);
+
     X_DEBUG_PRINTF("SelectedRegionIfno: %u/%u/%u", (unsigned)ARP->CountryId, (unsigned)ARP->StateId, (unsigned)ARP->CityId);
     // Select device:
     auto R               = xPA_DeviceRequest();
