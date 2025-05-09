@@ -83,6 +83,7 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
     switch (CP->Phase) {
         case xPA_ClientConnection::eUnknown:
             return OnChallenge(CP, DataPtr, DataSize);
+
         case xPA_ClientConnection::eS5WaitForAuthInfo:
             return OnS5ClientAuth(CP, DataPtr, DataSize);
         case xPA_ClientConnection::eS5WaitForConnectionRequest:
@@ -90,8 +91,8 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
         case xPA_ClientConnection::eS5ConnectionReady:
             return OnS5UploadData(CP, DataPtr, DataSize);
 
-            // case xPA_ClientConnection::eHttpRawChallenge:
-            //     return OnHttpRawChallenge(CP, DataPtr, DataSize);
+        case xPA_ClientConnection::eHttpRawChallenge:
+            return OnHttpRawChallenge(CP, DataPtr, DataSize);
             // case xPA_ClientConnection::eHttpRawReady:
             //     return OnHttpRawUploadData(CP, DataPtr, DataSize);
 
@@ -101,7 +102,7 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
             //     return OnHttpNormalUploadData(CP, DataPtr, DataSize);
 
         default:
-            X_DEBUG_PRINTF("Unknown processed phase, closing connection");
+            X_DEBUG_PRINTF("Unknown processed phase, closing connection: %u", (unsigned)CP->Phase);
             break;
     }
     Kill(*CP);
@@ -126,7 +127,16 @@ size_t xPA_ClientConnectionManager::OnChallenge(xPA_ClientConnection * Connectio
     if (((const ubyte *)DataPtr)[0] == 0x05) {  // version : S5
         return OnS5Challenge(ConnectionPtr, DataPtr, DataSize);
     }
-    return OnHttpChallenge(ConnectionPtr, DataPtr, DataSize);
+
+    auto HttpProcessed = OnHttpChallenge(ConnectionPtr, DataPtr, DataSize);
+    if (HttpProcessed != InvalidDataSize) {
+        auto RemainDataPtr = static_cast<const ubyte *>(DataPtr) + HttpProcessed;
+        auto Remained      = DataSize - HttpProcessed;
+        X_DEBUG_PRINTF("remained: \n%s", HexShow(RemainDataPtr, Remained).c_str());
+
+        Touch(RemainDataPtr, Remained);
+    }
+    return HttpProcessed;
 }
 
 size_t xPA_ClientConnectionManager::OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
@@ -177,6 +187,7 @@ size_t xPA_ClientConnectionManager::OnS5Challenge(xPA_ClientConnection * Connect
 }
 
 size_t xPA_ClientConnectionManager::OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
+    X_DEBUG_PRINTF("");
 
     std::string_view HostnameView;
     uint16_t         Port = 0;
@@ -214,6 +225,8 @@ size_t xPA_ClientConnectionManager::OnHttpChallenge(xPA_ClientConnection * Conne
         ConnectionPtr->Http.TargetHost = std::string(HostnameView);
         ConnectionPtr->Http.TargetPort = Port;
         ConnectionPtr->Phase           = xPA_ClientConnection::eHttpRawChallenge;
+
+        X_DEBUG_PRINTF("RawChallenge: %s:%u", ConnectionPtr->Http.TargetHost.c_str(), (unsigned)ConnectionPtr->Http.TargetPort);
         return LineLength + 2;
     }
 
@@ -262,6 +275,7 @@ size_t xPA_ClientConnectionManager::OnHttpChallenge(xPA_ClientConnection * Conne
         }
     }
 
+    X_DEBUG_PRINTF("NormalChallenge");
     ConnectionPtr->Http.TargetHost = std::string(HostnameView);
     ConnectionPtr->Http.TargetPort = Port;
     ConnectionPtr->Http.RebuiltHttpHeader.append(LineStart + PathStartIndex, LineLength - PathStartIndex + 2);
@@ -432,69 +446,73 @@ size_t xPA_ClientConnectionManager::OnS5UploadData(xPA_ClientConnection * CCP, v
 }
 
 size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
-    // auto   HeaderView   = std::string_view{ (const char *)DataPtr, DataSize };
-    // auto   AuthNameView = std::string_view{};
-    // auto   AuthPassView = std::string_view{};
-    // size_t ConsumedSize = 0;
-    // while (true) {
-    //     auto LineEndIndex = HeaderView.find("\r\n");
-    //     if (LineEndIndex == 0) {
-    //         if (AuthNameView.empty() || AuthPassView.empty()) {
-    //             X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
-    //             ConnectionPtr->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
-    //             LingerKill(ConnectionPtr);
-    //             return 0;
-    //         }
-    //         ConsumedSize += 2;
+    X_DEBUG_PRINTF("");
 
-    //         auto Key = std::string(AuthNameView) + '\0' + std::string(AuthPassView);
-    //         if (auto AuthQueryPtr = ProxyService.MakeAsyncAccountQuery(Key, AuthNameView, AuthPassView, ConnectionPtr); !AuthQueryPtr) {
-    //             X_DEBUG_PRINTF("Failed to query account auth");
-    //             Kill(ConnectionPtr);
-    //             return 0;
-    //         }
-    //         ConnectionPtr->SuspendReading();
-    //         ConnectionPtr->Phase = xPA_ClientConnection::eHttpRawWaitForAccountExchange;
-    //         return ConsumedSize;
-    //     }
-    //     if (LineEndIndex == HeaderView.npos) {
-    //         return ConsumedSize;
-    //     };
-    //     auto LineLength = LineEndIndex + 2;
-    //     ConsumedSize   += LineLength;
+    auto   HeaderView   = std::string_view{ (const char *)DataPtr, DataSize };
+    auto   AuthNamePass = std::string();
+    size_t ConsumedSize = 0;
+    while (true) {
+        auto LineEndIndex = HeaderView.find("\r\n");
+        if (LineEndIndex == 0) {
+            if (AuthNamePass.empty()) {
+                X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
+                ConnectionPtr->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+                LingerKill(*ConnectionPtr);
+                return 0;
+            }
+            ConsumedSize += 2;
 
-    //     auto LineStart = HeaderView.data();
-    //     if (LineEndIndex > 21 && 0 == strncasecmp(LineStart, "Proxy-Authorization: ", 21)) {
-    //         auto AuthStart  = LineStart + 21;
-    //         auto AuthLength = LineEndIndex - 21;
-    //         if (AuthLength < 6 && 0 != strncasecmp(AuthStart, "Basic ", 6)) {
-    //             X_DEBUG_PRINTF("Invalid Proxy-Authorization Request");
-    //             Kill(ConnectionPtr);
-    //             return 0;
-    //         }
-    //         auto   Base64Start = AuthStart + 6;
-    //         auto   Base64Size  = AuthLength - 6;
-    //         char   Buffer[1024 + 1];
-    //         size_t OLen = 0;
-    //         if (mbedtls_base64_decode((unsigned char *)Buffer, 1024, &OLen, (unsigned char *)Base64Start, Base64Size)) {
-    //             X_DEBUG_PRINTF("Invalid Proxy-Authorization Request");
-    //             Kill(ConnectionPtr);
-    //             return 0;
-    //         }
-    //         Buffer[OLen]   = '\0';
-    //         auto PassStart = strchr(Buffer, ':');
-    //         if (!PassStart) {
-    //             X_DEBUG_PRINTF("HttpReqeust AuthInfo Not Found!");
-    //             return {};
-    //         }
-    //         size_t NameLen = PassStart - Buffer;
-    //         AuthNameView   = { Buffer, NameLen };
-    //         AuthPassView   = { ++PassStart, OLen - NameLen - 1 };
-    //     }
-    //     HeaderView = HeaderView.substr(LineLength);
-    // }
-    // X_DEBUG_PRINTF("BUG: Impossible loop exit");
+            X_DEBUG_PRINTF("RequestAuth: %s", AuthNamePass.c_str());
+            GlobalAuthCacheManager.RequestAuth(ConnectionPtr->ConnectionId, AuthNamePass);
+
+            ConnectionPtr->SuspendReading();
+            ConnectionPtr->Phase = xPA_ClientConnection::eHttpRawWaitForAccountExchange;
+            return ConsumedSize;
+        }
+        if (LineEndIndex == HeaderView.npos) {
+            return ConsumedSize;
+        };
+        auto LineLength = LineEndIndex + 2;
+        ConsumedSize   += LineLength;
+
+        auto LineStart = HeaderView.data();
+        if (LineEndIndex > 21 && 0 == strncasecmp(LineStart, "Proxy-Authorization: ", 21)) {
+            auto AuthStart  = LineStart + 21;
+            auto AuthLength = LineEndIndex - 21;
+            if (AuthLength < 6 && 0 != strncasecmp(AuthStart, "Basic ", 6)) {
+                X_DEBUG_PRINTF("Invalid Proxy-Authorization Request");
+                Kill(*ConnectionPtr);
+                return 0;
+            }
+            auto Base64Start = AuthStart + 6;
+            auto Base64Size  = AuthLength - 6;
+            AuthNamePass     = Base64Decode(Base64Start, Base64Size);
+        }
+        HeaderView = HeaderView.substr(LineLength);
+    }
+    X_DEBUG_PRINTF("BUG: Impossible loop exit");
     return InvalidDataSize;
+}
+
+void xPA_ClientConnectionManager::OnHttpRawAuthFinished(xPA_ClientConnection * CCP, const xPA_AuthResult * ARP) {
+    if (!ARP) {
+        X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
+        CCP->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+        Kill(*CCP);
+        return;
+    }
+
+    X_DEBUG_PRINTF("");
+    // Select device:
+    auto R               = xPA_DeviceRequest();
+    R.ClientConnectionId = CCP->ConnectionId;
+    R.CountryId          = ARP->CountryId;
+    R.StateId            = ARP->StateId;
+    R.CityId             = ARP->CityId;
+
+    GlobalDeviceSelectorManager.PostDeviceRequest(R);
+    CCP->Phase = xPA_ClientConnection::eHttpRawWaitForDeviceSelection;
+    return;
 }
 
 void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR) {
@@ -507,6 +525,10 @@ void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId
     switch (PC->Phase) {
         case xPA_ClientConnection::eS5WaitForAccountExchange:
             OnS5ClientAuthFinished(PC, PR);
+            return;
+
+        case xPA_ClientConnection::eHttpRawWaitForAccountExchange:
+            OnHttpRawAuthFinished(PC, PR);
             return;
 
         default: {
@@ -544,6 +566,13 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
             return;
         }
 
+        case xPA_ClientConnection::eHttpRawWaitForDeviceSelection: {
+            auto Address = xNetAddress::Parse(CCP->Http.TargetHost);
+            Address.Port = CCP->Http.TargetPort;
+            OnOpenRemoteConnection(CCP, Address, CCP->Http.TargetHost);
+            return;
+        }
+
         default: {
             X_DEBUG_PRINTF("Invalid connection state");
             Kill(*CCP);
@@ -571,9 +600,17 @@ void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * 
     Req.HostnameView          = HostnameView;
     Req.HostnamePort          = Address.Port;
 
+    X_DEBUG_PRINTF("Try Open Connection: %s, %s:%u", Address.ToString().c_str(), std::string(Req.HostnameView).c_str(), (unsigned)Req.HostnamePort);
+
     ///
     RCP->PostMessage(Cmd, 0, Req);
-    CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionEstablish;
+    if (CCP->Phase == xPA_ClientConnection::eS5WaitForConnectionRequest) {
+        CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionEstablish;
+    } else if (CCP->Phase == xPA_ClientConnection::eHttpRawWaitForDeviceSelection) {
+        CCP->Phase = xPA_ClientConnection::eHttpRawWaitForConnectionEstablish;
+    } else if (CCP->Phase == xPA_ClientConnection::eHttpRawWaitForDeviceSelection) {
+        CCP->Phase = xPA_ClientConnection::eHttpNormalForConnectionEstablish;
+    }
 }
 
 void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte * PayloadPtr, size_t PayloadSize) {
@@ -622,6 +659,11 @@ void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte *
                     X_DEBUG_PRINTF("Invalid data state");
                     break;
             }
+            break;
+        }
+        case xPA_ClientConnection::xPA_ClientConnection::eHttpRawWaitForConnectionEstablish: {
+            X_DEBUG_PRINTF("???");
+            break;
         }
         default:
             X_DEBUG_PRINTF("Invalid connection state, Ignored");

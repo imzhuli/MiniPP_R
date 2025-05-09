@@ -6,6 +6,8 @@
 #include <core/indexed_storage.hpp>
 #include <core/list.hpp>
 #include <core/string.hpp>
+#include <crypto/base64.hpp>
+#include <crypto/md5.hpp>
 #include <network/net_address.hpp>
 #include <network/tcp_connection.hpp>
 #include <network/tcp_server.hpp>
@@ -38,6 +40,7 @@ using xel::xIndexIdPool;
 using xel::xIoContext;
 using xel::xList;
 using xel::xListNode;
+using xel::xMd5Result;
 using xel::xNetAddress;
 using xel::xObjectIdManager;
 using xel::xObjectIdManagerMini;
@@ -58,10 +61,13 @@ using xel::xTicker;
 using xel::xUdpChannel;
 
 // functions
+using xel::Base64Decode;
+using xel::Base64Encode;
 using xel::BuildPacket;
 using xel::GetTimestampMS;
 using xel::HexShow;
 using xel::HexToStr;
+using xel::Md5;
 using xel::Pure;
 using xel::RuntimeAssert;
 using xel::Split;

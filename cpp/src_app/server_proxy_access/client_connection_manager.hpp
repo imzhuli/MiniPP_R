@@ -26,14 +26,14 @@ struct xPA_ClientConnection
         eHttpChallenge,
         eHttpRawChallenge,
         eHttpRawWaitForAccountExchange,
-        eHttpRawWaitForRelayCheckResult,
+        eHttpRawWaitForDeviceSelection,
         eHttpRawWaitForConnectionEstablish,
         eHttpRawReady,
         eHttpRawClosed,  // TODO
 
         eHttpNormalChallenge,
         eHttpNormalWaitForAccountExchange,
-        eHttpNormalWaitForRelayCheckResult,
+        eHttpNormalWaitForDeviceSelection,
         eHttpNormalForConnectionEstablish,
         eHttpNormalReady,
         eHttpNormalClosed,
@@ -104,16 +104,22 @@ protected:
     void   OnPeerClose(xTcpConnection * TcpConnectionPtr) override;
 
 protected:
+    // S5
+    // from client
     size_t OnChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnS5Challenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnS5ClientAuth(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
     size_t OnS5ConnectionRequest(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
     size_t OnS5UploadData(xPA_ClientConnection * ConnectionPtr, void * DataPtr, size_t DataSize);
-
+    // from back service
     void OnS5ClientAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 
+    // HttpRaw
+    // from client
     size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    // from back service
+    void OnHttpRawAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 
     //
 protected:
