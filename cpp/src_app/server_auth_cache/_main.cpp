@@ -58,14 +58,6 @@ static void Test() {
 
 int main(int, char **) {
 
-    auto I1 = C.AddServer(TA, "apitest", "123456");
-    auto I2 = C.AddServer(TA, "apitest", "123456");
-    auto I3 = C.AddServer(TA, "apitest", "123456");
-
-    X_DEBUG_PRINTF("%" PRIx64 "", I1);
-    X_DEBUG_PRINTF("%" PRIx64 "", I2);
-    X_DEBUG_PRINTF("%" PRIx64 "", I3);
-
     while (true) {
         IC.LoopOnce();
         C.Tick();

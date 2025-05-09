@@ -12,6 +12,7 @@ bool xPA_RelayServerListManager::Init(xIoContext * ICP, const std::vector<xNetAd
         ConfigCenterConnectionIdList.push_back(CID);
     }
     for (auto & CID : ConfigCenterConnectionIdList) {
+        Touch(CID);
         X_DEBUG_PRINTF("ConnectionId to ConfigCenter: %" PRIx64 "", CID);
     }
 
@@ -44,12 +45,8 @@ void xPA_RelayServerListManager::OnServerClose(xClientConnection & CC) {
     --AvailableServerCount;
 }
 
-bool xPA_RelayServerListManager::OnServerPacket(
-    xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
-) {
-    X_DEBUG_PRINTF(
-        "ConnectionId=%" PRIx64 ", TargetAddress=%s, CommandId=%" PRIx32 "", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str(), CommandId
-    );
+bool xPA_RelayServerListManager::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    X_DEBUG_PRINTF("ConnectionId=%" PRIx64 ", TargetAddress=%s, CommandId=%" PRIx32 "", CC.GetConnectionId(), CC.GetTargetAddress().ToString().c_str(), CommandId);
     return true;
 }
 

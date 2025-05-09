@@ -335,6 +335,9 @@ void xPA_ClientConnectionManager::OnS5ClientAuthFinished(xPA_ClientConnection * 
         return;
     }
 
+    AccountTimeoutList.Remove(*CCP);
+    KeepAlive(*CCP);
+
     // Select device:
     auto R               = xPA_DeviceRequest();
     R.ClientConnectionId = CCP->ConnectionId;

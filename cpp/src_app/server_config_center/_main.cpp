@@ -26,9 +26,7 @@ struct xIpv6TestChennelReactor : xUdpChannel::iListener {
             return;
         }
 
-        X_DEBUG_PRINTF(
-            "Request: CmdId=%" PRIx32 ", RequestId=%" PRIx64 ", RemoteAddress=%s", Header.CommandId, Header.RequestId, RemoteAddress.ToString().c_str()
-        );
+        X_DEBUG_PRINTF("Request: CmdId=%" PRIx32 ", RequestId=%" PRIx64 ", RemoteAddress=%s", Header.CommandId, Header.RequestId, RemoteAddress.ToString().c_str());
         auto Payload     = xPacket::GetPayloadPtr(DataPtr);
         auto PayloadSize = Header.GetPayloadSize();
         Touch(PayloadSize);
@@ -91,9 +89,7 @@ struct xChallengeChennelReactor : xUdpChannel::iListener {
             return;
         }
 
-        X_DEBUG_PRINTF(
-            "Request: CmdId=%" PRIx32 ", RequestId=%" PRIx64 ", RemoteAddress=%s", Header.CommandId, Header.RequestId, RemoteAddress.ToString().c_str()
-        );
+        X_DEBUG_PRINTF("Request: CmdId=%" PRIx32 ", RequestId=%" PRIx64 ", RemoteAddress=%s", Header.CommandId, Header.RequestId, RemoteAddress.ToString().c_str());
         auto Payload     = xPacket::GetPayloadPtr(DataPtr);
         auto PayloadSize = Header.GetPayloadSize();
         Touch(PayloadSize);
@@ -198,10 +194,8 @@ int main(int argc, char ** argv) {
 
     for (auto & A : ForceRelayServerList) {
         auto Key = RelayServerManager.AddServerInfo(A);
-
-        X_DEBUG_PRINTF(
-            "ForcedRelayServerKey: %llx ForcedRelayServerAddress:%s->%s", (long long)(Key), A.CtrlAddress.ToString().c_str(), A.DataAddress.ToString().c_str()
-        );
+        Touch(Key);
+        X_DEBUG_PRINTF("ForcedRelayServerKey: %llx ForcedRelayServerAddress:%s->%s", (long long)(Key), A.CtrlAddress.ToString().c_str(), A.DataAddress.ToString().c_str());
     }
 
     auto Ticker = xTicker();

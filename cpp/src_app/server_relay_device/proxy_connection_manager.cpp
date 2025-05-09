@@ -1,7 +1,7 @@
 #include "./proxy_connection_manager.hpp"
 
 static constexpr const uint64_t CHALLENGE_TIMEOUT = 2'000;
-static constexpr const uint64_t IDLE_TIMEOUT      = 30 * 60'000;
+static constexpr const uint64_t IDLE_TIMEOUT      = 3 * 60'000;
 
 bool xRD_ProxyConnectionManager::Init(xIoContext * ICP, size32_t MaxConnections) {
     RuntimeAssert(this->ICP = ICP);

@@ -56,8 +56,7 @@ struct xAD_BK_ReportDeviceRelayServerInfoList : xBinaryMessage {
     static constexpr const size16_t MAX_SERVER_INFO_COUNT_PER_REPORT = 25;
 
     void SerializeMembers() override {
-        size16_t Count = ServerInfoList.size();
-        assert(Count < MAX_SERVER_INFO_COUNT_PER_REPORT);
+        assert(ServerInfoList.size() < MAX_SERVER_INFO_COUNT_PER_REPORT);
         for (auto & S : ServerInfoList) {
             W(S.ServerUuid);
             W(S.ServerIndex);

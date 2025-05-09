@@ -35,8 +35,7 @@ struct xAD_BK_ReportDeviceInfoList : xBinaryMessage {
     static constexpr const size16_t MAX_DEVICE_INFO_COUNT_PER_REPORT = 20;
 
     void SerializeMembers() override {
-        size16_t Count = DeviceInfoList.size();
-        assert(Count < MAX_DEVICE_INFO_COUNT_PER_REPORT);
+        assert(DeviceInfoList.size() < MAX_DEVICE_INFO_COUNT_PER_REPORT);
         for (auto & D : DeviceInfoList) {
             W(D.Version);
             W(D.DeviceUuid);

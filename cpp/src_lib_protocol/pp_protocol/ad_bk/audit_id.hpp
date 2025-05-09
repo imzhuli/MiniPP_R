@@ -16,8 +16,7 @@ struct xAD_BK_ReportUsageByAuditList : xBinaryMessage {
     static constexpr const size16_t MAX_USAGE_INFO_COUNT_PER_REPORT = 50;
 
     void SerializeMembers() override {
-        size16_t Count = AuditList.size();
-        assert(Count < MAX_USAGE_INFO_COUNT_PER_REPORT);
+        assert(AuditList.size() < MAX_USAGE_INFO_COUNT_PER_REPORT);
         for (auto & U : AuditList) {
             W(U.AuditId);
             W(U.TotalSelectDeviceCountSinceLastPost);
