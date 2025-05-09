@@ -21,6 +21,8 @@ bool xDeviceRelayService::OnProxyPacket(xRD_ProxyConnection * Conn, xPacketComma
             return OnProxyDestroyConnection(Conn, Payload, PayloadSize);
         case Cmd_PA_RL_PostData:
             return OnProxyPushData(Conn, Payload, PayloadSize);
+        case Cmd_PA_RL_NotifyConnectionState:
+            return OnProxyNotifyConnectionState(Payload, PayloadSize);
         default:
             X_DEBUG_PRINTF("unrecognized protocol %" PRIx32 "", CommandId);
             break;
@@ -156,5 +158,35 @@ bool xDeviceRelayService::OnProxyPushData(xRD_ProxyConnection * Conn, const ubyt
     Push.PayloadView            = R.PayloadView;
 
     DC->DataConnection->PostMessage(Cmd_DV_RL_PostData, 0, Push);
+    return true;
+}
+
+bool xDeviceRelayService::OnProxyNotifyConnectionState(const ubyte * Payload, size_t PayloadSize) {
+    auto N = xPR_ConnectionStateNotify();
+    if (!N.Deserialize(Payload, PayloadSize)) {
+        X_PERROR("invalid protocol");
+        return false;
+    }
+
+    auto RCP = RelayConnectionManager.GetConnectionById(N.RelaySideConnectionId);
+    if (!RCP) {
+        X_DEBUG_PRINTF("relay connection not found");
+        return true;
+    }
+
+    auto DCP = DeviceConnectionManager.GetConnectionById(RCP->DeviceId);
+    if (!DCP) {
+        X_DEBUG_PRINTF("device connection not found");
+        return true;
+    }
+
+    auto TN                   = xTR_ConnectionStateNotify();
+    TN.DeviceSideConnectionId = RCP->DeviceSideConnectionId;
+    TN.RelaySideConnectionId  = RCP->RelaySideConnectionId;
+    TN.NewState               = xTR_ConnectionStateNotify::STATE_UPDATE_TRANSFER;
+    TN.TotalReadBytes         = N.TotalDumpedBytes;
+    TN.TotalWrittenBytes      = N.TotalUploadedBytes;
+    DCP->PostMessage(Cmd_DV_RL_NotifyConnectionState, 0, TN);
+
     return true;
 }

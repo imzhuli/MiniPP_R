@@ -50,6 +50,12 @@ struct xPA_ClientConnection
     uint64_t    RelaySideDeviceId     = 0;
     uint64_t    RelaySideConnectionId = 0;
 
+    /* speed limit */
+    uint64_t TotalUploadDataSize         = 0;  // client->device
+    uint64_t TotalDumpedDataSize         = 0;  // device->client
+    uint64_t TotalReportedUploadDataSize = 0;
+    uint64_t TotalReportedDumpedDataSize = 0;
+
     std::string UserPass;
 
     struct {
@@ -123,6 +129,8 @@ protected:
     void OnHttpRawAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 
     //
+    void TryUpdateDataTransferSize(xPA_ClientConnection * ConnectionPtr, uint64_t UploadSizeIncrement, uint64_t DumpedSizeIncrement);
+
 protected:
     xTicker                               Ticker;
     xTcpServer                            TcpServer;

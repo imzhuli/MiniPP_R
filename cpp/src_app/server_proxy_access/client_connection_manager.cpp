@@ -444,6 +444,7 @@ size_t xPA_ClientConnectionManager::OnS5UploadData(xPA_ClientConnection * CCP, v
         RemainSize -= PostSize;
     }
 
+    TryUpdateDataTransferSize(CCP, DataSize, 0);
     KeepAlive(*CCP);
     return DataSize;
 }
@@ -545,6 +546,7 @@ size_t xPA_ClientConnectionManager::OnHttpRawUploadData(xPA_ClientConnection * C
         RemainSize -= PostSize;
     }
 
+    TryUpdateDataTransferSize(CCP, DataSize, 0);
     KeepAlive(*CCP);
     return DataSize;
 }
@@ -587,7 +589,7 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
             if (!Result.DeviceRelaySideId) {
                 X_DEBUG_PRINTF("invalid remote device");
                 CCP->PostData("\x01\x01", 2);  // S5 auth failure
-                LingerKill(*CCP);
+                Kill(*CCP);
                 return;
             }
 
@@ -777,4 +779,34 @@ void xPA_ClientConnectionManager::OnRelaySidePushData(const ubyte * PayloadPtr, 
     }
 
     CCP->PostData(Push.PayloadView.data(), Push.PayloadView.size());
+    TryUpdateDataTransferSize(CCP, 0, PayloadSize);
+}
+
+void xPA_ClientConnectionManager::TryUpdateDataTransferSize(xPA_ClientConnection * CCP, uint64_t UploadSizeIncrement, uint64_t DumpedSizeIncrement) {
+    CCP->TotalUploadDataSize += UploadSizeIncrement;
+    CCP->TotalDumpedDataSize += DumpedSizeIncrement;
+
+    if (CCP->TotalUploadDataSize - CCP->TotalReportedUploadDataSize < READ_OVERFLOW_SIZE && CCP->TotalDumpedDataSize - CCP->TotalReportedDumpedDataSize < WRITE_OVERFLOW_SIZE) {
+        return;
+    }
+
+    auto RCP = GlobalTestRCM.GetConnectionById(CCP->RelayConnectionId);
+    if (!RCP) {
+        X_DEBUG_PRINTF("Invalid relay server connection: %" PRIx64 "", CCP->RelayConnectionId);
+        Kill(*CCP);
+        return;
+    }
+
+    // do report
+    auto N                  = xPR_ConnectionStateNotify();
+    N.ProxySideConnectionId = CCP->ConnectionId;
+    N.RelaySideConnectionId = CCP->RelaySideConnectionId;
+    N.NewState              = xPR_ConnectionStateNotify::STATE_UPDATE_TRANSFER;
+    N.TotalUploadedBytes    = CCP->TotalUploadDataSize;
+    N.TotalDumpedBytes      = CCP->TotalDumpedDataSize;
+    RCP->PostMessage(Cmd_PA_RL_NotifyConnectionState, 0, N);
+
+    CCP->TotalReportedUploadDataSize = CCP->TotalUploadDataSize;
+    CCP->TotalReportedDumpedDataSize = CCP->TotalDumpedDataSize;
+    X_DEBUG_PRINTF("Upload: %" PRIu64 ", Dumped: %" PRIu64 "", CCP->TotalReportedUploadDataSize, CCP->TotalReportedDumpedDataSize);
 }
