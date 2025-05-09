@@ -74,10 +74,10 @@ bool xDeviceRelayService::OnTerminalDnsQueryResp(xRD_DeviceConnection * Conn, xP
         X_PERROR("TODO: Destroy and notify dns failure");
         return true;
     }
-    X_DEBUG_PRINTF("Select target address: %s", CC.TargetAddress.ToString().c_str());
 
     CC.TargetAddress.Port = RCC->TargetPort;
-    Conn->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
+    X_DEBUG_PRINTF("Select target address: %s", CC.TargetAddress.ToString().c_str());
 
+    Conn->PostMessage(Cmd_DV_RL_CreateConnection, 0, CC);
     return true;
 }

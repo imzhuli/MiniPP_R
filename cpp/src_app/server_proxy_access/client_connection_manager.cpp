@@ -78,7 +78,7 @@ void xPA_ClientConnectionManager::CleanupConnection(xPA_ClientConnection & Conn)
 }
 
 size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ubyte * DataPtr, size_t DataSize) {
-    X_DEBUG_PRINTF("\n%s", HexShow(DataPtr, DataSize).c_str());
+    // X_DEBUG_PRINTF("\n%s", HexShow(DataPtr, DataSize).c_str());
     auto CP = (xPA_ClientConnection *)TcpConnectionPtr;
     switch (CP->Phase) {
         case xPA_ClientConnection::eUnknown:
@@ -93,8 +93,8 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
 
         case xPA_ClientConnection::eHttpRawChallenge:
             return OnHttpRawChallenge(CP, DataPtr, DataSize);
-            // case xPA_ClientConnection::eHttpRawReady:
-            //     return OnHttpRawUploadData(CP, DataPtr, DataSize);
+        case xPA_ClientConnection::eHttpRawReady:
+            return OnHttpRawUploadData(CP, DataPtr, DataSize);
 
             // case xPA_ClientConnection::eHttpNormalChallenge:
             //     return OnHttpNormalChallenge(CP, DataPtr, DataSize);
@@ -502,7 +502,7 @@ void xPA_ClientConnectionManager::OnHttpRawAuthFinished(xPA_ClientConnection * C
         return;
     }
 
-    X_DEBUG_PRINTF("");
+    X_DEBUG_PRINTF("SelectedRegionIfno: %u/%u/%u", (unsigned)ARP->CountryId, (unsigned)ARP->StateId, (unsigned)ARP->CityId);
     // Select device:
     auto R               = xPA_DeviceRequest();
     R.ClientConnectionId = CCP->ConnectionId;
@@ -513,6 +513,34 @@ void xPA_ClientConnectionManager::OnHttpRawAuthFinished(xPA_ClientConnection * C
     GlobalDeviceSelectorManager.PostDeviceRequest(R);
     CCP->Phase = xPA_ClientConnection::eHttpRawWaitForDeviceSelection;
     return;
+}
+
+size_t xPA_ClientConnectionManager::OnHttpRawUploadData(xPA_ClientConnection * CCP, void * VoidDP, size_t DataSize) {
+    auto RCP = GlobalTestRCM.GetConnectionById(CCP->RelayConnectionId);
+    if (!RCP) {
+        X_DEBUG_PRINTF("Relay connection lost: RelayConnectionId:%" PRIx64 "", CCP->RelayConnectionId);
+        return InvalidDataSize;
+    }
+
+    auto DataPtr                      = (const char *)VoidDP;
+    auto RemainSize                   = DataSize;
+    auto PushRequest                  = xPR_PushData{};
+    PushRequest.RelaySideConnectionId = CCP->RelaySideConnectionId;
+    PushRequest.ProxySideConnectionId = CCP->ConnectionId;
+
+    while (RemainSize) {
+        size_t PostSize         = std::min(RemainSize, xPR_PushData::MAX_PAYLOAD_SIZE);
+        PushRequest.PayloadView = { (const char *)DataPtr, PostSize };
+
+        X_DEBUG_PRINTF("\n%s", HexShow(DataPtr, PostSize).c_str());
+        RCP->PostMessage(Cmd_PA_RL_PostData, 0, PushRequest);
+
+        DataPtr    += PostSize;
+        RemainSize -= PostSize;
+    }
+
+    KeepAlive(*CCP);
+    return DataSize;
 }
 
 void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR) {
@@ -567,6 +595,10 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
         }
 
         case xPA_ClientConnection::eHttpRawWaitForDeviceSelection: {
+
+            CCP->RelayConnectionId = Result.RelayServerRuntimeId;
+            CCP->RelaySideDeviceId = Result.DeviceRelaySideId;
+
             auto Address = xNetAddress::Parse(CCP->Http.TargetHost);
             Address.Port = CCP->Http.TargetPort;
             OnOpenRemoteConnection(CCP, Address, CCP->Http.TargetHost);
@@ -662,7 +694,12 @@ void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte *
             break;
         }
         case xPA_ClientConnection::xPA_ClientConnection::eHttpRawWaitForConnectionEstablish: {
-            X_DEBUG_PRINTF("???");
+            RuntimeAssert(N.NewState == xPR_ConnectionStateNotify::STATE_ESTABLISHED);
+            CCP->ResumeReading();
+            CCP->PostData("HTTP/1.1 200 Connection established\r\nProxy-agent: proxy / 1.0\r\n\r\n", 65);
+
+            CCP->RelaySideConnectionId = N.RelaySideConnectionId;
+            CCP->Phase                 = xPA_ClientConnection::eHttpRawReady;
             break;
         }
         default:
@@ -718,6 +755,8 @@ void xPA_ClientConnectionManager::OnDestroyConnection(const ubyte * PayloadPtr, 
 }
 
 void xPA_ClientConnectionManager::OnRelaySidePushData(const ubyte * PayloadPtr, size_t PayloadSize) {
+
+    X_DEBUG_PRINTF("\n%s", HexShow(PayloadPtr, PayloadSize).c_str());
 
     auto Push = xPR_PushData();
     if (!Push.Deserialize(PayloadPtr, PayloadSize)) {

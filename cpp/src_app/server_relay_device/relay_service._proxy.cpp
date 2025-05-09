@@ -70,12 +70,13 @@ bool xDeviceRelayService::OnProxyCreateConnection(xRD_ProxyConnection * Conn, co
         Conn->PostMessage(Cmd_PA_RL_NotifyConnectionState, 0, F);
         return true;
     }
-    X_DEBUG_PRINTF("RelaySideConnectionId=%" PRIx64 "", RCC->RelaySideConnectionId);
 
     RCC->DeviceId              = D->DeviceRuntimeId;
     RCC->ProxyConnectionId     = Conn->ConnectionId;
     RCC->ProxySideConnectionId = R.ProxySideConnectionId;
     RCC->TargetPort            = R.HostnamePort;
+
+    X_DEBUG_PRINTF("RelaySideConnectionId=%" PRIx64 ", TargetPort=%u", RCC->RelaySideConnectionId, (unsigned)RCC->TargetPort);
 
     if (R.TargetAddress) {
         auto CC                  = xTR_CreateConnection();

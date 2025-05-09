@@ -118,6 +118,7 @@ protected:
     // from client
     size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    size_t OnHttpRawUploadData(xPA_ClientConnection * CCP, void * VoidDP, size_t DataSize);
     // from back service
     void OnHttpRawAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 

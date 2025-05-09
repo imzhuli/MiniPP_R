@@ -4,10 +4,10 @@
 class xPR_CreateConnection : public xBinaryMessage {
 public:
     void SerializeMembers() override {
-        W(RelaySideDeviceId, ProxySideConnectionId, TargetAddress, HostnameView);
+        W(RelaySideDeviceId, ProxySideConnectionId, TargetAddress, HostnameView, HostnamePort);
     }
     void DeserializeMembers() override {
-        R(RelaySideDeviceId, ProxySideConnectionId, TargetAddress, HostnameView);
+        R(RelaySideDeviceId, ProxySideConnectionId, TargetAddress, HostnameView, HostnamePort);
     }
 
 public:
