@@ -14,7 +14,7 @@
 #include <pp_protocol/proxy_relay/connection.hpp>
 
 bool xDeviceRelayService::OnDataPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize) {
-    X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Request body: \n%s", CommandId, HexShow(Payload, PayloadSize).c_str());
+    X_DEBUG_PRINTF("Cmd=%" PRIx64 ", Payload size: %zi", CommandId, PayloadSize);
     switch (CommandId) {
         case Cmd_DV_RL_InitDataStream: {
             return OnTerminalInitDataStream(Conn, RequestId, Payload, PayloadSize);

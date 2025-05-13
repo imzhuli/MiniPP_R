@@ -96,10 +96,10 @@ size_t xPA_ClientConnectionManager::OnData(xTcpConnection * TcpConnectionPtr, ub
         case xPA_ClientConnection::eHttpRawReady:
             return OnHttpRawUploadData(CP, DataPtr, DataSize);
 
-            // case xPA_ClientConnection::eHttpNormalChallenge:
-            //     return OnHttpNormalChallenge(CP, DataPtr, DataSize);
-            // case xPA_ClientConnection::eHttpNormalReady:
-            //     return OnHttpNormalUploadData(CP, DataPtr, DataSize);
+        case xPA_ClientConnection::eHttpNormalChallenge:
+            return OnHttpNormalChallenge(CP, DataPtr, DataSize);
+        case xPA_ClientConnection::eHttpNormalReady:
+            return OnHttpNormalUploadData(CP, DataPtr, DataSize);
 
         default:
             X_DEBUG_PRINTF("Unknown processed phase, closing connection: %u", (unsigned)CP->Phase);
@@ -132,8 +132,6 @@ size_t xPA_ClientConnectionManager::OnChallenge(xPA_ClientConnection * Connectio
     if (HttpProcessed != InvalidDataSize) {
         auto RemainDataPtr = static_cast<const ubyte *>(DataPtr) + HttpProcessed;
         auto Remained      = DataSize - HttpProcessed;
-        X_DEBUG_PRINTF("remained: \n%s", HexShow(RemainDataPtr, Remained).c_str());
-
         Touch(RemainDataPtr, Remained);
     }
     return HttpProcessed;
@@ -275,11 +273,12 @@ size_t xPA_ClientConnectionManager::OnHttpChallenge(xPA_ClientConnection * Conne
         }
     }
 
-    X_DEBUG_PRINTF("NormalChallenge");
     ConnectionPtr->Http.TargetHost = std::string(HostnameView);
     ConnectionPtr->Http.TargetPort = Port;
     ConnectionPtr->Http.RebuiltHttpHeader.append(LineStart + PathStartIndex, LineLength - PathStartIndex + 2);
     ConnectionPtr->Phase = xPA_ClientConnection::eHttpNormalChallenge;
+    X_DEBUG_PRINTF("NormalChallenge to %s:%u", ConnectionPtr->Http.TargetHost.c_str(), (unsigned)ConnectionPtr->Http.TargetPort);
+
     return LineLength + 2;
 }
 
@@ -551,12 +550,133 @@ size_t xPA_ClientConnectionManager::OnHttpRawUploadData(xPA_ClientConnection * C
     return DataSize;
 }
 
+size_t xPA_ClientConnectionManager::OnHttpNormalChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize) {
+    auto   ConsumedSize = 0;
+    auto   DataView     = std::string_view{ (const char *)DataPtr, DataSize };
+    auto & Http         = ConnectionPtr->Http;
+    auto & LineRef      = Http.HttpHeaderLine;
+    while (true) {
+        // fill line:
+        auto LineEndIndex = DataView.find("\r\n");
+        if (LineEndIndex == DataView.npos) {
+            LineRef.append(DataView.data(), DataView.length());
+            return DataSize;
+        }
+        if (LineEndIndex == 0) {
+            if (LineRef.empty()) {
+                ConsumedSize += 2;
+                break;  // process whole header
+            }
+        }
+        LineRef.append(DataView.data(), LineEndIndex);
+        ConsumedSize += LineEndIndex + 2;
+        DataView      = DataView.substr(LineEndIndex + 2);
+
+        // process line
+        if (LineRef.length() > 18 && 0 == strncasecmp(LineRef.data(), "Proxy-Connection: ", 18)) {
+            Pass();
+        } else if (LineRef.length() > 12 && 0 == strncasecmp(LineRef.data(), "Connection: ", 12)) {
+            Http.RebuiltHttpHeader.append("Connection: close\r\n", 19);
+        } else if (LineRef.length() > 21 && 0 == strncasecmp(LineRef.data(), "Proxy-Authorization: ", 21)) {
+            auto AuthStart  = LineRef.data() + 21;
+            auto AuthLength = LineEndIndex - 21;
+            if (AuthLength < 6 && 0 != strncasecmp(AuthStart, "Basic ", 6)) {
+                X_DEBUG_PRINTF("Invalid Proxy-Authorization Request");
+                Kill(*ConnectionPtr);
+                return 0;
+            }
+            auto Base64Start  = AuthStart + 6;
+            auto Base64Size   = AuthLength - 6;
+            Http.AuthNamePass = Base64Decode(Base64Start, Base64Size);
+            X_DEBUG_PRINTF("HttpAuth: %s", Http.AuthNamePass.c_str());
+        } else if (LineRef.length() > 16 && 0 == strncasecmp(LineRef.data(), "Content-Length: ", 16)) {
+            Http.ContentLengthLeft = atoll(LineRef.data() + 16);
+            Http.RebuiltHttpHeader.append(LineRef);
+            Http.RebuiltHttpHeader.append("\r\n", 2);
+        } else {
+            Http.RebuiltHttpHeader.append(LineRef);
+            Http.RebuiltHttpHeader.append("\r\n", 2);
+        }
+
+        // clear line:
+        LineRef.clear();
+    }
+    Http.RebuiltHttpHeader.append("\r\n", 2);
+    X_DEBUG_PRINTF("RebuiltHttpHeader: ConsumedSize=%d\n%s", ConsumedSize, Http.RebuiltHttpHeader.c_str());
+
+    // Header Done
+    if (Http.AuthNamePass.empty()) {
+        X_DEBUG_PRINTF("Missing auth info");
+        ConnectionPtr->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+        LingerKill(*ConnectionPtr);
+        return ConsumedSize;
+    }
+    GlobalAuthCacheManager.RequestAuth(ConnectionPtr->ConnectionId, Http.AuthNamePass);
+    ConnectionPtr->SuspendReading();
+    ConnectionPtr->Phase = xPA_ClientConnection::eHttpNormalWaitForAccountExchange;
+    return ConsumedSize;
+}
+
+void xPA_ClientConnectionManager::OnHttpNormalAuthFinished(xPA_ClientConnection * CCP, const xPA_AuthResult * ARP) {
+    if (!ARP) {
+        X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
+        CCP->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+        Kill(*CCP);
+        return;
+    }
+
+    AccountTimeoutList.Remove(*CCP);
+    KeepAlive(*CCP);
+
+    X_DEBUG_PRINTF("SelectedRegionIfno: %u/%u/%u", (unsigned)ARP->CountryId, (unsigned)ARP->StateId, (unsigned)ARP->CityId);
+    // Select device:
+    auto R               = xPA_DeviceRequest();
+    R.ClientConnectionId = CCP->ConnectionId;
+    R.CountryId          = ARP->CountryId;
+    R.StateId            = ARP->StateId;
+    R.CityId             = ARP->CityId;
+
+    GlobalDeviceSelectorManager.PostDeviceRequest(R);
+    CCP->Phase = xPA_ClientConnection::eHttpNormalWaitForDeviceSelection;
+    return;
+}
+
+size_t xPA_ClientConnectionManager::OnHttpNormalUploadData(xPA_ClientConnection * CCP, void * VoidDP, size_t DataSize) {
+    auto RCP = GlobalTestRCM.GetConnectionById(CCP->RelayConnectionId);
+    if (!RCP) {
+        X_DEBUG_PRINTF("Relay connection lost: RelayConnectionId:%" PRIx64 "", CCP->RelayConnectionId);
+        return InvalidDataSize;
+    }
+
+    auto DataPtr                      = (const char *)VoidDP;
+    auto RemainSize                   = DataSize;
+    auto PushRequest                  = xPR_PushData{};
+    PushRequest.RelaySideConnectionId = CCP->RelaySideConnectionId;
+    PushRequest.ProxySideConnectionId = CCP->ConnectionId;
+
+    while (RemainSize) {
+        size_t PostSize         = std::min(RemainSize, xPR_PushData::MAX_PAYLOAD_SIZE);
+        PushRequest.PayloadView = { (const char *)DataPtr, PostSize };
+
+        X_DEBUG_PRINTF("\n%s", HexShow(DataPtr, PostSize).c_str());
+        RCP->PostMessage(Cmd_PA_RL_PostData, 0, PushRequest);
+
+        DataPtr    += PostSize;
+        RemainSize -= PostSize;
+    }
+
+    TryUpdateDataTransferSize(CCP, DataSize, 0);
+    KeepAlive(*CCP);
+    return DataSize;
+}
+
 void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId, const xPA_AuthResult * PR) {
     auto PC = GetConnectionById(SourceClientConnectionId);
     if (!PC) {
         X_DEBUG_PRINTF("Connection lost");
         return;
     }
+    X_DEBUG_PRINTF("ConnectionId: %" PRIx64 "", SourceClientConnectionId);
 
     switch (PC->Phase) {
         case xPA_ClientConnection::eS5WaitForAccountExchange:
@@ -565,6 +685,10 @@ void xPA_ClientConnectionManager::OnAuthResult(uint64_t SourceClientConnectionId
 
         case xPA_ClientConnection::eHttpRawWaitForAccountExchange:
             OnHttpRawAuthFinished(PC, PR);
+            return;
+
+        case xPA_ClientConnection::eHttpNormalWaitForAccountExchange:
+            OnHttpNormalAuthFinished(PC, PR);
             return;
 
         default: {
@@ -613,6 +737,17 @@ void xPA_ClientConnectionManager::OnDeviceSelected(const xPA_DeviceRequestResp &
             return;
         }
 
+        case xPA_ClientConnection::eHttpNormalWaitForDeviceSelection: {
+
+            CCP->RelayConnectionId = Result.RelayServerRuntimeId;
+            CCP->RelaySideDeviceId = Result.DeviceRelaySideId;
+
+            auto Address = xNetAddress::Parse(CCP->Http.TargetHost);
+            Address.Port = CCP->Http.TargetPort;
+            OnOpenRemoteConnection(CCP, Address, CCP->Http.TargetHost);
+            return;
+        }
+
         default: {
             X_DEBUG_PRINTF("Invalid connection state");
             Kill(*CCP);
@@ -648,8 +783,8 @@ void xPA_ClientConnectionManager::OnOpenRemoteConnection(xPA_ClientConnection * 
         CCP->Phase = xPA_ClientConnection::eS5WaitForConnectionEstablish;
     } else if (CCP->Phase == xPA_ClientConnection::eHttpRawWaitForDeviceSelection) {
         CCP->Phase = xPA_ClientConnection::eHttpRawWaitForConnectionEstablish;
-    } else if (CCP->Phase == xPA_ClientConnection::eHttpRawWaitForDeviceSelection) {
-        CCP->Phase = xPA_ClientConnection::eHttpNormalForConnectionEstablish;
+    } else if (CCP->Phase == xPA_ClientConnection::eHttpNormalWaitForDeviceSelection) {
+        CCP->Phase = xPA_ClientConnection::eHttpNormalWaitForConnectionEstablish;
     }
 }
 
@@ -710,8 +845,18 @@ void xPA_ClientConnectionManager::OnRelaySideConnectionStateChange(const ubyte *
             CCP->Phase                 = xPA_ClientConnection::eHttpRawReady;
             break;
         }
+        case xPA_ClientConnection::xPA_ClientConnection::eHttpNormalWaitForConnectionEstablish: {
+            RuntimeAssert(N.NewState == xPR_ConnectionStateNotify::STATE_ESTABLISHED);
+            CCP->ResumeReading();
+            CCP->RelaySideConnectionId = N.RelaySideConnectionId;
+            CCP->Phase                 = xPA_ClientConnection::eHttpNormalReady;
+
+            OnHttpNormalUploadData(CCP, CCP->Http.RebuiltHttpHeader.data(), CCP->Http.RebuiltHttpHeader.size());
+            break;
+        }
+
         default:
-            X_DEBUG_PRINTF("Invalid connection state, Ignored");
+            X_DEBUG_PRINTF("Invalid connection state, Ignored: %u", (unsigned)CCP->Phase);
             break;
     }
 
@@ -755,8 +900,41 @@ void xPA_ClientConnectionManager::OnDestroyConnection(const ubyte * PayloadPtr, 
             break;
         }
 
+        case xPA_ClientConnection::eHttpRawWaitForConnectionEstablish: {
+            CCP->Phase = xPA_ClientConnection::eHttpRawClosed;
+            CCP->PostData("HTTP/1.1 502 Bad Gateway\r\nProxy-agent: proxy / 1.0\r\n\r\n", 64);
+            LingerKill(*CCP);
+            break;
+        }
+
+        case xPA_ClientConnection::eHttpRawReady:
+            CCP->Phase = xPA_ClientConnection::eHttpRawClosed;
+            if (CCP->HasPendingWrites()) {
+                LingerKill(*CCP);
+            } else {
+                Kill(*CCP);
+            }
+            break;
+
+        case xPA_ClientConnection::eHttpNormalReady: {
+            CCP->Phase = xPA_ClientConnection::eHttpNormalClosed;
+            if (CCP->HasPendingWrites()) {
+                LingerKill(*CCP);
+            } else {
+                Kill(*CCP);
+            }
+            break;
+        }
+
+        case xPA_ClientConnection::eHttpNormalWaitForConnectionEstablish: {
+            CCP->Phase = xPA_ClientConnection::eHttpNormalClosed;
+            CCP->PostData("HTTP/1.1 502 Bad Gateway\r\nProxy-agent: proxy / 1.0\r\n\r\n", 64);
+            LingerKill(*CCP);
+            break;
+        }
         default:
-            X_DEBUG_PRINTF("invalid connection state");
+            X_DEBUG_PRINTF("invalid connection state: %u", (unsigned)CCP->Phase);
+            Kill(*CCP);
             break;
     }
     return;
@@ -764,7 +942,7 @@ void xPA_ClientConnectionManager::OnDestroyConnection(const ubyte * PayloadPtr, 
 
 void xPA_ClientConnectionManager::OnRelaySidePushData(const ubyte * PayloadPtr, size_t PayloadSize) {
 
-    X_DEBUG_PRINTF("\n%s", HexShow(PayloadPtr, PayloadSize).c_str());
+    X_DEBUG_PRINTF("size=%zi", PayloadSize);
 
     auto Push = xPR_PushData();
     if (!Push.Deserialize(PayloadPtr, PayloadSize)) {
@@ -778,6 +956,7 @@ void xPA_ClientConnectionManager::OnRelaySidePushData(const ubyte * PayloadPtr, 
         return;
     }
 
+    KeepAlive(*CCP);
     CCP->PostData(Push.PayloadView.data(), Push.PayloadView.size());
     TryUpdateDataTransferSize(CCP, 0, PayloadSize);
 }

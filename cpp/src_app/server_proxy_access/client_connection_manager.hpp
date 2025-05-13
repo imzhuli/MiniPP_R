@@ -34,7 +34,7 @@ struct xPA_ClientConnection
         eHttpNormalChallenge,
         eHttpNormalWaitForAccountExchange,
         eHttpNormalWaitForDeviceSelection,
-        eHttpNormalForConnectionEstablish,
+        eHttpNormalWaitForConnectionEstablish,
         eHttpNormalReady,
         eHttpNormalClosed,
 
@@ -63,8 +63,7 @@ struct xPA_ClientConnection
         uint16_t    TargetPort;
         std::string RebuiltHttpHeader;
         std::string HttpHeaderLine;
-        std::string AccountName;
-        std::string Password;
+        std::string AuthNamePass;
         size_t      ContentLengthLeft = 0;
     } Http;
 };
@@ -125,8 +124,12 @@ protected:
     size_t OnHttpChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnHttpRawChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
     size_t OnHttpRawUploadData(xPA_ClientConnection * CCP, void * VoidDP, size_t DataSize);
+    void   OnHttpRawAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
+    size_t OnHttpNormalChallenge(xPA_ClientConnection * ConnectionPtr, const void * DataPtr, size_t DataSize);
+    size_t OnHttpNormalUploadData(xPA_ClientConnection * CCP, void * VoidDP, size_t DataSize);
+    void   OnHttpNormalAuthFinished(xPA_ClientConnection * CCP, const xPA_AuthResult * ARP);
+
     // from back service
-    void OnHttpRawAuthFinished(xPA_ClientConnection * ConnectionPtr, const xPA_AuthResult * ARP);
 
     //
     void TryUpdateDataTransferSize(xPA_ClientConnection * ConnectionPtr, uint64_t UploadSizeIncrement, uint64_t DumpedSizeIncrement);
