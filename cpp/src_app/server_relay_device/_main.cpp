@@ -30,6 +30,10 @@ int main(int argc, char ** argv) {
 
     DeviceReporter.AddServer(DeviceAuditAddress);
 
+    auto LALG = xResourceGuard(LocalAuditLogger, LocalAuditFilename.c_str(), false);
+    RuntimeAssert(LALG);
+
+    auto AuditTimer = xTimer();
     while (true) {
         auto NowMS = GetTimestampMS();
         GlobalIoContext.LoopOnce();
@@ -39,6 +43,11 @@ int main(int argc, char ** argv) {
         ProxyConnectionManager.Tick(NowMS);
         RelayConnectionManager.Tick(NowMS);
         DeviceReporter.Tick(NowMS);
+
+        if (AuditTimer.TestAndTag(std::chrono::minutes(1))) {
+            LocalAuditLogger.I("%s", LocalAudit.ToString().c_str());
+            LocalAudit.ResetPeriodicalValues();
+        }
     }
 
     RelayConnectionManager.Clean();

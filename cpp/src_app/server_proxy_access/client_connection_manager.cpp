@@ -965,7 +965,12 @@ void xPA_ClientConnectionManager::TryUpdateDataTransferSize(xPA_ClientConnection
     CCP->TotalUploadDataSize += UploadSizeIncrement;
     CCP->TotalDumpedDataSize += DumpedSizeIncrement;
 
-    if (CCP->TotalUploadDataSize - CCP->TotalReportedUploadDataSize < READ_OVERFLOW_SIZE && CCP->TotalDumpedDataSize - CCP->TotalReportedDumpedDataSize < WRITE_OVERFLOW_SIZE) {
+    auto UploadDiff = CCP->TotalUploadDataSize - CCP->TotalReportedUploadDataSize;
+    auto DumpedDiff = CCP->TotalDumpedDataSize - CCP->TotalReportedDumpedDataSize;
+    X_DEBUG_PRINTF("UploadDiff: %" PRIu64 ", DumpedDiff: %" PRIu64 "", UploadDiff, DumpedDiff);
+
+    if (UploadDiff < READ_OVERFLOW_SIZE && DumpedDiff < WRITE_OVERFLOW_SIZE) {
+
         return;
     }
 

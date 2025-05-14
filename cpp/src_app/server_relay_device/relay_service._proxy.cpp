@@ -174,19 +174,20 @@ bool xDeviceRelayService::OnProxyNotifyConnectionState(const ubyte * Payload, si
         return true;
     }
 
-    auto DCP = DeviceConnectionManager.GetConnectionById(RCP->DeviceId);
-    if (!DCP) {
-        X_DEBUG_PRINTF("device connection not found");
+    auto DC = DeviceManager.GetDeviceById(RCP->DeviceId);
+    if (!DC) {
+        X_DEBUG_PRINTF("Device connection not found");
         return true;
     }
 
+    X_DEBUG_PRINTF("TotalUpload: %" PRIu64 ", TotalDumped: %" PRIu64 "", N.TotalUploadedBytes, N.TotalDumpedBytes);
     auto TN                   = xTR_ConnectionStateNotify();
     TN.DeviceSideConnectionId = RCP->DeviceSideConnectionId;
     TN.RelaySideConnectionId  = RCP->RelaySideConnectionId;
     TN.NewState               = xTR_ConnectionStateNotify::STATE_UPDATE_TRANSFER;
     TN.TotalReadBytes         = N.TotalDumpedBytes;
     TN.TotalWrittenBytes      = N.TotalUploadedBytes;
-    DCP->PostMessage(Cmd_DV_RL_ProxyClientNotify, 0, TN);
+    DC->DataConnection->PostMessage(Cmd_DV_RL_ProxyClientNotify, 0, TN);
 
     return true;
 }
