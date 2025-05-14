@@ -13,18 +13,26 @@ int main(int argc, char ** argv) {
     LoadConfig(C.c_str());
 
     auto DSSG = xResourceGuard(DeviceSelectorService, &IC, BindAddress, MAX_RELAY_DEVICE_SERVER_SUPPORTED, true);
+    auto LAG  = xResourceGuard(AuditLogger, AuditLoggerFilename.c_str(), false);
     RuntimeAssert(DSSG);
+    RuntimeAssert(LAG);
 
     auto DSDOG = xResourceGuard(DeviceObserver, &IC);
     RuntimeAssert(DSDOG);
     RuntimeAssert(DeviceObserver.AddServer(DeviceDispatcherAddress));
 
+    auto AuditTimer = xTimer();
     while (true) {
         Ticker.Update();
         IC.LoopOnce();
         DeviceSelectorService.Tick(Ticker());
         DeviceObserver.Tick(Ticker());
         DeviceContextManager.Tick(Ticker());
+
+        if (AuditTimer.TestAndTag(std::chrono::minutes(1))) {
+            AuditLogger.I("%s", LocalAudit.ToString().c_str());
+            LocalAudit.ResetPeriodCount();
+        }
     }
     return 0;
 }

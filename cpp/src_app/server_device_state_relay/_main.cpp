@@ -59,8 +59,7 @@ public:
     bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
         X_DEBUG_PRINTF("CommandId: %" PRIx32 ", RequestId:%" PRIx64 ":  \n%s", CommandId, RequestId, HexShow(PayloadPtr, PayloadSize).c_str());
         switch (CommandId) {
-            case Cmd_DSR_DS_DeviceOnline:
-            case Cmd_DSR_DS_DeviceOffline: {
+            case Cmd_DSR_DS_DeviceUpdate: {
                 ubyte  B[MaxPacketSize];
                 size_t RS = BuildPacket(B, CommandId, 0, PayloadPtr, PayloadSize);
                 assert(RS);

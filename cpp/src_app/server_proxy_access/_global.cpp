@@ -9,6 +9,7 @@ xNetAddress              ConfigUdpBindAddress;
 xNetAddress              ConfigAuthServerAddress;
 xNetAddress              ConfigDeviceSelectorAddress;
 std::vector<xNetAddress> ConfigCenterAddressList;
+std::string              ConfigAuditLoggerFilename;
 
 xRunState                   GlobalRunState;
 xTicker                     GlobalTicker;
@@ -19,6 +20,7 @@ xPA_RelayServerListManager  GlobalRelayServerListManager;
 xPA_DeviceSelectorManager   GlobalDeviceSelectorManager;
 
 xPA_LocalAudit GlobalLocalAudit = {};
+xBaseLogger    GlobalAuditLogger;
 
 std::map<uint64_t, xNetAddress> ConfigRelayServerMapForTest;
 xPATest_RCM                     GlobalTestRCM;
@@ -61,6 +63,7 @@ void LoadConfig(const std::string & filename) {
     Loader.Require(ConfigCenterAddressListStr, "ConfigCenterAddressList");
     Loader.Require(ConfigDeviceSelectorAddress, "ConfigDeviceSelectorAddress");
     Loader.Require(ConfigAuthServerAddress, "ConfigAuthServerAddress");
+    Loader.Require(ConfigAuditLoggerFilename, "ConfigAuditLoggerFilename");
 
     //
     auto CCList = Split(ConfigCenterAddressListStr, ",");

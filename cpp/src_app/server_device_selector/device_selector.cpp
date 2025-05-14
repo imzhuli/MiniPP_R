@@ -73,7 +73,7 @@ bool xDS_DeviceSelectorService::OnSelectDevice(xServiceClientConnection & CC, xP
 
 bool xDS_DeviceObserver::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     switch (CommandId) {
-        case Cmd_DSR_DS_DeviceOnline: {
+        case Cmd_DSR_DS_DeviceUpdate: {
             X_DEBUG_PRINTF("");
             auto PP = xPP_DeviceInfoUpdate();
             if (!PP.Deserialize(PayloadPtr, PayloadSize)) {
@@ -81,16 +81,20 @@ bool xDS_DeviceObserver::OnServerPacket(xClientConnection & CC, xPacketCommandId
                 return true;
             }
 
-            auto LocalDevInfo                  = xDR_DeviceInfoBase{};
-            LocalDevInfo.DeviceId              = PP.DeviceUuid;
-            LocalDevInfo.ReleayServerRuntimeId = PP.RelayServerRuntimeId;
-            LocalDevInfo.RelaySideDeviceId     = PP.RelaySideDeviceKey;
+            if (!PP.IsOffline) {
+                auto LocalDevInfo                  = xDR_DeviceInfoBase{};
+                LocalDevInfo.DeviceId              = PP.DeviceUuid;
+                LocalDevInfo.ReleayServerRuntimeId = PP.RelayServerRuntimeId;
+                LocalDevInfo.RelaySideDeviceId     = PP.RelaySideDeviceKey;
 
-            LocalDevInfo.CountryId = PP.CountryId;
-            LocalDevInfo.StateId   = PP.StateId;
-            LocalDevInfo.CityId    = PP.CityId;
+                LocalDevInfo.CountryId = PP.CountryId;
+                LocalDevInfo.StateId   = PP.StateId;
+                LocalDevInfo.CityId    = PP.CityId;
 
-            DeviceContextManager.UpdateDevice(LocalDevInfo);
+                DeviceContextManager.UpdateDevice(LocalDevInfo);
+            } else {
+                DeviceContextManager.RemoveDeviceById(PP.DeviceUuid);
+            }
             break;
         }
 

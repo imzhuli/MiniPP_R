@@ -81,7 +81,7 @@ bool xDeviceRelayService::OnTerminalInitDataStream(xRD_DeviceConnection * Conn, 
 
     DeviceConnectionManager.KeepAlive(Conn);
 
-    DeviceManager.ReportDeviceState(NewDevice);
+    DeviceManager.ReportDeviceOnState(NewDevice);
     return true;
 }
 

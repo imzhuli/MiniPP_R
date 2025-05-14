@@ -51,7 +51,7 @@ public:
     void ReleaseDevice(xDevice * DC) {
         DeferDestroyDevice(DC);
     }
-    void ReportDeviceState(uint64_t DeviceId) {
+    void ReportDeviceOnState(uint64_t DeviceId) {
         auto PD = DevicePool.CheckAndGet(DeviceId);
         if (!PD) {
             return;
@@ -59,16 +59,21 @@ public:
         // if (!PD || (PD->ReportCounter++) % 5) {
         //     return;
         // }
-        ReportDeviceState(PD);
+        ReportDeviceOnState(PD);
+    }
+    void ReportDeviceOnState(xDevice * PD) {
+        ReportDeviceState(PD, false);
     }
     void ReportDeviceOfflineState(uint64_t DeviceId) {
         auto PD = DevicePool.CheckAndGet(DeviceId);
         if (!PD) {
             return;
         }
+        ReportDeviceOfflineState(PD);
+    }
+    void ReportDeviceOfflineState(xDevice * PD) {
         ReportDeviceState(PD, true);
     }
-    void ReportDeviceState(xDevice * Device, bool Offline = false);
 
 protected:
     auto CreateDevice() -> xDevice *;
@@ -77,6 +82,7 @@ protected:
         DeviceKillList.GrabTail(*DC);
     }
     void DestroyDevice(xDevice * DC);
+    void ReportDeviceState(xDevice * Device, bool Offline);
 
 private:
     xTicker                  Ticker;

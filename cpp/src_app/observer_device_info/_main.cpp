@@ -12,11 +12,8 @@ struct xODI : public xClientPool {
         cout << "OnServerPacket: " << endl;
         cout << HexShow(PayloadPtr, PayloadSize) << endl;
         switch (CommandId) {
-            case Cmd_DSR_DS_DeviceOnline:
-                cout << "Cmd_DSR_DS_DeviceOnline" << endl;
-                break;
-            case Cmd_DSR_DS_DeviceOffline:
-                cout << "Cmd_DSR_DS_DeviceOffline" << endl;
+            case Cmd_DSR_DS_DeviceUpdate:
+                cout << "Cmd_DSR_DS_DeviceUpdate" << endl;
                 break;
         }
 

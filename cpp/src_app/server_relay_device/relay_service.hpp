@@ -37,8 +37,7 @@ public:
 
 protected:
     void RemoveDeviceFromConnection(xRD_DeviceConnection * Conn);
-    void RemoveDevice(xDevice * Device);  // TODO
-    bool PostConnectionData(xDevice * Device, uint32_t DeviceSideConnectionId, uint64_t LocalConnectionId, const ubyte * PayloadPtr, size_t PayloadSize);
+    void RemoveDevice(xDevice * Device);
 
     bool OnDataPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);
     bool OnCtrlPacket(xRD_DeviceConnection * Conn, xPacketCommandId CommandId, xPacketRequestId RequestId, const ubyte * Payload, size_t PayloadSize);

@@ -1,6 +1,6 @@
 #include "./_local_audit.hpp"
 
-#define O(x) OS << #x << ": " << (x) << endl
+#define O(x) OS << #x << "=" << (x) << ' '
 
 std::string xPA_LocalAudit::ToString() const {
     auto OS = std::ostringstream();

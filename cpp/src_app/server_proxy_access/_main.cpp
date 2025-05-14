@@ -23,6 +23,7 @@ int main(int argc, char ** argv) {
     auto RSLMG = xResourceGuard(GlobalRelayServerListManager, &IC, ConfigCenterAddressList);
     auto CCMG  = xResourceGuard(GlobalClientConnectionManager, &IC, ConfigTcpBindAddress, 10'0000);
     auto DSMG  = xResourceGuard(GlobalDeviceSelectorManager, &IC);
+    auto ALG   = xResourceGuard(GlobalAuditLogger, ConfigAuditLoggerFilename.c_str(), false);
 
     GlobalDeviceSelectorManager.AddServer(ConfigDeviceSelectorAddress);
 
@@ -43,9 +44,8 @@ int main(int argc, char ** argv) {
         TickAll(GlobalTicker(), GlobalAuthCacheManager, GlobalRelayConnectionManager, GlobalRelayServerListManager, GlobalClientConnectionManager, GlobalDeviceSelectorManager);
         TickAll(GlobalTicker(), GlobalTestRCM);
 
-        if (AuditTimer.TestAndTag(std::chrono::seconds(30))) {
-            cout << "PA_LocalAudit: " << endl;
-            cout << GlobalLocalAudit.ToString() << endl;
+        if (AuditTimer.TestAndTag(std::chrono::seconds(60))) {
+            GlobalAuditLogger.I("%s", Steal(GlobalLocalAudit).ToString().c_str());
         }
     }
     GlobalRunState.Finish();

@@ -5,6 +5,7 @@
 #include <core/executable.hpp>
 #include <core/indexed_storage.hpp>
 #include <core/list.hpp>
+#include <core/logger.hpp>
 #include <core/string.hpp>
 #include <crypto/base64.hpp>
 #include <crypto/md5.hpp>
@@ -31,6 +32,7 @@ using xel::PacketHeaderSize;
 
 // type-defs
 using xel::xAbstract;
+using xel::xBaseLogger;
 using xel::xBinaryMessage;
 using xel::xClientPool;
 using xel::xCommandLine;

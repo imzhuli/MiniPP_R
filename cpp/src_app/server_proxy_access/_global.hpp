@@ -8,12 +8,15 @@
 #include "./relay_server_list_manager.hpp"
 #include "./test_relay_connection_manager.hpp"
 
+#include <core/logger.hpp>
+
 extern xNetAddress              ConfigExportBindAddress;
 extern xNetAddress              ConfigTcpBindAddress;
 extern xNetAddress              ConfigUdpBindAddress;
 extern xNetAddress              ConfigAuthServerAddress;
 extern xNetAddress              ConfigDeviceSelectorAddress;
 extern std::vector<xNetAddress> ConfigCenterAddressList;
+extern std::string              ConfigAuditLoggerFilename;
 
 extern xRunState                   GlobalRunState;
 extern xTicker                     GlobalTicker;
@@ -24,6 +27,7 @@ extern xPA_RelayServerListManager  GlobalRelayServerListManager;
 extern xPA_DeviceSelectorManager   GlobalDeviceSelectorManager;
 
 extern xPA_LocalAudit GlobalLocalAudit;
+extern xBaseLogger    GlobalAuditLogger;
 
 extern std::map<uint64_t, xNetAddress> ConfigRelayServerMapForTest;
 extern xPATest_RCM                     GlobalTestRCM;

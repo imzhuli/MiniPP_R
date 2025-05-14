@@ -104,9 +104,8 @@ static constexpr const xPacketCommandId Cmd_DV_RL_DnsQuery     = Cmd_DV_RL_Base 
 static constexpr const xPacketCommandId Cmd_DV_RL_DnsQueryResp = Cmd_DV_RL_Base + 0x21;
 
 // device-state-relay(dsr) / device-selector
-static constexpr const xPacketCommandId Cmd_DSR_DS_Base          = 0x09'000;
-static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOnline  = Cmd_DSR_DS_Base + 0x01;
-static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceOffline = Cmd_DSR_DS_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_DSR_DS_Base         = 0x09'000;
+static constexpr const xPacketCommandId Cmd_DSR_DS_DeviceUpdate = Cmd_DSR_DS_Base + 0x01;
 
 // ac-cc
 static constexpr const xPacketCommandId Cmd_AC_CC_Base                       = 0x0A'000;

@@ -1,5 +1,7 @@
 #include "./device_context_manager.hpp"
 
+#include "./_global.hpp"
+
 bool xDS_DeviceContextManager::Init() {
     return true;
 }
@@ -14,7 +16,8 @@ void xDS_DeviceContextManager::Clean() {
 void xDS_DeviceContextManager::Tick(uint64_t NowMS) {
     Ticker.Update(NowMS);
     auto KP = NowMS - DEVICE_KEEPALIVE_TIMEOUT_MS;
-    while (auto PD = static_cast<xDS_DeviceContext *>(TimeoutDeviceList.PopHead([KP](const xDR_TimeoutNode & N) mutable { return N.TimestampMS <= KP++; }))) {
+    while (auto PD = static_cast<xDS_DeviceContext *>(TimeoutDeviceList.PopHead([KP](const xDR_TimeoutNode & N) mutable { return N.TimestampMS <= KP; }))) {
+        ++LocalAudit.TimeoutDeviceCount;
         RemoveDevice(PD);
     }
 }
@@ -30,6 +33,7 @@ void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
         if (InfoBase.ReleayServerRuntimeId != PD->InfoBase.ReleayServerRuntimeId || InfoBase.RelaySideDeviceId != PD->InfoBase.RelaySideDeviceId) {
             if (!--PD->ResisterCounter) {
                 X_DEBUG_PRINTF("ReplaceDevice with new info");
+                ++LocalAudit.ReplacedDeviceCount;
                 PD->InfoBase = InfoBase;
                 Reset(PD->ResisterCounter, DEVICE_INFO_RESIST_COUNTER);
             }
@@ -51,6 +55,8 @@ void xDS_DeviceContextManager::UpdateDevice(const xDR_DeviceInfoBase & InfoBase)
 
     DeviceMap[InfoBase.DeviceId] = PD;
     KeepAlive(PD);
+    ++LocalAudit.NewDeviceCount;
+    ++LocalAudit.TotalDeviceCount;
 
     X_DEBUG_PRINTF("UpdateDevice: %s,%" PRIx64 ": %u/%u/%u", InfoBase.DeviceId.c_str(), InfoBase.RelaySideDeviceId, InfoBase.CountryId, InfoBase.StateId, InfoBase.CityId);
 }
@@ -70,6 +76,8 @@ void xDS_DeviceContextManager::RemoveDeviceById(const std::string & DeviceId) {
 
     delete DP;
     DeviceMap.erase(Iter);
+    ++LocalAudit.RemovedDeviceCount;
+    --LocalAudit.TotalDeviceCount;
 }
 
 void xDS_DeviceContextManager::KeepAlive(xDS_DeviceContext * Device) {

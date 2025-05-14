@@ -105,7 +105,7 @@ size_t xDeviceRelayService::OnData(xTcpConnection * TcpConnectionPtr, ubyte * Da
                 DeviceConnectionManager.KeepAlive(PDC);
                 if (PDC->DeviceId) {
                     X_DEBUG_PRINTF("DeviceCtrl:KeepAlive %" PRIx64 "", PDC->DeviceId);
-                    DeviceManager.ReportDeviceState(PDC->DeviceId);
+                    DeviceManager.ReportDeviceOnState(PDC->DeviceId);
                 }
             } else if (Conn->IsType_Data()) {
                 auto PDC = static_cast<xRD_DeviceConnection *>(Conn);
@@ -149,6 +149,7 @@ void xDeviceRelayService::RemoveDeviceFromConnection(xRD_DeviceConnection * Conn
     if (!Device) {
         return;
     }
+    DeviceManager.ReportDeviceOfflineState(Device);
     DeviceManager.ReleaseDevice(Device);
 }
 
@@ -160,19 +161,4 @@ void xDeviceRelayService::RemoveDevice(xDevice * Device) {
         DeviceConnectionManager.DeferReleaseConnection(Steal(Device->DataConnection));
     }
     DeviceManager.ReleaseDevice(Device);
-}
-
-bool xDeviceRelayService::PostConnectionData(xDevice * Device, uint32_t DeviceSideConnectionId, uint64_t LocalConnectionId, const ubyte * PayloadPtr, size_t TotalPayloadSize) {
-    while (TotalPayloadSize) {
-        auto PayloadSize          = std::min(TotalPayloadSize, xTR_PostData::MAX_PAYLOAD_SIZE);
-        auto PP                   = xTR_PostData();
-        PP.DeviceSideConnectionId = DeviceSideConnectionId;
-        PP.RelaySideConnectionId  = LocalConnectionId;
-        PP.PayloadView            = { (const char *)PayloadPtr, PayloadSize };
-
-        PayloadPtr       += PayloadSize;
-        TotalPayloadSize -= PayloadSize;
-    }
-
-    return true;
 }
