@@ -58,7 +58,7 @@ void xDeviceManager::ReportDeviceState(xDevice * Device, bool Offline) {
     A.DeviceUuid = Device->DeviceLocalIdString;
     A.IsOffline  = Offline;
 
-    DeviceReporter.PostMessage(Cmd_DSR_DS_DeviceOnline, 0, A);
+    DeviceReporter.PostMessage(Cmd_DSR_DS_DeviceUpdate, 0, A);
 }
 
 //

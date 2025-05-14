@@ -186,7 +186,7 @@ bool xDeviceRelayService::OnProxyNotifyConnectionState(const ubyte * Payload, si
     TN.NewState               = xTR_ConnectionStateNotify::STATE_UPDATE_TRANSFER;
     TN.TotalReadBytes         = N.TotalDumpedBytes;
     TN.TotalWrittenBytes      = N.TotalUploadedBytes;
-    DCP->PostMessage(Cmd_DV_RL_NotifyConnectionState, 0, TN);
+    DCP->PostMessage(Cmd_DV_RL_ProxyClientNotify, 0, TN);
 
     return true;
 }
