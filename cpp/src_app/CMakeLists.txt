@@ -5,6 +5,7 @@ include_directories(
 	../src_lib_common/
 	../src_lib_db/
 	../src_lib_protocol/
+	${LIBRDKAFKA_INCLUDE_DIRS}
 	${LOCAL_3RD_INCLUDE_DIR}
 	${X_INCLUDE_DIRS}
 )
@@ -71,9 +72,14 @@ set(target_list
 	server_server_list
 	)
 
+
+
 foreach(item IN LISTS target_list)
     build_app(${item})
 endforeach()
+
+message(STATUS ${LIBRDKAFKA_LIBRARIES})
+target_link_libraries(observer_device_info PRIVATE ${LIBRDKAFKA_LIBRARIES})
 
 install(TARGETS
 	${target_list}

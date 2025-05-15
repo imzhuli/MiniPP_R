@@ -1,4 +1,5 @@
 #include "../lib_server_util/all.hpp"
+#include "./_global.hpp"
 
 #include <pp_common/_.hpp>
 #include <pp_protocol/command.hpp>
@@ -29,15 +30,21 @@ static auto ICG           = xResourceGuard(IC);
 static auto ODI           = xODI();
 
 int main(int argc, char ** argv) {
-    auto CL = GetConfigLoader(argc, argv);
-    CL.Require(TargetAddress, "TargetAddress");
 
-    auto ODIG = xResourceGuard(ODI, &IC);
-    RuntimeAssert(ODIG);
+    RuntimeAssert(InitKafka());
+    auto KFKG = xScopeGuard(CleanKafka);
 
-    while (true) {
-        IC.LoopOnce();
-    }
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    // auto CL = GetConfigLoader(argc, argv);
+    // CL.Require(TargetAddress, "TargetAddress");
+
+    // auto ODIG = xResourceGuard(ODI, &IC);
+    // RuntimeAssert(ODIG);
+
+    // while (true) {
+    //     IC.LoopOnce();
+    // }
 
     return 0;
 }
