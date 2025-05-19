@@ -1,8 +1,20 @@
 #include <pp_common/ipdb/Ipdb.hpp>
 
-int main(int, char **) {
+int main(int argc, char ** argv) {
+    auto CL = xCommandLine(
+        argc, argv,
+        {
+            { 'n', "filenmae", "filename", true },
+        }
+    );
+
     auto RegionFileName = "./test_assets/ip-loc-region-list.csv";
     auto filename       = "./test_assets/ip-loc.BIN";
+
+    auto Opt = CL["filename"];
+    if (Opt()) {
+        filename = Opt->c_str();
+    }
 
     auto ipdb = xIpDb();
     ipdb.Init(RegionFileName, filename);

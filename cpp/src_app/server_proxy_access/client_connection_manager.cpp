@@ -7,6 +7,8 @@
 
 static constexpr const uint64_t MAX_ACCOUNT_CHECK_TIMEOUT          = 3'000;
 static constexpr const uint64_t MAX_CONNECTION_LIGNER_KILL_TIMEOUT = 10'000;
+static constexpr const char *   HTTP_407_RESPONSE        = "HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm=Restricted\r\nConnection: close\r\n\r\n";
+static constexpr const size_t   HTTP_407_RESPONSE_LENGTH = 109;
 
 bool xPA_ClientConnectionManager::Init(xIoContext * ICP, const xNetAddress & BindAddress, size_t ConnectionPoolSize) {
     RuntimeAssert(TcpServer.Init(ICP, BindAddress, this));
@@ -459,7 +461,7 @@ size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * Co
         if (LineEndIndex == 0) {
             if (AuthNamePass.empty()) {
                 X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
-                ConnectionPtr->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+                ConnectionPtr->PostData(HTTP_407_RESPONSE, HTTP_407_RESPONSE_LENGTH);
                 LingerKill(*ConnectionPtr);
                 return 0;
             }
@@ -500,7 +502,7 @@ size_t xPA_ClientConnectionManager::OnHttpRawChallenge(xPA_ClientConnection * Co
 void xPA_ClientConnectionManager::OnHttpRawAuthFinished(xPA_ClientConnection * CCP, const xPA_AuthResult * ARP) {
     if (!ARP) {
         X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
-        CCP->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+        CCP->PostData(HTTP_407_RESPONSE, HTTP_407_RESPONSE_LENGTH);
         Kill(*CCP);
         return;
     }
@@ -607,7 +609,7 @@ size_t xPA_ClientConnectionManager::OnHttpNormalChallenge(xPA_ClientConnection *
     // Header Done
     if (Http.AuthNamePass.empty()) {
         X_DEBUG_PRINTF("Missing auth info");
-        ConnectionPtr->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+        ConnectionPtr->PostData(HTTP_407_RESPONSE, HTTP_407_RESPONSE_LENGTH);
         LingerKill(*ConnectionPtr);
         return ConsumedSize;
     }
@@ -620,7 +622,7 @@ size_t xPA_ClientConnectionManager::OnHttpNormalChallenge(xPA_ClientConnection *
 void xPA_ClientConnectionManager::OnHttpNormalAuthFinished(xPA_ClientConnection * CCP, const xPA_AuthResult * ARP) {
     if (!ARP) {
         X_DEBUG_PRINTF("Invalid Proxy-Authorization: Not Found!");
-        CCP->PostData("HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic\r\nConnection: close\r\n\r\n", 92);
+        CCP->PostData(HTTP_407_RESPONSE, HTTP_407_RESPONSE_LENGTH);
         Kill(*CCP);
         return;
     }
