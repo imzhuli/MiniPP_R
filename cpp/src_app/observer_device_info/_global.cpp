@@ -38,7 +38,8 @@ bool InitKafka() {
     RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("sasl.mechanism", "SCRAM-SHA-256", errstr));
     RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("sasl.username", "client", errstr));
     RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("sasl.password", "client123456", errstr));
-    RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("bootstrap.servers", "45.197.7.51:9085", errstr));
+    // RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("bootstrap.servers", "45.197.7.51:9085", errstr));
+    RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("bootstrap.servers", "127.0.0.1:9092", errstr));
 
     KfkProducer = RdKafka::Producer::create(KfkConf, errstr);
     if (!KfkProducer) {

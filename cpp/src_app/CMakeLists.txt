@@ -5,7 +5,6 @@ include_directories(
 	../src_lib_common/
 	../src_lib_db/
 	../src_lib_protocol/
-	${LIBRDKAFKA_INCLUDE_DIRS}
 	${LOCAL_3RD_INCLUDE_DIR}
 	${X_INCLUDE_DIRS}
 )
@@ -78,7 +77,7 @@ foreach(item IN LISTS target_list)
     build_app(${item})
 endforeach()
 
-message(STATUS ${LIBRDKAFKA_LIBRARIES})
+set(LIBRDKAFKA_LIBRARIES librdkafka++.a librdkafka-static.a libssl.a libcrypto.a z)
 target_link_libraries(observer_device_info PRIVATE ${LIBRDKAFKA_LIBRARIES})
 
 install(TARGETS
