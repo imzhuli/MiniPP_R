@@ -29,12 +29,33 @@ static auto IC            = xIoContext();
 static auto ICG           = xResourceGuard(IC);
 static auto ODI           = xODI();
 
+static auto KR = xKfkProducer();
+
 int main(int argc, char ** argv) {
 
-    RuntimeAssert(InitKafka());
-    auto KFKG = xScopeGuard(CleanKafka);
+    RuntimeAssert(KR.Init(
+        "my-topic",
+        {
+            { "security.protocol", "SASL_PLAINTEXT" },
+            { "sasl.mechanism", "SCRAM-SHA-256" },
+            { "sasl.username", "client" },
+            { "sasl.password", "client123456" },
+            { "bootstrap.servers", "45.197.7.51:9085" },
+        }
+    ));
+    auto KRC = xScopeCleaner(KR);
+
+    // RuntimeAssert(InitKafka());
+    // auto KFKG = xScopeGuard(CleanKafka);
+
+    for (size_t I = 0; I < 100; ++I) {
+        auto Payload = std::string("Message: ") + std::to_string(I);
+        KR.Post(Payload);
+    }
+    KR.Flush();
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
+    KR.Poll();
 
     // auto CL = GetConfigLoader(argc, argv);
     // CL.Require(TargetAddress, "TargetAddress");

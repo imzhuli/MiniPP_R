@@ -77,7 +77,7 @@ foreach(item IN LISTS target_list)
     build_app(${item})
 endforeach()
 
-set(LIBRDKAFKA_LIBRARIES librdkafka++.a librdkafka-static.a libssl.a libcrypto.a z)
+set(LIBRDKAFKA_LIBRARIES librdkafka++.a librdkafka-static.a libssl.a libcrypto.a)
 target_link_libraries(observer_device_info PRIVATE ${LIBRDKAFKA_LIBRARIES})
 
 install(TARGETS

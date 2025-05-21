@@ -10,6 +10,7 @@ import xsetup
 import _build_mmdb as mmdb
 import _build_json as nlohmann_json
 import _build_rapidcsv as rapidcsv
+import _build_rdkafka as rdkafka
 import _build_abseil as abseil
 import _build_protobuf as protobuf
 
@@ -43,6 +44,11 @@ if not rapidcsv.build():
 if not mmdb.build():
     print("failed to build mmdb")
     exit -1
+
+if not rdkafka.build():
+    print("failed to build rdkafka")
+    exit -1
+
 
 # if not abseil.build():
 #     print("failed to build abseil")

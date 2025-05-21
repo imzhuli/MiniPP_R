@@ -26,8 +26,8 @@ def build():
     try:
         print(f"start building..., src_dir={unzipped_src_dir}")
         os.chdir(unzipped_src_dir)
-        os.system(f'./configure --prefix={install_dir!r} --enable-static --disable-zstd --disable-tests')
-        os.system(f"make")
+        os.system(f'./configure --prefix={install_dir!r} --enable-static --disable-lz4 --disable-zlib --disable-zstd --disable-syslog --disable-shared')
+        os.system(f"make -j 8")
         os.system(f"make install")
     except Exception as e:
         print(e)

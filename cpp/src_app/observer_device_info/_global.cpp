@@ -2,6 +2,8 @@
 
 #include <librdkafka/rdkafkacpp.h>
 
+using namespace ::std::chrono_literals;
+
 std::vector<std::string> KafkaServerAddressList;
 std::string              KafkaTopicName = "my-topic";
 int                      KafdaPartition = RdKafka::Topic::PARTITION_UA;
@@ -20,7 +22,7 @@ public:
         if (message.err()) {
             std::cerr << "消息发送失败: " << message.errstr() << std::endl;
         } else {
-            std::cout << "消息发送成功，偏移量: " << message.offset() << std::endl;
+            std::cout << "消息发送成功，偏移量: " << message.offset() << ", 延迟: " << message.latency() << std::endl;
         }
     }
 };
@@ -38,8 +40,8 @@ bool InitKafka() {
     RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("sasl.mechanism", "SCRAM-SHA-256", errstr));
     RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("sasl.username", "client", errstr));
     RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("sasl.password", "client123456", errstr));
-    // RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("bootstrap.servers", "45.197.7.51:9085", errstr));
-    RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("bootstrap.servers", "127.0.0.1:9092", errstr));
+    RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("bootstrap.servers", "45.197.7.51:9085", errstr));
+    RuntimeAssert(RdKafka::Conf::CONF_OK == KfkConf->set("dr_cb", &KfkCB, errstr));
 
     KfkProducer = RdKafka::Producer::create(KfkConf, errstr);
     if (!KfkProducer) {
@@ -71,13 +73,15 @@ bool InitKafka() {
         if (resp != RdKafka::ERR_NO_ERROR) {
             std::cerr << "发送消息失败: " << RdKafka::err2str(resp) << std::endl;
         } else {
-            std::cout << "已发送消息: " << payload << std::endl;
+            std::cout << "已尝试发送消息: " << payload << std::endl;
         }
         // 7. 定期轮询以处理事件（如交付报告回调）
+    }
+    cout << "消息发送完毕" << endl;
+    auto T = xel::xTimer();
+    while (!T.TestAndTag(5s)) {
         KfkProducer->poll(0);
     }
-    KfkProducer->flush(10000);
-    KfkProducer->poll(0);
 
     return true;
 }

@@ -15,7 +15,7 @@ link_directories(
 )
 
 message(STATUS ${LIBRARY_OUTPUT_PATH})
-set(LOCAL_PP_LIBRARIES ppprotocol ppcommon)
+set(LOCAL_PP_LIBRARIES ppprotocol ppdb ppcommon)
 
 # enable specific macors by system type:
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
