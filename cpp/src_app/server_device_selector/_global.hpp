@@ -12,6 +12,8 @@ extern xDS_DeviceSelectorService DeviceSelectorService;
 extern xDS_DeviceObserver        DeviceObserver;
 
 extern struct xDS_LocalAudit {
+    uint64_t DurationMS = 0;
+
     size_t NewDeviceCount      = 0;
     size_t ReplacedDeviceCount = 0;
     size_t RemovedDeviceCount  = 0;

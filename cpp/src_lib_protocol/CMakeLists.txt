@@ -11,6 +11,7 @@ include_directories(
 # local libs
 aux_source_directory("./pp_protocol"                        SRC)
 aux_source_directory("./pp_protocol/_backend"               SRC)
+aux_source_directory("./pp_protocol/_backend/json"          SRC)
 aux_source_directory("./pp_protocol/ac_cc"                  SRC)
 aux_source_directory("./pp_protocol/ad_bk"                  SRC)
 aux_source_directory("./pp_protocol/cc_all"                 SRC)

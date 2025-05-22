@@ -54,8 +54,7 @@ int main(int argc, char ** argv) {
     }
     KR.Flush();
 
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    KR.Poll();
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // auto CL = GetConfigLoader(argc, argv);
     // CL.Require(TargetAddress, "TargetAddress");

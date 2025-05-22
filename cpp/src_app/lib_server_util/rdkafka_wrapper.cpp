@@ -15,11 +15,22 @@ public:
     void dr_cb(RdKafka::Message & message) {
         cout << "CallbackThread: " << std::this_thread::get_id() << endl;
         if (message.err()) {
+            ++TotalFailure;
             std::cerr << "消息发送失败: " << message.errstr() << std::endl;
         } else {
+            ++TotalSuccess;
             std::cout << "消息发送成功，偏移量: " << message.offset() << ", 延迟: " << message.latency() << std::endl;
         }
     }
+
+    void Reset() {
+        xel::Reset(TotalSuccess);
+        xel::Reset(TotalFailure);
+    }
+
+private:
+    size_t TotalSuccess = 0;
+    size_t TotalFailure = 0;
 };
 static xKfkDeliveryReportCb KfkCB;
 
@@ -57,46 +68,66 @@ bool xKfkProducer::Init(const std::string & Topic, const std::map<std::string, s
     ConfCleaner.Dismiss();
     TopicNameCleaner.Dismiss();
 
+    RuntimeAssert(RunState.Start());
+    PollThread = std::thread([this] { Poll(); });
+
     X_DEBUG_PRINTF("done");
     return true;
 }
 
 void xKfkProducer::Clean() {
-    if (KfkProducer) {
-        assert(KfkTopic);
-        DestroyProducer();
-    }
+    RunState.Stop();
+    PollThread.join();
+    Reset(PollThread);
+    RunState.Finish();
+
+    DestroyProducer();
     auto ConfCleaner      = xScopeGuard([this] { delete Steal(KfkConf); });
     auto TopicNameCleaner = xScopeGuard([this] { Reset(KfkToipcName); });
     X_DEBUG_PRINTF("done");
 }
 
 bool xKfkProducer::CreateProducer() {
-    assert(!KfkProducer);
-    std::string errstr;
-    KfkProducer = RdKafka::Producer::create(KfkConf, errstr);
-    if (!KfkProducer) {
-        X_DEBUG_PRINTF("error=%s", errstr.c_str());
+    assert(!Producer.KfkProducer && !Producer.KfkTopic);
+    Producer = CreateNativeProducer();
+    if (!Producer.KfkProducer) {
         return false;
     }
-    auto KPG = xScopeGuard([this] { delete Steal(KfkProducer); });
-
-    KfkTopic = RdKafka::Topic::create(KfkProducer, KfkToipcName, NULL, errstr);
-    if (!KfkTopic) {
-        X_DEBUG_PRINTF("error=%s", errstr.c_str());
-        return false;
-    }
-    auto KTG = xScopeGuard([this] { delete Steal(KfkTopic); });
-
-    KPG.Dismiss();
-    KTG.Dismiss();
     return true;
 }
 
 void xKfkProducer::DestroyProducer() {
-    assert(KfkProducer && KfkTopic);
-    auto KPG = xScopeGuard([this] { delete Steal(KfkProducer); });
-    auto KTG = xScopeGuard([this] { delete Steal(KfkTopic); });
+    DestroyNativeProducer(std::move(Producer));
+}
+
+auto xKfkProducer::CreateNativeProducer() -> xTopicProducer {
+    auto Ret    = xTopicProducer{};
+    auto errstr = std::string();
+
+    Ret.KfkProducer = RdKafka::Producer::create(KfkConf, errstr);
+    if (!Ret.KfkProducer) {
+        X_DEBUG_PRINTF("error=%s", errstr.c_str());
+        return {};
+    }
+    auto KPG = xScopeGuard([&] { delete Steal(Ret.KfkProducer); });
+
+    Ret.KfkTopic = RdKafka::Topic::create(Ret.KfkProducer, KfkToipcName, NULL, errstr);
+    if (!Ret.KfkTopic) {
+        X_DEBUG_PRINTF("error=%s", errstr.c_str());
+        return {};
+    }
+    auto KTG = xScopeGuard([&] { delete Steal(Ret.KfkTopic); });
+
+    KPG.Dismiss();
+    KTG.Dismiss();
+    return Ret;
+}
+
+void xKfkProducer::DestroyNativeProducer(xTopicProducer && TP) {
+    assert(TP.KfkProducer && TP.KfkTopic);
+    auto KPG = xScopeGuard([&] { delete Steal(TP.KfkProducer); });
+    auto KTG = xScopeGuard([&] { delete Steal(TP.KfkTopic); });
+    return;
 }
 
 void xKfkProducer::CheckAndRecreateProducer() {
@@ -104,8 +135,8 @@ void xKfkProducer::CheckAndRecreateProducer() {
 }
 
 bool xKfkProducer::Post(const std::string & Key, const void * DataPtr, const size_t Size) {
-    RdKafka::ErrorCode resp = KfkProducer->produce(
-        KfkTopic,                        // 主题对象
+    RdKafka::ErrorCode resp = Producer.KfkProducer->produce(
+        Producer.KfkTopic,               // 主题对象
         RdKafka::Topic::PARTITION_UA,    // 分区（PARTITION_UA 表示自动分配）
         RdKafka::Producer::RK_MSG_COPY,  // 消息复制策略
         (char *)(DataPtr),               // 消息内容
@@ -121,15 +152,14 @@ bool xKfkProducer::Post(const std::string & Key, const void * DataPtr, const siz
 }
 
 void xKfkProducer::Flush() {
-    if (!KfkProducer) {
+    if (!Producer.KfkProducer) {
         return;
     }
-    KfkProducer->flush(0);
+    Producer.KfkProducer->flush(0);
 }
 
 void xKfkProducer::Poll() {
-    if (!KfkProducer) {
-        return;
+    while (RunState) {
+        Producer.KfkProducer->poll(100);
     }
-    KfkProducer->poll(0);
 }

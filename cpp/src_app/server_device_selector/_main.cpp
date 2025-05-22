@@ -21,7 +21,7 @@ int main(int argc, char ** argv) {
     RuntimeAssert(DSDOG);
     RuntimeAssert(DeviceObserver.AddServer(DeviceDispatcherAddress));
 
-    auto AuditTimer = xTimer();
+    auto AuditTimestampMS = Ticker();
     while (true) {
         Ticker.Update();
         IC.LoopOnce();
@@ -29,9 +29,11 @@ int main(int argc, char ** argv) {
         DeviceObserver.Tick(Ticker());
         DeviceContextManager.Tick(Ticker());
 
-        if (AuditTimer.TestAndTag(std::chrono::minutes(1))) {
+        LocalAudit.DurationMS = Ticker() - AuditTimestampMS;
+        if (LocalAudit.DurationMS >= 60'000) {
             AuditLogger.I("%s", LocalAudit.ToString().c_str());
             LocalAudit.ResetPeriodCount();
+            AuditTimestampMS = Ticker();
         }
     }
     return 0;

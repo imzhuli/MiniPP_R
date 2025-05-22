@@ -18,7 +18,6 @@ public:
     }
 
     void Flush();
-    void Poll();
 
 protected:
     bool CreateProducer();
@@ -27,10 +26,22 @@ protected:
 
     // run in poll thread:
 
+    struct xTopicProducer {
+        RdKafka::Producer * KfkProducer = nullptr;
+        RdKafka::Topic *    KfkTopic    = nullptr;
+    };
+
+    auto CreateNativeProducer() -> xTopicProducer;
+    void DestroyNativeProducer(xTopicProducer && TP);
+    void Poll();
+
 private:
     RdKafka::Conf * KfkConf = nullptr;
     std::string     KfkToipcName;
 
-    RdKafka::Producer * KfkProducer = nullptr;
-    RdKafka::Topic *    KfkTopic    = nullptr;
+    // when post message count reaches very big, switch to a new producer
+    xRunState      RunState;
+    xTopicProducer Producer;
+    xTopicProducer BackupProducer;
+    std::thread    PollThread;
 };

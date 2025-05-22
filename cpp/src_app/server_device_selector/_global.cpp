@@ -14,6 +14,7 @@ std::string    AuditLoggerFilename;
 xBaseLogger    AuditLogger;
 
 void xDS_LocalAudit::ResetPeriodCount() {
+    Reset(DurationMS);
     Reset(NewDeviceCount);
     Reset(ReplacedDeviceCount);
     Reset(RemovedDeviceCount);
@@ -23,6 +24,8 @@ void xDS_LocalAudit::ResetPeriodCount() {
 #define O(x) OS << #x << "=" << (x) << ' '
 std::string xDS_LocalAudit::ToString() const {
     auto OS = std::ostringstream();
+
+    O(DurationMS);
 
     O(NewDeviceCount);
     O(ReplacedDeviceCount);

@@ -36,7 +36,10 @@ struct xFakeAuthService : xService {
         PostMessage(Connection, Cmd_AuthService_QueryAuthCacheResp, RequestId, Resp);
         return true;
     }
+
+    //
 };
+
 xFakeAuthService FAS;
 
 int main(int argc, char ** argv) {
