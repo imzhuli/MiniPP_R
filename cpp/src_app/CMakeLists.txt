@@ -60,7 +60,8 @@ set(target_list
 	fake_auth_service
 
 	observer_device_info
-	
+
+	server_audit_dispatcher
 	server_auth_cache
 	server_auth_dispatcher
 	server_config_center

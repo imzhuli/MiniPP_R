@@ -23,5 +23,6 @@ struct xAudit_ProxyAccess {
     uint64_t RemoteDnsQueryCount;
 
     uint64_t UdpChannelCount;
+
     //
 };
