@@ -3,13 +3,15 @@
 
 #include <functional>
 #include <pp_common/_.hpp>
+#include <pp_protocol/ad_bk/device_info.hpp>
 #include <pp_protocol/command.hpp>
 #include <pp_protocol/internal/device_state.hpp>
 #include <unordered_set>
 
-static auto TargetAddress = xNetAddress();
-static auto IC            = xIoContext();
-static auto ICG           = xResourceGuard(IC);
+static auto IC                = xIoContext();
+static auto ICG               = xResourceGuard(IC);
+static auto GlobalTicker      = xTicker();
+static auto DispatcherAddress = xNetAddress();
 
 static auto KR               = xKfkProducer();
 static auto SecurityProtocol = std::string();
@@ -67,9 +69,7 @@ struct xODI : public xClientPool {
                 X_DEBUG_PRINTF("Found offline device");
                 return;
             }
-            //
-            Todo("Post offline device info");
-
+            PostDeviceInfo(&Iter->second, false);
             DeviceMap.erase(Iter);
             return;
         }
@@ -78,19 +78,35 @@ struct xODI : public xClientPool {
         auto & DI    = DeviceMap[PP.DeviceUuid];
         if (!DI.DeviceUuid.empty()) {  // newly added device info
             assert(!DI.OnlineTimestampMS);
+            X_DEBUG_PRINTF("new device");
 
+            DI.DeviceUuid        = PP.DeviceUuid;
             DI.OnlineTimestampMS = NowMS;
-            Todo("Init device node");
 
+            DI.Version            = PP.Version;
+            DI.PrimaryIpv4Address = PP.PrimaryIpv4Address;
+            DI.PrimaryIpv6Address = PP.PrimaryIpv6Address;
+
+            DI.SupportUdpChannel  = PP.SupportUdpChannel;
+            DI.SupportDnsRequests = PP.SupportDnsRequests;
+            DI.SpeedLimitEnabled  = PP.SpeedLimitEnabled;
+
+            // KeepAlive
+            PostDeviceInfo(&DI, true);
             DI.LastKeepAliveTimestampMS = NowMS;
             DeviceTimeoutList.AddTail(DI);
-
-            // KeepAlive
-            Todo("Post device online info");
         } else {
-            Todo("Accumulate audit info");
+            X_DEBUG_PRINTF("device heartbeat");
+            // TODO ("Accumulate audit info");
+
+            // DI.TotalNewConnectionsSinceLastPost;
+            // DI.TotalClosedConnectionSinceLastPost;
+            // DI.TotalNewUdpChannelSinceLastPost;
+            // DI.TotalClosedUdpChannelSinceLastPost;
+            // DI.TotalDnsRequestSinceLastPost;
 
             // KeepAlive
+            PostDeviceInfo(&DI, true);
             DI.LastKeepAliveTimestampMS = NowMS;
             DeviceTimeoutList.GrabTail(DI);
         }
@@ -110,7 +126,18 @@ struct xODI : public xClientPool {
         return true;
     }
 
-    //
+    void PostDeviceInfo(const xODI_DeviceInfo * DP, bool Online) {
+        auto Req   = xAD_BK_ReportDeviceInfoList();
+        auto ReqDI = xAD_BK_DeviceInfo();
+
+        Req.DeviceInfoList.push_back(std::move(ReqDI));
+
+        ubyte Buffer[MaxPacketSize];
+        auto  MSize = WriteMessage(Buffer, Cmd_AuditTerminalInfo2, 0, Req);
+
+        auto MsgKey = std::to_string(GlobalTicker()) + DP->DeviceUuid;
+        KR.Post(MsgKey, Buffer, MSize);
+    }
 };
 static auto ODI = xODI();
 
@@ -122,6 +149,7 @@ int main(int argc, char ** argv) {
     ConfigLoader.Require(SaslUsername, "SaslUsername");
     ConfigLoader.Require(SaslPassword, "SaslPassword");
     ConfigLoader.Require(BootstrapServers, "BootstrapServers");
+    ConfigLoader.Require(DispatcherAddress, "DispatcherAddress");
 
     RuntimeAssert(KR.Init(
         "my-topic",
@@ -135,26 +163,15 @@ int main(int argc, char ** argv) {
     ));
     auto KRC = xScopeCleaner(KR);
 
-    // RuntimeAssert(InitKafka());
-    // auto KFKG = xScopeGuard(CleanKafka);
+    auto ODIG = xResourceGuard(ODI, &IC);
+    RuntimeAssert(ODIG);
+    ODI.AddServer(DispatcherAddress);
 
-    for (size_t I = 0; I < 100; ++I) {
-        auto Payload = std::string("Message: ") + std::to_string(I);
-        KR.Post(Payload);
+    while (true) {
+        GlobalTicker.Update();
+        IC.LoopOnce();
+        ODI.Tick(GlobalTicker());
     }
-    KR.Flush();
-
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-
-    // auto CL = GetConfigLoader(argc, argv);
-    // CL.Require(TargetAddress, "TargetAddress");
-
-    // auto ODIG = xResourceGuard(ODI, &IC);
-    // RuntimeAssert(ODIG);
-
-    // while (true) {
-    //     IC.LoopOnce();
-    // }
 
     return 0;
 }

@@ -46,7 +46,7 @@ void xBackendConnectionPool::OnServerConnected(xClientConnection & CC) {
     challenge.TimestampMS    = xel::GetTimestampMS();
     challenge.ChallengeValue = challenge.GenerateChallengeString(Ctx.AppSecret);
     ubyte Buffer[xel::MaxPacketSize];
-    auto  RSize = xel::WriteMessage(Cmd_BackendChallenge, 0, Buffer, sizeof(Buffer), challenge);
+    auto  RSize = xel::WriteMessage(Buffer, Cmd_BackendChallenge, 0, challenge);
     CC.PostData(Buffer, RSize);
 
     X_DEBUG_PRINTF("Sending:\n%s", HexShow(Buffer, RSize).c_str());
@@ -54,9 +54,7 @@ void xBackendConnectionPool::OnServerConnected(xClientConnection & CC) {
     X_DEBUG_PRINTF("Body: %s", StrToHex(Buffer + PacketHeaderSize, RSize - PacketHeaderSize).c_str());
 }
 
-bool xBackendConnectionPool::OnServerPacket(
-    xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
-) {
+bool xBackendConnectionPool::OnServerPacket(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     if (CommandId == Cmd_BackendChallengeResp) {
         return OnCmdBackendChallengeResp(CC, CommandId, RequestId, PayloadPtr, PayloadSize);
     }
@@ -80,9 +78,7 @@ void xBackendConnectionPool::OnServerClose(xClientConnection & CC) {
     Reset(Ctx);
 }
 
-bool xBackendConnectionPool::OnCmdBackendChallengeResp(
-    xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
-) {
+bool xBackendConnectionPool::OnCmdBackendChallengeResp(xClientConnection & CC, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     auto   Sid = CC.GetConnectionId();
     auto   Idx = Sid.GetIndex();
     auto & Ctx = ContextList[Idx];

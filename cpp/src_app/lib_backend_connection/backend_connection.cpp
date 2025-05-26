@@ -91,7 +91,7 @@ void xBackendConnection::OnConnected(xTcpConnection * TcpConnectionPtr) {
     challenge.TimestampMS    = xel::GetTimestampMS();
     challenge.ChallengeValue = challenge.GenerateChallengeString(AppSecret);
     ubyte Buffer[xel::MaxPacketSize];
-    auto  RSize = xel::WriteMessage(Cmd_BackendChallenge, 0, Buffer, sizeof(Buffer), challenge);
+    auto  RSize = xel::WriteMessage(Buffer, Cmd_BackendChallenge, 0, challenge);
     Connection.PostData(Buffer, RSize);
 
     X_DEBUG_PRINTF("Sending:\n%s", HexShow(Buffer, RSize).c_str());
@@ -178,7 +178,7 @@ bool xBackendConnection::PostData(const void * Data, size_t DataSize) {
 
 bool xBackendConnection::PostMessage(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message) {
     ubyte Buffer[MaxPacketSize];
-    auto  PSize = WriteMessage(CmdId, RequestId, Buffer, Message);
+    auto  PSize = WriteMessage(Buffer, CmdId, RequestId, Message);
     if (!PSize) {
         X_DEBUG_PRINTF("");
         return false;

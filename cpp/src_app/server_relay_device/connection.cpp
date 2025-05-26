@@ -5,7 +5,7 @@
  */
 bool xRD_ConnectionBase::PostMessage(xPacketCommandId CmdId, xPacketRequestId RequestId, xBinaryMessage & Message) {
     ubyte Buffer[MaxPacketSize];
-    auto  PSize = WriteMessage(CmdId, RequestId, Buffer, Message);
+    auto  PSize = WriteMessage(Buffer, CmdId, RequestId, Message);
     if (!PSize) {
         return false;
     }
