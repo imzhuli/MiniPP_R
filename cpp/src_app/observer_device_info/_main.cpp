@@ -19,6 +19,7 @@ static auto SaslMechanism    = std::string();
 static auto SaslUsername     = std::string();
 static auto SaslPassword     = std::string();
 static auto BootstrapServers = std::string();
+static auto Topic            = std::string();
 
 struct xODI_DeviceKeepAliveNode : xListNode {};
 using xODI_DeviceKeepAliveList = xList<xODI_DeviceKeepAliveNode>;
@@ -144,6 +145,7 @@ static auto ODI = xODI();
 int main(int argc, char ** argv) {
 
     auto ConfigLoader = GetConfigLoader(argc, argv);
+    ConfigLoader.Require(Topic, "Topic");
     ConfigLoader.Require(SecurityProtocol, "SecurityProtocol");
     ConfigLoader.Require(SaslMechanism, "SaslMechanism");
     ConfigLoader.Require(SaslUsername, "SaslUsername");
@@ -152,7 +154,7 @@ int main(int argc, char ** argv) {
     ConfigLoader.Require(DispatcherAddress, "DispatcherAddress");
 
     RuntimeAssert(KR.Init(
-        "my-topic",
+        Topic,
         {
             { "security.protocol", SecurityProtocol },
             { "sasl.mechanism", SaslMechanism },
