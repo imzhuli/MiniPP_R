@@ -30,12 +30,79 @@ struct xAD_BK_DeviceInfo {
     //
 };
 
+struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
+
+    static constexpr const size16_t MAX_DEVICE_INFO_COUNT_PER_REPORT = 20;
+
+    void SerializeMembers() override {
+        W(LocalAuditTimestampMS);
+
+        W(DeviceInfo.Version);
+        W(DeviceInfo.DeviceUuid);
+        W(DeviceInfo.RelayServerUuid);
+        W(DeviceInfo.PrimaryIpv4Address);
+        W(DeviceInfo.PrimaryIpv6Address);
+
+        W(DeviceInfo.IsOffline);
+        W(DeviceInfo.SupportUdpChannel);
+        W(DeviceInfo.SupportDnsRequests);
+        W(DeviceInfo.SpeedLimitEnabled);
+
+        W(DeviceInfo.TotalOnlineTimeMS);
+        W(DeviceInfo.TotalNewConnectionsSinceLastPost);
+        W(DeviceInfo.TotalClosedConnectionSinceLastPost);
+        W(DeviceInfo.TotalNewUdpChannelSinceLastPost);
+        W(DeviceInfo.TotalClosedUdpChannelSinceLastPost);
+        W(DeviceInfo.TotalDnsRequestSinceLastPost);
+
+        W(DeviceInfo.TotalUploadSizeSinceOnline);
+        W(DeviceInfo.TotalDownloadSizeSinceOnline);
+
+        W(DeviceInfo.CurrentConnectionCount);
+        W(DeviceInfo.CurrentUdpChannelCount);
+    };
+
+    void DeserializeMembers() override {
+        R(LocalAuditTimestampMS);
+
+        R(DeviceInfo.Version);
+        R(DeviceInfo.DeviceUuid);
+        R(DeviceInfo.RelayServerUuid);
+        R(DeviceInfo.PrimaryIpv4Address);
+        R(DeviceInfo.PrimaryIpv6Address);
+
+        R(DeviceInfo.IsOffline);
+        R(DeviceInfo.SupportUdpChannel);
+        R(DeviceInfo.SupportDnsRequests);
+        R(DeviceInfo.SpeedLimitEnabled);
+
+        R(DeviceInfo.TotalOnlineTimeMS);
+        R(DeviceInfo.TotalNewConnectionsSinceLastPost);
+        R(DeviceInfo.TotalClosedConnectionSinceLastPost);
+        R(DeviceInfo.TotalNewUdpChannelSinceLastPost);
+        R(DeviceInfo.TotalClosedUdpChannelSinceLastPost);
+        R(DeviceInfo.TotalDnsRequestSinceLastPost);
+
+        R(DeviceInfo.TotalUploadSizeSinceOnline);
+        R(DeviceInfo.TotalDownloadSizeSinceOnline);
+
+        R(DeviceInfo.CurrentConnectionCount);
+        R(DeviceInfo.CurrentUdpChannelCount);
+    };
+
+    uint64_t          LocalAuditTimestampMS;
+    xAD_BK_DeviceInfo DeviceInfo;
+};
+
 struct xAD_BK_ReportDeviceInfoList : xBinaryMessage {
 
     static constexpr const size16_t MAX_DEVICE_INFO_COUNT_PER_REPORT = 20;
 
     void SerializeMembers() override {
         assert(DeviceInfoList.size() < MAX_DEVICE_INFO_COUNT_PER_REPORT);
+
+        size32_t Count = DeviceInfoList.size();
+        W(Count);
         for (auto & D : DeviceInfoList) {
             W(D.Version);
             W(D.DeviceUuid);
@@ -52,15 +119,19 @@ struct xAD_BK_ReportDeviceInfoList : xBinaryMessage {
             W(D.TotalNewConnectionsSinceLastPost);
             W(D.TotalClosedConnectionSinceLastPost);
             W(D.TotalNewUdpChannelSinceLastPost);
+            W(D.TotalClosedUdpChannelSinceLastPost);
             W(D.TotalDnsRequestSinceLastPost);
 
             W(D.TotalUploadSizeSinceOnline);
             W(D.TotalDownloadSizeSinceOnline);
+
+            W(D.CurrentConnectionCount);
+            W(D.CurrentUdpChannelCount);
         }
     };
 
     void DeserializeMembers() override {
-        size16_t Count = 0;
+        size32_t Count = 0;
         R(Count);
         if (Count > MAX_DEVICE_INFO_COUNT_PER_REPORT) {
             xBinaryMessageReader::SetError();
@@ -83,10 +154,14 @@ struct xAD_BK_ReportDeviceInfoList : xBinaryMessage {
             R(D.TotalNewConnectionsSinceLastPost);
             R(D.TotalClosedConnectionSinceLastPost);
             R(D.TotalNewUdpChannelSinceLastPost);
+            R(D.TotalClosedUdpChannelSinceLastPost);
             R(D.TotalDnsRequestSinceLastPost);
 
             R(D.TotalUploadSizeSinceOnline);
             R(D.TotalDownloadSizeSinceOnline);
+
+            R(D.CurrentConnectionCount);
+            R(D.CurrentUdpChannelCount);
         }
     };
 

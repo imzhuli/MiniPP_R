@@ -31,6 +31,7 @@ using xel::MaxPacketSize;
 using xel::PacketHeaderSize;
 
 // type-defs
+using xel::eLogLevel;
 using xel::xAbstract;
 using xel::xBaseLogger;
 using xel::xBinaryMessage;
@@ -42,6 +43,7 @@ using xel::xIndexIdPool;
 using xel::xIoContext;
 using xel::xList;
 using xel::xListNode;
+using xel::xLogger;
 using xel::xMd5Result;
 using xel::xNetAddress;
 using xel::xObjectIdManager;

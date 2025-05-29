@@ -69,7 +69,9 @@ set(target_list
 	server_device_state_relay
 	server_proxy_access
 	server_relay_device
+	server_server_id_center
 	server_server_list
+	server_stream_usage_audit_dispatcher
 	)
 
 

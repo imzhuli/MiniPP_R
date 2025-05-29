@@ -77,7 +77,7 @@ struct xODI : public xClientPool {
 
         auto   NowMS = GetTickTimeMS();
         auto & DI    = DeviceMap[PP.DeviceUuid];
-        if (!DI.DeviceUuid.empty()) {  // newly added device info
+        if (DI.DeviceUuid.empty()) {  // newly added device info
             assert(!DI.OnlineTimestampMS);
             X_DEBUG_PRINTF("new device");
 
@@ -128,16 +128,33 @@ struct xODI : public xClientPool {
     }
 
     void PostDeviceInfo(const xODI_DeviceInfo * DP, bool Online) {
-        auto Req   = xAD_BK_ReportDeviceInfoList();
-        auto ReqDI = xAD_BK_DeviceInfo();
+        auto   Req   = xAD_BK_ReportDeviceInfoSingle();
+        auto & ReqDI = Req.DeviceInfo;
 
-        Req.DeviceInfoList.push_back(std::move(ReqDI));
+        auto NowMS = GlobalTicker();
+
+        Req.LocalAuditTimestampMS = NowMS;
+
+        ReqDI.Version    = DP->Version;
+        ReqDI.DeviceUuid = DP->DeviceUuid;
+        // ReqDI.RelayServerUuid    = DP->RelayServerUuid;
+        ReqDI.PrimaryIpv4Address = DP->PrimaryIpv4Address;
+        ReqDI.PrimaryIpv6Address = DP->PrimaryIpv6Address;
+
+        ReqDI.IsOffline          = !Online;
+        ReqDI.SupportUdpChannel  = DP->SupportUdpChannel;
+        ReqDI.SupportDnsRequests = DP->SupportDnsRequests;
+        ReqDI.SpeedLimitEnabled  = DP->SpeedLimitEnabled;
+
+        ReqDI.TotalOnlineTimeMS = NowMS - DP->OnlineTimestampMS;
 
         ubyte Buffer[MaxPacketSize];
         auto  MSize = WriteMessage(Buffer, Cmd_AuditTerminalInfo2, 0, Req);
 
-        auto MsgKey = std::to_string(GlobalTicker()) + DP->DeviceUuid;
+        auto MsgKey = DP->DeviceUuid;
         KR.Post(MsgKey, Buffer, MSize);
+
+        X_DEBUG_PRINTF("\n%s", HexShow(Buffer, MSize).c_str());
     }
 };
 static auto ODI = xODI();

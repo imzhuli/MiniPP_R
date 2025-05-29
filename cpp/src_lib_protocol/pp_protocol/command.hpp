@@ -44,8 +44,9 @@ static constexpr const xPacketCommandId Cmd_AuditTerminalInfoResp   = Cmd_Backen
 static constexpr const xPacketCommandId Cmd_AuditUsageByAuditId     = Cmd_BackendBase + 0x03;  // 旧版, 弃用
 static constexpr const xPacketCommandId Cmd_AuditUsageByAuditIdResp = Cmd_BackendBase + 0x04;  // 一般不处理返回
 
-static constexpr const xPacketCommandId Cmd_AuditTerminalInfo2     = Cmd_BackendBase + 0x05;  // 2025-03-09 新增, 无返回
-static constexpr const xPacketCommandId Cmd_DeviceRelayServerInfo2 = Cmd_BackendBase + 0x06;  // 2025-03-09 新增, 无返回
+static constexpr const xPacketCommandId Cmd_AuditTerminalInfo2          = Cmd_BackendBase + 0x05;  // 2025-03-09 新增, 无返回
+static constexpr const xPacketCommandId Cmd_DeviceRelayServerInfo2      = Cmd_BackendBase + 0x06;  // 2025-03-09 新增, 无返回
+static constexpr const xPacketCommandId Cmd_DeviceRelayServerInfoSingle = Cmd_BackendBase + 0x07;  // 2025-05-28 新增, 无返回
 
 static constexpr const xPacketCommandId Cmd_BackendChallenge     = Cmd_BackendBase + 0x101;
 static constexpr const xPacketCommandId Cmd_BackendChallengeResp = Cmd_BackendBase + 0x102;
