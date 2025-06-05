@@ -1,7 +1,7 @@
 #include "./dispatcher_input.hpp"
 
 bool xAD_CacheDispatcherInput::Init(xIoContext * ICP, const xNetAddress & Address) {
-    RuntimeAssert(xService::Init(ICP, Address, 1024));
+    RuntimeAssert(xService::Init(ICP, Address, DEFAULT_MAX_SERVER_CONNECTIONS, true));
     return true;
 }
 

@@ -57,7 +57,7 @@ int main(int argc, char ** argv) {
         cout << "using country : " << *Nopt << ": " << CountryId << endl;
     }
 
-    FAS.Init(&IC, BindAddress);
+    FAS.Init(&IC, BindAddress, DEFAULT_MAX_SERVER_CONNECTIONS);
 
     while (true) {
         Ticker.Update();

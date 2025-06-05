@@ -42,13 +42,9 @@ struct xSUA_ProducerService : xService {
 
 struct xSUA_ConsumerService : xService {
 
-    xSUA_ConsumerService() {
-        RuntimeAssert(NoConsumerPrinter.Init("NoConsumerPrinter"));
-    }
+    xSUA_ConsumerService() { RuntimeAssert(NoConsumerPrinter.Init()); }
 
-    ~xSUA_ConsumerService() {
-        NoConsumerPrinter.Clean();
-    }
+    ~xSUA_ConsumerService() { NoConsumerPrinter.Clean(); }
 
     void OnClientConnected(xServiceClientConnection & Connection) override {
         ChallengingServerList.push_back(Connection.GetConnectionId());
@@ -71,9 +67,7 @@ struct xSUA_ConsumerService : xService {
         DoCleanupConnection(Connection);
     }
 
-    void SetConnectionChallenging(xServiceClientConnection & Connection) {
-        Connection.GetUserContext().U64 |= nConnectionFlags::CHALLENGING;
-    }
+    void SetConnectionChallenging(xServiceClientConnection & Connection) { Connection.GetUserContext().U64 |= nConnectionFlags::CHALLENGING; }
 
     void SetConnectionReady(xServiceClientConnection & Connection) {
         auto F = GetConnectionFlags(Connection);
@@ -81,19 +75,15 @@ struct xSUA_ConsumerService : xService {
         }
     }
 
-    void DoInsertConnection(xServiceClientConnection & Connection) {
-    }
+    void DoInsertConnection(xServiceClientConnection & Connection) {}
 
-    void DoCleanupConnection(xServiceClientConnection & Connection) {
-        X_DEBUG_PRINTF("");
-    }
+    void DoCleanupConnection(xServiceClientConnection & Connection) { X_DEBUG_PRINTF(""); }
 
     //
-    void OnTick(uint64_t NowMS) override {
-    }
+    void OnTick(uint64_t NowMS) override {}
 
 private:
-    xCollectableErrorPrinter NoConsumerPrinter;
+    xCollectableErrorPrinter NoConsumerPrinter = { "NoConsumerPrinter" };
 };
 
 xSUA_ProducerService PS;
@@ -105,8 +95,8 @@ int main(int argc, char ** argv) {
     CL.Require(ProducerAddress, "ProducerAddress");
     CL.Require(ConsumerAddress, "ConsumerAddress");
 
-    auto PSG = xResourceGuard(PS, &IC, ProducerAddress);
-    auto CSG = xResourceGuard(CS, &IC, ProducerAddress);
+    auto PSG = xResourceGuard(PS, &IC, ProducerAddress, DEFAULT_MAX_SERVER_CONNECTIONS);
+    auto CSG = xResourceGuard(CS, &IC, ProducerAddress, DEFAULT_MAX_SERVER_CONNECTIONS);
 
     RuntimeAssert(PSG);
     RuntimeAssert(CSG);

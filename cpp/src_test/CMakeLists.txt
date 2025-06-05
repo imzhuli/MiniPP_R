@@ -4,6 +4,8 @@ project (pp_apps)
 include_directories(
 	../src_lib_common/
 	../src_lib_protocol/
+	../src_app/lib_backend_connection/
+	../src_app/lib_server_util/
 	${LOCAL_3RD_INCLUDE_DIR}
 	${X_INCLUDE_DIRS}
 )
@@ -30,7 +32,16 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	set(PLATFORM_LIBRARIES dl ${SYSTEM_CONFIGURATION_LIBRARY} ${FUNDATION_LIBRARY} ${IOKIT_LIBRARY} ${COCOA_LIBRARY} )
 endif()
 
+
+aux_source_directory("../src_app/lib_backend_connection"    LIB_SRC)
+aux_source_directory("../src_app/lib_server_util"           LIB_SRC)
+
+add_library(app_server ${LIB_SRC})
+target_compile_definitions(app_server PRIVATE X_OPTION_STATIC)
+
+
 set(lib_dependency
+	app_server
 	${LOCAL_PP_LIBRARIES}
 	${LOCAL_3RD_LIBRARIES}
 	${X_LIBRARIES}
@@ -47,3 +58,4 @@ endfunction()
 
 build_app(cpp)
 build_app(ip2loc)
+build_app(server_id_client)

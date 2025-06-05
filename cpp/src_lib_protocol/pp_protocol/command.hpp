@@ -128,6 +128,8 @@ static constexpr const xPacketCommandId Cmd_CC_PA_DownloadRelayServerListResp   
 static constexpr const xPacketCommandId Cmd_ALL_CC_Base                          = 0x0C'000;
 static constexpr const xPacketCommandId Cmd_ALL_CC_DownloadBackendServerList     = Cmd_ALL_CC_Base + 0x01;
 static constexpr const xPacketCommandId Cmd_ALL_CC_DownloadBackendServerListResp = Cmd_ALL_CC_Base + 0x02;
+static constexpr const xPacketCommandId Cmd_ALL_CC_AcquireServerId               = Cmd_ALL_CC_Base + 0x03;
+static constexpr const xPacketCommandId Cmd_ALL_CC_AcquireServerIdResp           = Cmd_ALL_CC_Base + 0x04;
 
 // device-selector
 static constexpr const xPacketCommandId Cmd_DeviceSelector_Base              = 0x0D'000;

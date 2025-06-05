@@ -19,15 +19,14 @@ static void CleanDefaultLogger() {
     }
 }
 
-bool xCollectableErrorPrinter::Init(const std::string & ErrorMessage, size_t TriggerCountLimit, uint64_t TriggerTimeoutLimitMS) {
-    return Init(&DefaultLogger, ErrorMessage, TriggerCountLimit, TriggerTimeoutLimitMS);
+bool xCollectableErrorPrinter::Init(size_t TriggerCountLimit, uint64_t TriggerTimeoutLimitMS) {
+    return Init(&DefaultLogger, TriggerCountLimit, TriggerTimeoutLimitMS);
 }
 
-bool xCollectableErrorPrinter::Init(xLogger * LoggerPtr, const std::string & ErrorMessage, size_t TriggerCountLimit, uint64_t TriggerTimeoutLimitMS) {
+bool xCollectableErrorPrinter::Init(xLogger * LoggerPtr, size_t TriggerCountLimit, uint64_t TriggerTimeoutLimitMS) {
     InitDefaultLogger();
 
     this->LoggerPtr             = LoggerPtr;
-    this->ErrorMessage          = ErrorMessage;
     this->TriggerCountLimit     = TriggerCountLimit;
     this->TriggerTimeoutLimitMS = TriggerTimeoutLimitMS;
 
@@ -36,7 +35,6 @@ bool xCollectableErrorPrinter::Init(xLogger * LoggerPtr, const std::string & Err
 
 void xCollectableErrorPrinter::Clean() {
     Reset(LoggerPtr);
-    Reset(ErrorMessage);
     Reset(Counter);
     Reset(TriggerCountLimit);
     Reset(LastTriggerTimestampMS);

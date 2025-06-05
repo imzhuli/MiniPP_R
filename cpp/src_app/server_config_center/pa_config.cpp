@@ -4,16 +4,14 @@
 #include <pp_protocol/command.hpp>
 
 bool xCC_PAConfigManager::Init(xIoContext * ICP, const xNetAddress & BindAddress) {
-    RuntimeAssert(xService::Init(ICP, BindAddress));
+    RuntimeAssert(xService::Init(ICP, BindAddress, DEFAULT_MAX_SERVER_CONNECTIONS));
     return true;
 }
 
 void xCC_PAConfigManager::Clean() {
 }
 
-bool xCC_PAConfigManager::OnClientPacket(
-    xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
-) {
+bool xCC_PAConfigManager::OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     switch (CommandId) {
         case Cmd_CC_PA_GetRelayServerListVersion:
             return OnQueryRelayServerListVersion(Connection, RequestId, PayloadPtr, PayloadSize);
@@ -28,9 +26,7 @@ bool xCC_PAConfigManager::OnClientPacket(
     return true;
 }
 
-bool xCC_PAConfigManager::OnQueryRelayServerListVersion(
-    xServiceClientConnection & Connection, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
-) {
+bool xCC_PAConfigManager::OnQueryRelayServerListVersion(xServiceClientConnection & Connection, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     auto R = xCC_PA_GetRelayServerListVersion();
     if (!R.Deserialize(PayloadPtr, PayloadSize)) {
         return false;

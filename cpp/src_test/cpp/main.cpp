@@ -1,18 +1,16 @@
-#include <pp_common/_.hpp>
+#include <string>
 //
 using namespace std;
-using namespace xel;
+
+struct Test {
+
+    Test(const std::string &) {}
+    ~Test() = default;
+};
 
 int main(int, char **) {
 
-    auto M = static_cast<uint64_t>(xObjectIdManager::MaxObjectId);
-    cout << M << endl;
-
-    cout << hex;
-    constexpr const auto Mask = (uint64_t(1) << 44) - 1;
-    cout << Mask << endl;
-
-    cout << ((M << 44) | Mask) << endl;
+    Test t = { "hello" };
 
     return 0;
 }

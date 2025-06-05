@@ -4,7 +4,7 @@
 #include <pp_protocol/command.hpp>
 
 bool xCC_AuthCacheServerManager::Init(xIoContext * IoContextPtr, const xNetAddress & BindAddress) {
-    RuntimeAssert(xService::Init(IoContextPtr, BindAddress));
+    RuntimeAssert(xService::Init(IoContextPtr, BindAddress, DEFAULT_MAX_SERVER_CONNECTIONS));
     RuntimeAssert(IdManager.Init());
 
     return true;
@@ -50,9 +50,7 @@ bool xCC_AuthCacheServerManager::OnAllocAuthCacheServerId(xServiceClientConnecti
     return true;
 }
 
-bool xCC_AuthCacheServerManager::OnAllocDownloadDispatcherList(
-    xServiceClientConnection & Connection, uint64_t RequestId, ubyte * PayloadPtr, size_t PayloadSize
-) {
+bool xCC_AuthCacheServerManager::OnAllocDownloadDispatcherList(xServiceClientConnection & Connection, uint64_t RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
 
     return false;
 }

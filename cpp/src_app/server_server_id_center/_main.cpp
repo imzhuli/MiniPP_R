@@ -1,9 +1,11 @@
 #include "../lib_server_util/all.hpp"
 
 #include <pp_common/base.hpp>
+#include <pp_protocol/command.hpp>
+#include <pp_protocol/internal/server_id.hpp>
 
-static constexpr const auto IdShift       = 44;
-static constexpr const auto TimestampMask = (uint64_t(1) << IdShift) - 1;
+static constexpr const size_t   MAX_ID_INDEX                 = 10'0000;
+static constexpr const uint64_t SERVER_ID_RECYCLE_TIMEOUT_MS = 3 * 1'000;
 
 static auto ConfigServiceBindAddress = xNetAddress();
 
@@ -15,11 +17,16 @@ class xServerIdCenterService : public xService {
 
 public:
     bool Init(xIoContext * IoContextPtr, const xNetAddress & BindAddress) {
-        if (!IdManager.Init()) {
+        if (!ErrorPrinter.Init()) {
             return false;
         }
-        if (!xService::Init(IoContextPtr, BindAddress, false, IdManager.MaxObjectId)) {
-            IdManager.Clean();
+        if (!ServerIdManager.Init()) {
+            ErrorPrinter.Clean();
+            return false;
+        }
+        if (!xService::Init(IoContextPtr, BindAddress, false, MAX_ID_INDEX)) {
+            ServerIdManager.Clean();
+            ErrorPrinter.Clean();
             return false;
         }
         return true;
@@ -27,39 +34,50 @@ public:
 
     void Clean() {
         xService::Clean();
-        IdManager.Clean();
+        ServerIdManager.Clean();
+        ErrorPrinter.Clean();
     }
 
-    uint64_t Acquire() {
-        uint32_t InnerId = IdManager.Acquire();
-        if (!InnerId) {
-            return 0;
+    bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override {
+        auto & ServerId = Connection.GetUserContext().U64;
+        if (ServerId) {
+            X_DEBUG_PRINTF("Multiple server id request");
+            return false;
         }
-        return (static_cast<uint64_t>(InnerId) << 44) + (TimestampMask & GetTimestampMS());
+        if (CommandId != Cmd_ALL_CC_AcquireServerId) {
+            X_DEBUG_PRINTF("Unrecognized command");
+            return false;
+        }
+        auto Req = xPP_AcquireServerId();
+        if (!Req.Deserialize(PayloadPtr, PayloadSize)) {
+            X_DEBUG_PRINTF("Invalid data packet");
+            return false;
+        }
+
+        ServerId = ServerIdManager.RegainServerId(Req.PreviousServerId);
+        if (!ServerId) {
+            ErrorPrinter.Hit();
+        }
+        X_DEBUG_PRINTF("ServerId %" PRIx64 " -> %" PRIx64 "", Req.PreviousServerId, ServerId);
+
+        auto Resp             = xPP_AcquireServerIdResp();
+        Resp.PreviousServerId = Req.PreviousServerId;
+        Resp.NewServerId      = ServerId;
+        PostMessage(Connection, Cmd_ALL_CC_AcquireServerIdResp, RequestId, Resp);
+        return true;
     }
 
-    uint64_t TryAcquire(uint64_t Id) {
-        uint32_t InnerId = (uint32_t)(Id >> 44);
-        if (Id) {
-            if (!InnerId || InnerId > IdManager.MaxObjectId) {
-                X_DEBUG_PRINTF("Invalid previous server id");
-                return 0;
-            }
+    void OnClientClose(xServiceClientConnection & Connection) override {
+        auto & ServerId = Connection.GetUserContext().U64;
+        if (ServerId) {
+            X_DEBUG_PRINTF("Releasing ServerId: %" PRIx64 "", ServerId);
+            X_RUNTIME_ASSERT(ServerIdManager.ReleaseServerId(ServerId));
         }
-
-        if (!IdManager.MarkInUse(InnerId)) {
-            return Acquire();
-        }
-        return Id;
-    }
-
-    void Release(uint64_t Id) {
-        uint32_t InnerId = (uint32_t)(Id >> 44);
-        IdManager.Release(InnerId);
     }
 
 private:
-    xObjectIdManager IdManager;
+    xServerIdManager         ServerIdManager;
+    xCollectableErrorPrinter ErrorPrinter = { "Failed to allocate server id" };
 };
 
 static auto Service = xServerIdCenterService();
@@ -73,6 +91,7 @@ int main(int argc, char ** argv) {
 
     while (true) {
         GlobalTicker.Update();
+        IC.LoopOnce();
         TickAll(GlobalTicker(), Service);
     }
 

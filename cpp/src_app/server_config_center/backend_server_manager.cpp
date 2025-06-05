@@ -7,7 +7,7 @@ static constexpr const uint64_t RELOAD_TIMEOUT_MS            = 2 * 60'000;
 static constexpr const size_t   MAX_BACKEND_SERVER_LIST_SIZE = 100;
 
 bool xCC_BackendServerManager::Init(xIoContext * ICP, const xNetAddress & BindAddress, const std::string & ForcedBackendServerListFile) {
-    RuntimeAssert(xService::Init(ICP, BindAddress));
+    RuntimeAssert(xService::Init(ICP, BindAddress, DEFAULT_MAX_SERVER_CONNECTIONS));
     RuntimeAssert(!ForcedBackendServerListFile.empty());
     ServerListFile = ForcedBackendServerListFile;
 

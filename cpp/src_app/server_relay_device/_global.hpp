@@ -33,12 +33,18 @@ extern struct xRD_LocalAudit {
     uint64_t TotalDeviceEnabled;
     uint64_t TotalRelayConnections;
 
+    // new de
     uint64_t NewRelayConnections;
+    uint64_t NewEnabledDevices;
     uint64_t DeviceClosedConnections;
     uint64_t ProxyClosedConnections;
 
-    void        ResetPeriodicalValues();
-    std::string ToString() const;
+    uint64_t MissingLostDeviceCount;
+
+    void ResetPeriodicalValues();
+    auto ToString() const -> std::string;
+
 } LocalAudit;
+
 extern std::string LocalAuditFilename;
 extern xBaseLogger LocalAuditLogger;

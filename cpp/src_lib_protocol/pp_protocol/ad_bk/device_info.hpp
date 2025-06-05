@@ -9,6 +9,10 @@ struct xAD_BK_DeviceInfo {
     xNetAddress PrimaryIpv4Address;
     xNetAddress PrimaryIpv6Address;
 
+    uint32_t CountryId;
+    uint32_t StateId;
+    uint32_t CityId;
+
     bool IsOffline;  // 下线时会设置这个标志位. 但考虑到服务器的变更, 不是所有设备都有上/下线标志, 后台服务器应当将30分钟未发统计的设备设为下线.
     bool SupportUdpChannel;
     bool SupportDnsRequests;
@@ -27,6 +31,9 @@ struct xAD_BK_DeviceInfo {
 
     uint32_t CurrentConnectionCount;
     uint32_t CurrentUdpChannelCount;
+
+    uint32_t MaxConnectionCount;
+    uint32_t MaxUdpChannelCount;
     //
 };
 
@@ -42,6 +49,10 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
         W(DeviceInfo.RelayServerUuid);
         W(DeviceInfo.PrimaryIpv4Address);
         W(DeviceInfo.PrimaryIpv6Address);
+
+        W(DeviceInfo.CountryId);
+        W(DeviceInfo.StateId);
+        W(DeviceInfo.CityId);
 
         W(DeviceInfo.IsOffline);
         W(DeviceInfo.SupportUdpChannel);
@@ -60,6 +71,9 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
 
         W(DeviceInfo.CurrentConnectionCount);
         W(DeviceInfo.CurrentUdpChannelCount);
+
+        W(DeviceInfo.MaxConnectionCount);
+        W(DeviceInfo.MaxUdpChannelCount);
     };
 
     void DeserializeMembers() override {
@@ -70,6 +84,10 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
         R(DeviceInfo.RelayServerUuid);
         R(DeviceInfo.PrimaryIpv4Address);
         R(DeviceInfo.PrimaryIpv6Address);
+
+        R(DeviceInfo.CountryId);
+        R(DeviceInfo.StateId);
+        R(DeviceInfo.CityId);
 
         R(DeviceInfo.IsOffline);
         R(DeviceInfo.SupportUdpChannel);
@@ -88,82 +106,93 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
 
         R(DeviceInfo.CurrentConnectionCount);
         R(DeviceInfo.CurrentUdpChannelCount);
+
+        R(DeviceInfo.MaxConnectionCount);
+        R(DeviceInfo.MaxUdpChannelCount);
     };
 
     uint64_t          LocalAuditTimestampMS;
     xAD_BK_DeviceInfo DeviceInfo;
 };
 
-struct xAD_BK_ReportDeviceInfoList : xBinaryMessage {
+// struct xAD_BK_ReportDeviceInfoList : xBinaryMessage {
 
-    static constexpr const size16_t MAX_DEVICE_INFO_COUNT_PER_REPORT = 20;
+//     static constexpr const size16_t MAX_DEVICE_INFO_COUNT_PER_REPORT = 20;
 
-    void SerializeMembers() override {
-        assert(DeviceInfoList.size() < MAX_DEVICE_INFO_COUNT_PER_REPORT);
+//     void SerializeMembers() override {
+//         assert(DeviceInfoList.size() < MAX_DEVICE_INFO_COUNT_PER_REPORT);
 
-        size32_t Count = DeviceInfoList.size();
-        W(Count);
-        for (auto & D : DeviceInfoList) {
-            W(D.Version);
-            W(D.DeviceUuid);
-            W(D.RelayServerUuid);
-            W(D.PrimaryIpv4Address);
-            W(D.PrimaryIpv6Address);
+//         size32_t Count = DeviceInfoList.size();
+//         W(Count);
+//         for (auto & D : DeviceInfoList) {
+//             W(D.Version);
+//             W(D.DeviceUuid);
+//             W(D.RelayServerUuid);
+//             W(D.PrimaryIpv4Address);
+//             W(D.PrimaryIpv6Address);
 
-            W(D.IsOffline);
-            W(D.SupportUdpChannel);
-            W(D.SupportDnsRequests);
-            W(D.SpeedLimitEnabled);
+//             W(CountryId);
+//             W(StateId);
+//             W(CityId);
 
-            W(D.TotalOnlineTimeMS);
-            W(D.TotalNewConnectionsSinceLastPost);
-            W(D.TotalClosedConnectionSinceLastPost);
-            W(D.TotalNewUdpChannelSinceLastPost);
-            W(D.TotalClosedUdpChannelSinceLastPost);
-            W(D.TotalDnsRequestSinceLastPost);
+//             W(D.IsOffline);
+//             W(D.SupportUdpChannel);
+//             W(D.SupportDnsRequests);
+//             W(D.SpeedLimitEnabled);
 
-            W(D.TotalUploadSizeSinceOnline);
-            W(D.TotalDownloadSizeSinceOnline);
+//             W(D.TotalOnlineTimeMS);
+//             W(D.TotalNewConnectionsSinceLastPost);
+//             W(D.TotalClosedConnectionSinceLastPost);
+//             W(D.TotalNewUdpChannelSinceLastPost);
+//             W(D.TotalClosedUdpChannelSinceLastPost);
+//             W(D.TotalDnsRequestSinceLastPost);
 
-            W(D.CurrentConnectionCount);
-            W(D.CurrentUdpChannelCount);
-        }
-    };
+//             W(D.TotalUploadSizeSinceOnline);
+//             W(D.TotalDownloadSizeSinceOnline);
 
-    void DeserializeMembers() override {
-        size32_t Count = 0;
-        R(Count);
-        if (Count > MAX_DEVICE_INFO_COUNT_PER_REPORT) {
-            xBinaryMessageReader::SetError();
-            return;
-        }
-        DeviceInfoList.resize(Count);
-        for (auto & D : DeviceInfoList) {
-            R(D.Version);
-            R(D.DeviceUuid);
-            R(D.RelayServerUuid);
-            R(D.PrimaryIpv4Address);
-            R(D.PrimaryIpv6Address);
+//             W(D.CurrentConnectionCount);
+//             W(D.CurrentUdpChannelCount);
+//         }
+//     };
 
-            R(D.IsOffline);
-            R(D.SupportUdpChannel);
-            R(D.SupportDnsRequests);
-            R(D.SpeedLimitEnabled);
+//     void DeserializeMembers() override {
+//         size32_t Count = 0;
+//         R(Count);
+//         if (Count > MAX_DEVICE_INFO_COUNT_PER_REPORT) {
+//             xBinaryMessageReader::SetError();
+//             return;
+//         }
+//         DeviceInfoList.resize(Count);
+//         for (auto & D : DeviceInfoList) {
+//             R(D.Version);
+//             R(D.DeviceUuid);
+//             R(D.RelayServerUuid);
+//             R(D.PrimaryIpv4Address);
+//             R(D.PrimaryIpv6Address);
 
-            R(D.TotalOnlineTimeMS);
-            R(D.TotalNewConnectionsSinceLastPost);
-            R(D.TotalClosedConnectionSinceLastPost);
-            R(D.TotalNewUdpChannelSinceLastPost);
-            R(D.TotalClosedUdpChannelSinceLastPost);
-            R(D.TotalDnsRequestSinceLastPost);
+//             R(CountryId);
+//             R(StateId);
+//             R(CityId);
 
-            R(D.TotalUploadSizeSinceOnline);
-            R(D.TotalDownloadSizeSinceOnline);
+//             R(D.IsOffline);
+//             R(D.SupportUdpChannel);
+//             R(D.SupportDnsRequests);
+//             R(D.SpeedLimitEnabled);
 
-            R(D.CurrentConnectionCount);
-            R(D.CurrentUdpChannelCount);
-        }
-    };
+//             R(D.TotalOnlineTimeMS);
+//             R(D.TotalNewConnectionsSinceLastPost);
+//             R(D.TotalClosedConnectionSinceLastPost);
+//             R(D.TotalNewUdpChannelSinceLastPost);
+//             R(D.TotalClosedUdpChannelSinceLastPost);
+//             R(D.TotalDnsRequestSinceLastPost);
 
-    std::vector<xAD_BK_DeviceInfo> DeviceInfoList;
-};
+//             R(D.TotalUploadSizeSinceOnline);
+//             R(D.TotalDownloadSizeSinceOnline);
+
+//             R(D.CurrentConnectionCount);
+//             R(D.CurrentUdpChannelCount);
+//         }
+//     };
+
+//     std::vector<xAD_BK_DeviceInfo> DeviceInfoList;
+// };

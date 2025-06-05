@@ -90,8 +90,8 @@ int main(int argc, char ** argv) {
     CL.Require(BindObserverAddress, "BindObserverAddress");
     CL.Require(BindProducerAddress, "BindProducerAddress");
 
-    RuntimeAssert(OS.Init(&IC, BindObserverAddress));
-    RuntimeAssert(PS.Init(&IC, BindProducerAddress));
+    RuntimeAssert(OS.Init(&IC, BindObserverAddress, DEFAULT_MAX_SERVER_CONNECTIONS));
+    RuntimeAssert(PS.Init(&IC, BindProducerAddress, DEFAULT_MAX_SERVER_CONNECTIONS));
 
     while (true) {
         Ticker.Update();
