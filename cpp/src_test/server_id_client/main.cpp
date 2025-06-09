@@ -7,7 +7,7 @@ auto ICG = xResourceGuard(IC);
 auto GT  = xTicker();
 
 class xTestServerIdClient : public xServerIdClient {
-    void OnServerIdUpdated(uint64_t NewServerId) override { X_DEBUG_PRINTF("NewServerId=%" PRIx64 "", NewServerId); };
+    void OnServerIdUpdated(uint64_t NewServerId) override { X_PDEBUG("NewServerId=%" PRIx64 ", (%" PRIu64 ")", NewServerId, NewServerId); };
 };
 
 int main(int argc, char ** argv) {

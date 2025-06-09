@@ -16,6 +16,7 @@ public:
 
 private:
     uint32_t GenerateRandom();
+    uint32_t GenerateCheckSum(uint32_t IdIndex, uint32_t IdRandom);
 
 private:
     xObjectIdManager IdManager;
