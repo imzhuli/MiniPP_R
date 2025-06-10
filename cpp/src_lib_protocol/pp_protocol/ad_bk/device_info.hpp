@@ -44,7 +44,7 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
     void SerializeMembers() override {
         W(LocalAuditTimestampMS);
 
-        W(DeviceInfo.Version);
+        W(X2R(uint64_t(DeviceInfo.Version)));
         W(DeviceInfo.DeviceUuid);
         W(DeviceInfo.RelayServerUuid);
         W(DeviceInfo.PrimaryIpv4Address);
@@ -79,7 +79,10 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
     void DeserializeMembers() override {
         R(LocalAuditTimestampMS);
 
-        R(DeviceInfo.Version);
+        uint64_t Version64;
+        R(Version64);
+        DeviceInfo.Version = (uint32_t)Version64;
+
         R(DeviceInfo.DeviceUuid);
         R(DeviceInfo.RelayServerUuid);
         R(DeviceInfo.PrimaryIpv4Address);
