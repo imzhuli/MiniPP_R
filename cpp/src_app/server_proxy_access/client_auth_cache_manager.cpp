@@ -90,6 +90,19 @@ void xPA_AuthCacheManager::ReleaseCacheNode(xPA_AuthCacheNode * P) {
 
 bool xPA_AuthCacheManager::RequestAuth(uint64_t RequestSourceId, const std::string & UserPass) {
     X_DEBUG_PRINTF("SourceId: %" PRIx64 ", UserPass=%s", RequestSourceId, UserPass.c_str());
+    // length check
+    auto SplitIndex = UserPass.find(':');
+    if (SplitIndex == UserPass.npos) {
+        X_DEBUG_PRINTF("invalid UserPass form");
+        return false;
+    }
+    auto UserLength = SplitIndex;
+    auto PassLength = UserPass.length() - SplitIndex - 1;
+    if (!UserLength || !PassLength || UserLength > 127 || PassLength > 127) {
+        X_DEBUG_PRINTF("invalid User/Pass length");
+        return false;
+    }
+
     auto Rid = RequestPool.Acquire();
     if (!Rid) {
         return false;
