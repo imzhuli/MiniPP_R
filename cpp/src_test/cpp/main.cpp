@@ -7,19 +7,40 @@
 //
 using namespace std;
 
-void test(auto && v) {
-    cout << std::is_reference_v<decltype(v)> << endl;
-    cout << std::is_rvalue_reference_v<decltype(v)> << endl;
+struct xX;
+struct xY;
 
-    cout << std::is_reference_v<decltype((v))> << endl;
-    cout << std::is_rvalue_reference_v<decltype((v))> << endl;
+struct xX {
+    xX() = default;
+    xX(const xY & y) { cout << "x(y)" << endl; }
+};
+
+struct xY {
+    operator xX() const {
+        cout << "y->x" << endl;
+        return xX();
+    }
+};
+
+struct xZ {
+    xZ(const xX &){};
+};
+
+struct xYY : xY {};
+
+void foo(const xX &) {
 }
 
 int main(int argc, char ** argv) {
 
-    auto E = ParseEnv(argc, argv);
-    cout << E.ToString() << endl;
-    test(1);
+    auto E = xRuntimeEnv::FromCommandLine(argc, argv);
+    cout << ToString(E) << endl;
+
+    xY y;
+    xZ z(y);
+
+    xYY yy;
+    xZ  zz(yy);
 
     return 0;
 }

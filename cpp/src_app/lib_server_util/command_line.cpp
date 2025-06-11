@@ -3,17 +3,19 @@
 #include <filesystem>
 #include <sstream>
 
-std::string xRuntimeEnv::ToString() const {
+std::string ToString(const xRuntimeEnv & Env) {
     auto OS = std::ostringstream();
-    OS << "Home: " << HomeDir << endl;
-    OS << "Bin: " << BinDir << endl;
-    OS << "Conf: " << ConfigDir << endl;
-    OS << "Data: " << DataDir << endl;
-    OS << "Cache: " << CacheDir << endl;
+    OS << "Home: " << Env.HomeDir << endl;
+    OS << "Bin: " << Env.BinDir << endl;
+    OS << "Conf: " << Env.ConfigDir << endl;
+    OS << "Data: " << Env.DataDir << endl;
+    OS << "Cache: " << Env.CacheDir << endl;
+
+    OS << "DefaultConfigFilePath: " << Env.DefaultConfigFilePath << endl;
     return OS.str();
 }
 
-xRuntimeEnv ParseEnv(int CmdArgc, char ** CmdArgv) {
+xRuntimeEnv xRuntimeEnv::FromCommandLine(int CmdArgc, char ** CmdArgv) {
     auto Env = xRuntimeEnv{};
     auto CL  = xCommandLine(
         CmdArgc, CmdArgv,
@@ -30,19 +32,53 @@ xRuntimeEnv ParseEnv(int CmdArgc, char ** CmdArgv) {
     auto DefaultBinPath = std::filesystem::current_path();
     auto HomeOpt        = CL["home_dir"];
     if (!HomeOpt()) {
-        Env.HomeDir   = std::filesystem::absolute(DefaultBinPath);
+        Env.HomeDir   = std::filesystem::weakly_canonical(DefaultBinPath);
         Env.BinDir    = Env.HomeDir;
         Env.ConfigDir = Env.HomeDir;
         Env.DataDir   = Env.HomeDir;
         Env.CacheDir  = Env.HomeDir;
     } else {
-        Env.HomeDir   = std::filesystem::absolute(*HomeOpt);
+        Env.HomeDir   = std::filesystem::weakly_canonical(*HomeOpt);
         Env.BinDir    = Env.HomeDir / "bin";
         Env.ConfigDir = Env.HomeDir / "conf";
         Env.DataDir   = Env.HomeDir / "data";
         Env.CacheDir  = Env.HomeDir / "cache";
     }
+
+    auto ConfigFilename    = std::string("");
+    auto ConfigFilenameOpt = CL["config-file"];
+    if (ConfigFilenameOpt()) {
+        Env.DefaultConfigFilePath = Env.GetConfigPath(*ConfigFilenameOpt);
+    } else {
+        Env.DefaultConfigFilePath = Env.GetConfigPath("default");
+    }
+
     return Env;
+}
+
+static inline bool IsRelativePath(const std::filesystem::path & Path) {
+    auto ParentPath = Path.parent_path();
+    return ParentPath.empty();
+}
+
+std::filesystem::path xRuntimeEnv::GetBinaryPath(const std::filesystem::path & Filename) const {
+    RuntimeAssert(!Filename.empty(), "filename should not be empty");
+    return IsRelativePath(Filename) ? (BinDir / Filename) : Filename;
+}
+
+std::filesystem::path xRuntimeEnv::GetConfigPath(const std::filesystem::path & Filename) const {
+    RuntimeAssert(!Filename.empty(), "filename should not be empty");
+    return IsRelativePath(Filename) ? (ConfigDir / Filename) : Filename;
+}
+
+std::filesystem::path xRuntimeEnv::GetDataPath(const std::filesystem::path & Filename) const {
+    RuntimeAssert(!Filename.empty(), "filename should not be empty");
+    return IsRelativePath(Filename) ? (DataDir / Filename) : Filename;
+}
+
+std::filesystem::path xRuntimeEnv::GetCachePath(const std::filesystem::path & Filename) const {
+    RuntimeAssert(!Filename.empty(), "filename should not be empty");
+    return IsRelativePath(Filename) ? (CacheDir / Filename) : Filename;
 }
 
 std::string GetConfigFile(int CmdArgC, char ** CmdArgV) {
