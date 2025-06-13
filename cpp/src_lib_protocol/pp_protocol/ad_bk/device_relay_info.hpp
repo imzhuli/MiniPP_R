@@ -36,7 +36,7 @@ struct xAD_BK_DeivceRelayServerInfo {
     static constexpr const xServerRouteId INVALID_ROUTE_ID = (uint16_t)(-1);
 
     std::string    ServerUuid;
-    uint16_t       ServerIndex;                       // 这是运行时由配置中心给的值, 在同一时刻不会重复,
+    uint64_t       ServerRuntimeId;                   // 这是运行时由配置中心给的值, 在同一时刻不会重复,
     xServerRouteId ServerRouteId = INVALID_ROUTE_ID;  // 为减少服务器间延迟而给服务器硬写的区块ID.
     xNetAddress    ExportCtrlAddress;
     xNetAddress    ExportDataAddress;
@@ -59,7 +59,7 @@ struct xAD_BK_ReportDeviceRelayServerInfoList : xBinaryMessage {
         assert(ServerInfoList.size() < MAX_SERVER_INFO_COUNT_PER_REPORT);
         for (auto & S : ServerInfoList) {
             W(S.ServerUuid);
-            W(S.ServerIndex);
+            W(S.ServerRuntimeId);
             W(S.ServerRouteId);
             W(S.ExportCtrlAddress);
             W(S.ExportDataAddress);
@@ -83,7 +83,7 @@ struct xAD_BK_ReportDeviceRelayServerInfoList : xBinaryMessage {
         ServerInfoList.resize(Count);
         for (auto & S : ServerInfoList) {
             R(S.ServerUuid);
-            R(S.ServerIndex);
+            R(S.ServerRuntimeId);
             R(S.ServerRouteId);
             R(S.ExportCtrlAddress);
             R(S.ExportDataAddress);

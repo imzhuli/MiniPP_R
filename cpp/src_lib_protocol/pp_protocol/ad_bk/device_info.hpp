@@ -5,7 +5,8 @@ struct xAD_BK_DeviceInfo {
 
     uint32_t    Version;
     std::string DeviceUuid;
-    std::string RelayServerUuid;
+    uint64_t    RelayServerRuntimeId;
+    uint64_t    RelayServerSideDeviceId;
     xNetAddress PrimaryIpv4Address;
     xNetAddress PrimaryIpv6Address;
 
@@ -46,7 +47,9 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
 
         W(X2R(uint64_t(DeviceInfo.Version)));
         W(DeviceInfo.DeviceUuid);
-        W(DeviceInfo.RelayServerUuid);
+
+        W(DeviceInfo.RelayServerRuntimeId);
+        W(DeviceInfo.RelayServerSideDeviceId);
         W(DeviceInfo.PrimaryIpv4Address);
         W(DeviceInfo.PrimaryIpv6Address);
 
@@ -84,7 +87,8 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
         DeviceInfo.Version = (uint32_t)Version64;
 
         R(DeviceInfo.DeviceUuid);
-        R(DeviceInfo.RelayServerUuid);
+        R(DeviceInfo.RelayServerRuntimeId);
+        R(DeviceInfo.RelayServerSideDeviceId);
         R(DeviceInfo.PrimaryIpv4Address);
         R(DeviceInfo.PrimaryIpv6Address);
 

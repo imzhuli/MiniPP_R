@@ -17,6 +17,8 @@ struct xAD_BK_ReportUsageByAuditList : xBinaryMessage {
 
     void SerializeMembers() override {
         assert(AuditList.size() < MAX_USAGE_INFO_COUNT_PER_REPORT);
+        W(LocalTimestampMS);
+        W(X2R(uint32_t(AuditList.size())));
         for (auto & U : AuditList) {
             W(U.AuditId);
             W(U.TotalSelectDeviceCountSinceLastPost);
@@ -28,7 +30,8 @@ struct xAD_BK_ReportUsageByAuditList : xBinaryMessage {
     }
 
     void DeserializeMembers() override {
-        size16_t Count = 0;
+        R(LocalTimestampMS);
+        size32_t Count = 0;
         R(Count);
         if (Count > MAX_USAGE_INFO_COUNT_PER_REPORT) {
             xBinaryMessageReader::SetError();
@@ -45,5 +48,6 @@ struct xAD_BK_ReportUsageByAuditList : xBinaryMessage {
         }
     }
 
+    uint64_t                           LocalTimestampMS;
     std::vector<xAD_BK_UsageByAuditId> AuditList;
 };
