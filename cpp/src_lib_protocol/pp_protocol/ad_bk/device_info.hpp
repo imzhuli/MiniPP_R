@@ -4,6 +4,7 @@
 struct xAD_BK_DeviceInfo {
 
     uint32_t    Version;
+    uint32_t    ChannelId;
     std::string DeviceUuid;
     uint64_t    RelayServerRuntimeId;
     uint64_t    RelayServerSideDeviceId;
@@ -45,7 +46,8 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
     void SerializeMembers() override {
         W(LocalAuditTimestampMS);
 
-        W(X2R(uint64_t(DeviceInfo.Version)));
+        W(DeviceInfo.Version);
+        W(DeviceInfo.ChannelId);
         W(DeviceInfo.DeviceUuid);
 
         W(DeviceInfo.RelayServerRuntimeId);
@@ -82,9 +84,8 @@ struct xAD_BK_ReportDeviceInfoSingle : xBinaryMessage {
     void DeserializeMembers() override {
         R(LocalAuditTimestampMS);
 
-        uint64_t Version64;
-        R(Version64);
-        DeviceInfo.Version = (uint32_t)Version64;
+        R(DeviceInfo.Version);
+        R(DeviceInfo.ChannelId);
 
         R(DeviceInfo.DeviceUuid);
         R(DeviceInfo.RelayServerRuntimeId);
