@@ -4,6 +4,8 @@
 #include <mbedtls/base64.h>
 
 std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string & AesKey) {
+    assert(AesKey.size() == 128);
+
     auto Blocks        = (DataSize + 16) / 16;
     auto Length        = Blocks * 16;
     auto R             = std::vector<ubyte>(Length * 2);
@@ -31,13 +33,15 @@ std::vector<ubyte> Encrypt(const void * Data, size_t DataSize, const std::string
 }
 
 std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string & AesKey) {
-    if (DataSize % 16) {
+    assert(AesKey.size() == 128);
+
+    if (!DataSize || DataSize % 16) {
         return {};
     }
 
     mbedtls_aes_context aes_ctx;
     mbedtls_aes_init(&aes_ctx);
-    mbedtls_aes_setkey_dec(&aes_ctx, (const ubyte *)AesKey.data(), 128);
+    mbedtls_aes_setkey_dec(&aes_ctx, (const ubyte *)AesKey.data(), AesKey.size());
     auto G = xScopeGuard([&] { mbedtls_aes_free(&aes_ctx); });
 
     auto R      = std::vector<ubyte>(DataSize);
@@ -49,7 +53,10 @@ std::vector<ubyte> Decrypt(const void * Data, size_t DataSize, const std::string
         Src += 16;
         Dst += 16;
     }
-    auto padding = (int)(R[DataSize - 1]);
+    auto padding = (size_t)(R[DataSize - 1]);
+    if (DataSize < padding) {
+        return {};
+    }
     R.resize(DataSize - padding);
     return R;
 }
