@@ -1,5 +1,6 @@
 #pragma once
 #include <core/core_min.hpp>
+#include <core/core_os.hpp>
 #include <core/core_stream.hpp>
 #include <core/core_time.hpp>
 #include <core/executable.hpp>
@@ -69,6 +70,7 @@ using xel::xUdpChannel;
 using xel::Base64Decode;
 using xel::Base64Encode;
 using xel::BuildPacket;
+using xel::Daemonize;
 using xel::GetTimestampMS;
 using xel::HexShow;
 using xel::HexToStr;
