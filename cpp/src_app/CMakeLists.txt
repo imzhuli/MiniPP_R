@@ -62,6 +62,8 @@ set(target_list
 	observer_device_info
 
 	server_audit_dispatcher
+	server_audit_device_backend_reporter
+
 	server_auth_cache
 	server_auth_dispatcher
 	server_config_center
@@ -71,7 +73,9 @@ set(target_list
 	server_relay_device
 	server_server_id_center
 	server_server_list
+	
 	server_stream_usage_audit_dispatcher
+	server_stream_usage_audit_reporter
 	)
 
 

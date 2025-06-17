@@ -10,12 +10,8 @@ public:
     void Clean();
 
     bool Post(const std::string & Key, const void * DataPtr, const size_t Size);
-    bool Post(const std::string & Key, std::string_view Data) {
-        return Post(Key, Data.data(), Data.size());
-    }
-    bool Post(std::string_view Data) {
-        return Post({}, Data.data(), Data.size());
-    }
+    bool Post(const std::string & Key, std::string_view Data) { return Post(Key, Data.data(), Data.size()); }
+    bool Post(std::string_view Data) { return Post({}, Data.data(), Data.size()); }
 
     void Flush();
 
