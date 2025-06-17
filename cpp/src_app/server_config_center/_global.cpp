@@ -11,10 +11,8 @@ xUdpChannel ChallengeChannel;
 
 std::string GeoInfoMapFilename;
 std::string IpLocationDbFilename;
-std::string BackendServerListFilename;
 
 xCC_IpLocationManager       IpLocationManager;
-xCC_BackendServerManager    BackendServerManager;
 xCC_ChallengeContextManager ChallengeContextManager;
 xCC_RelayServerManager      RelayServerManager;
 xCC_PAConfigManager         PAConfigManager;

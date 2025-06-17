@@ -6,19 +6,19 @@
 static constexpr const uint64_t RELOAD_TIMEOUT_MS            = 2 * 60'000;
 static constexpr const size_t   MAX_BACKEND_SERVER_LIST_SIZE = 100;
 
-bool xCC_BackendServerManager::Init(xIoContext * ICP, const xNetAddress & BindAddress, const std::string & ForcedBackendServerListFile) {
+bool xSL_BackendServerManager::Init(xIoContext * ICP, const xNetAddress & BindAddress, const std::string & ForcedBackendServerListFile) {
     RuntimeAssert(xService::Init(ICP, BindAddress, DEFAULT_MAX_SERVER_CONNECTIONS));
     RuntimeAssert(!ForcedBackendServerListFile.empty());
     ServerListFile = ForcedBackendServerListFile;
 
     return true;
 }
-void xCC_BackendServerManager::Clean() {
+void xSL_BackendServerManager::Clean() {
     xService::Clean();
     Reset(LastReloadTimestamp);
 }
 
-void xCC_BackendServerManager::Tick(uint64_t NowMS) {
+void xSL_BackendServerManager::Tick(uint64_t NowMS) {
     xService::Tick(NowMS);
     if (NowMS - LastReloadTimestamp <= RELOAD_TIMEOUT_MS) {
         return;
@@ -27,7 +27,7 @@ void xCC_BackendServerManager::Tick(uint64_t NowMS) {
     LastReloadTimestamp = NowMS;
 }
 
-void xCC_BackendServerManager::ReloadServerList() {
+void xSL_BackendServerManager::ReloadServerList() {
     auto NewList = std::vector<xNetAddress>();
     auto Lines   = FileToLines(ServerListFile);
 
@@ -53,7 +53,7 @@ void xCC_BackendServerManager::ReloadServerList() {
     ServerList = std::move(NewList);
 }
 
-bool xCC_BackendServerManager::OnClientPacket(
+bool xSL_BackendServerManager::OnClientPacket(
     xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
 ) {
     switch (CommandId) {
@@ -65,7 +65,7 @@ bool xCC_BackendServerManager::OnClientPacket(
     return true;
 }
 
-bool xCC_BackendServerManager::OnDownloadBackendServerList(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId) {
+bool xSL_BackendServerManager::OnDownloadBackendServerList(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId) {
     auto Resp           = xCC_ALL_GetBackendServerListResp{};
     Resp.AddressListPtr = &ServerList;
 

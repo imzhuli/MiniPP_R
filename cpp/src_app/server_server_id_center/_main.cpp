@@ -84,8 +84,6 @@ static auto Service = xServerIdCenterService();
 
 int main(int argc, char ** argv) {
 
-    Daemonize();
-
     auto CL = GetConfigLoader(argc, argv);
     CL.Require(ConfigServiceBindAddress, "BindAddress");
 

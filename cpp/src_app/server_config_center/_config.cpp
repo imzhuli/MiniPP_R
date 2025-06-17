@@ -51,7 +51,6 @@ bool LoadConfig(const char * filename) {
 
     Loader.Require(GeoInfoMapFilename, "GeoInfoMapFilename");
     Loader.Require(IpLocationDbFilename, "IpLocationDbFilename");
-    Loader.Require(BackendServerListFilename, "BackendServerListFilename");
 
     std::string ForcedRelayerConfigFile;
     Loader.Optional(ForcedRelayerConfigFile, "ForcedRelayerConfigFile");

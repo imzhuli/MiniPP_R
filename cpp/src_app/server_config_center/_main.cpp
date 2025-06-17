@@ -186,7 +186,6 @@ int main(int argc, char ** argv) {
     auto RSMG  = xResourceGuard(RelayServerManager);
     auto CCMG  = xResourceGuard(ChallengeContextManager);
     auto PACMG = xResourceGuard(PAConfigManager, &GlobalIoContext, BindAddressForProxyAccess);
-    auto BSMG  = xResourceGuard(BackendServerManager, &GlobalIoContext, BindAddressForGetBackendServerList, BackendServerListFilename);
 
     RuntimeAssert(RuntimeEnv);
     SetupIpv6TestChannel();
@@ -202,7 +201,7 @@ int main(int argc, char ** argv) {
     while (true) {
         Ticker.Update();
         GlobalIoContext.LoopOnce();
-        TickAll(Ticker(), IpLocationManager, RelayServerManager, ChallengeContextManager, PAConfigManager, BackendServerManager);
+        TickAll(Ticker(), IpLocationManager, RelayServerManager, ChallengeContextManager, PAConfigManager);
     }
 
     GlobalIoContext.Clean();

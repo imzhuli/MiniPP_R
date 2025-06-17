@@ -1,6 +1,5 @@
 #pragma once
 
-#include "./backend_server_manager.hpp"
 #include "./challenge.hpp"
 #include "./ip_location.hpp"
 #include "./pa_config.hpp"
@@ -19,10 +18,8 @@ extern xUdpChannel ChallengeChannel;
 
 extern std::string GeoInfoMapFilename;
 extern std::string IpLocationDbFilename;
-extern std::string BackendServerListFilename;
 
 extern xCC_IpLocationManager       IpLocationManager;
-extern xCC_BackendServerManager    BackendServerManager;
 extern xCC_ChallengeContextManager ChallengeContextManager;
 extern xCC_RelayServerManager      RelayServerManager;
 extern xCC_PAConfigManager         PAConfigManager;
