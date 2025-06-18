@@ -1,19 +1,39 @@
-#include "../lib_server_util/all.hpp"
+
+#include "./_global.hpp"
 
 #include <pp_common/_.hpp>
 
-int main(int, char **) {
+static auto IC  = xIoContext();
+static auto ICG = xResourceGuard(IC);
 
-    std::string input = "  [ '45.197.7.51:9085', '33mm\\'1:9085']  ";
+struct xSUAR_Service : xServerIdClient {
+    void OnServerIdUpdated(uint64_t NewServerId) {
+        Logger->I("UpdateLocalServerId: %" PRIx64 "", NewServerId);
+        if (NewServerId) {
+            ::LocalServerId = NewServerId;
+            DumpLocalServerId();
+        }
+    }
+};
+auto ServerIdClient = xSUAR_Service();
 
-    auto P = ParsePythonStringArray(input);
-    if (!P()) {
-        cerr << "Failed to parse python string array" << endl;
-        return -1;
+int main(int argc, char ** argv) {
+
+    RuntimeEnv = xRuntimeEnv::FromCommandLine(argc, argv);
+    cout << ToString(RuntimeEnv) << endl;
+
+    LoadConfig();
+    auto LogGuard = xScopeGuard(InitLogger, CleanLogger);
+
+    auto SICG = xResourceGuard(ServerIdClient, &IC, ServerIdCenterAddress, LocalServerId);
+
+    Logger->I("ServiceStart, Init LocalServerId=%" PRIx64 "", LocalServerId);
+
+    while (true) {
+        Ticker.Update();
+        IC.LoopOnce();
+        TickAll(Ticker(), ServerIdClient);
     }
 
-    for (auto & I : *P) {
-        cout << ">> " << I << endl;
-    }
     return 0;
 }
