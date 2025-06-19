@@ -27,7 +27,13 @@ xRuntimeEnv xRuntimeEnv::FromCommandLine(int CmdArgc, char ** CmdArgv) {
     if (!CmdArgc) {
         return Env;
     }
-    Env.ProgramName = CmdArgv[0];
+    auto ProgramPath = std::filesystem::path(CmdArgv[0]);
+    if (!ProgramPath.empty()) {
+        Env.ProgramName = ProgramPath.filename();
+    }
+    if (Env.ProgramName.empty()) {
+        Env.ProgramName = "unnamed_application";
+    }
 
     auto DefaultBinPath = std::filesystem::current_path();
     auto HomeOpt        = CL["home_dir"];
@@ -52,6 +58,8 @@ xRuntimeEnv xRuntimeEnv::FromCommandLine(int CmdArgc, char ** CmdArgv) {
     } else {
         Env.DefaultConfigFilePath = Env.GetConfigPath("default");
     }
+
+    Env.DefaultLoggerFilePath = Env.CacheDir / (Env.ProgramName + ".log");
 
     return Env;
 }

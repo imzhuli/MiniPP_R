@@ -21,9 +21,6 @@ std::string LoggerFilename;
 xBaseLogger * Logger = nullptr;
 xTicker       Ticker;
 
-static const char * LocalServerIdFilename = "LocalServerId";
-static void         LoadLocalServerId();
-
 void LoadConfig() {
     auto CL = xConfigLoader(RuntimeEnv.DefaultConfigFilePath.c_str());
     CL.Require(ServerIdCenterAddress, "ServerIdCenterAddress");
@@ -48,31 +45,7 @@ void LoadConfig() {
     CL.Require(BootstrapServerList, "BootstrapServerList");
     CL.Require(Topic, "Topic");
 
-    CL.Require(LoggerFilename, "LoggerFilename");
-
-    LoadLocalServerId();
-    cout << LocalServerId << endl;
-}
-
-void LoadLocalServerId() {
-    auto File = RuntimeEnv.GetCachePath(LocalServerIdFilename);
-    auto FS   = FileToStr(File);
-    if (!FS()) {
-        LocalServerId = 0;
-        return;
-    }
-    LocalServerId = (uint64_t)strtoumax(FS->c_str(), nullptr, 10);
-}
-
-void DumpLocalServerId() {
-    auto File = RuntimeEnv.GetCachePath(LocalServerIdFilename);
-    auto FS   = std::ofstream(File, std::ios_base::binary | std::ios_base::out);
-    if (!FS) {
-        cerr << "failed to dump file to LocalCacheFile" << endl;
-        return;
-    }
-    FS << LocalServerId << endl;
-    return;
+    CL.Optional(LoggerFilename, "LoggerFilename", "stream_usage_audit_reporter.log");
 }
 
 void InitLogger() {

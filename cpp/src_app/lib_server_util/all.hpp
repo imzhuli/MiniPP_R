@@ -5,3 +5,4 @@
 #include "./rdkafka_wrapper.hpp"
 #include "./server_id_client.hpp"
 #include "./server_id_manager.hpp"
+#include "./service_client_hash_pool.hpp"

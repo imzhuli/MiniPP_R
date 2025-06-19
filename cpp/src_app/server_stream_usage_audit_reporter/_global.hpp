@@ -19,8 +19,6 @@ extern std::string LoggerFilename;
 extern xBaseLogger * Logger;
 extern xTicker       Ticker;
 
-extern void LoadConfig();
-extern void DumpLocalServerId();
-
 extern void InitLogger();
 extern void CleanLogger();
+extern void LoadConfig();

@@ -9,9 +9,12 @@ static constexpr const uint64_t SERVER_ID_RECYCLE_TIMEOUT_MS = 3 * 1'000;
 
 static auto ConfigServiceBindAddress = xNetAddress();
 
+static auto RuntimeEnv = xRuntimeEnv();
+
 static auto GlobalTicker = xTicker();
 static auto IC           = xIoContext();
 static auto ICG          = xResourceGuard(IC);
+static auto Logger       = (xBaseLogger *)nullptr;
 
 class xServerIdCenterService : public xService {
 
@@ -24,7 +27,7 @@ public:
             ErrorPrinter.Clean();
             return false;
         }
-        if (!xService::Init(IoContextPtr, BindAddress, false, MAX_ID_INDEX)) {
+        if (!xService::Init(IoContextPtr, BindAddress, MAX_ID_INDEX, true)) {
             ServerIdManager.Clean();
             ErrorPrinter.Clean();
             return false;
@@ -83,11 +86,24 @@ private:
 static auto Service = xServerIdCenterService();
 
 int main(int argc, char ** argv) {
+    RuntimeEnv = xRuntimeEnv::FromCommandLine(argc, argv);
+    Logger     = new xBaseLogger();
+    Logger->Init(RuntimeEnv.DefaultLoggerFilePath.c_str(), false);
+    auto LC = xScopeGuard([&] {
+        Logger->Clean();
+        delete Steal(Logger);
+    });
 
     auto CL = GetConfigLoader(argc, argv);
     CL.Require(ConfigServiceBindAddress, "BindAddress");
 
     auto SG = xResourceGuard(Service, &IC, ConfigServiceBindAddress);
+    if (!SG) {
+        Logger->E("failed to init service, bind-address=%s", ConfigServiceBindAddress.ToString().c_str());
+        return -1;
+    } else {
+        Logger->I("init service done, bind-address=%s", ConfigServiceBindAddress.ToString().c_str());
+    }
 
     while (true) {
         GlobalTicker.Update();
