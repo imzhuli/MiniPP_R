@@ -9,12 +9,8 @@ static constexpr const uint64_t SERVER_ID_RECYCLE_TIMEOUT_MS = 3 * 1'000;
 
 static auto ConfigServiceBindAddress = xNetAddress();
 
-static auto RuntimeEnv = xRuntimeEnv();
-
-static auto GlobalTicker = xTicker();
-static auto IC           = xIoContext();
-static auto ICG          = xResourceGuard(IC);
-static auto Logger       = (xBaseLogger *)nullptr;
+static auto IC  = xIoContext();
+static auto ICG = xResourceGuard(IC);
 
 class xServerIdCenterService : public xService {
 
@@ -86,13 +82,8 @@ private:
 static auto Service = xServerIdCenterService();
 
 int main(int argc, char ** argv) {
-    RuntimeEnv = xRuntimeEnv::FromCommandLine(argc, argv);
-    Logger     = new xBaseLogger();
-    Logger->Init(RuntimeEnv.DefaultLoggerFilePath.c_str(), false);
-    auto LC = xScopeGuard([&] {
-        Logger->Clean();
-        delete Steal(Logger);
-    });
+
+    auto SEG = xServiceEnvGuard(argc, argv);
 
     auto CL = GetConfigLoader(argc, argv);
     CL.Require(ConfigServiceBindAddress, "BindAddress");
@@ -106,9 +97,9 @@ int main(int argc, char ** argv) {
     }
 
     while (true) {
-        GlobalTicker.Update();
+        ServiceTicker.Update();
         IC.LoopOnce();
-        TickAll(GlobalTicker(), Service);
+        TickAll(ServiceTicker(), Service);
     }
 
     return 0;

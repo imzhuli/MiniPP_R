@@ -27,7 +27,5 @@ bool LoadConfig(const char * filename) {
 
     Loader.Require(DeviceAuditAddress, "DeviceAuditAddress");
 
-    Loader.Require(LocalAuditFilename, "LocalAuditFilename");
-
     return true;
 }

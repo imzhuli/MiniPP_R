@@ -22,11 +22,9 @@ auto ServerIdClient = xSUAR_Service();
 
 int main(int argc, char ** argv) {
 
-    RuntimeEnv = xRuntimeEnv::FromCommandLine(argc, argv);
-    cout << ToString(RuntimeEnv) << endl;
+    auto SEG = xServiceEnvGuard(argc, argv);
 
     LoadConfig();
-    auto LogGuard = xScopeGuard(InitLogger, CleanLogger);
 
     LocalServerIdFilename = RuntimeEnv.CacheDir / (RuntimeEnv.ProgramName + ".local_service_id");
     auto SICG             = xResourceGuard(ServerIdClient, &IC, ServerIdCenterAddress, LocalServerIdFilename);
@@ -34,9 +32,9 @@ int main(int argc, char ** argv) {
     Logger->I("ServiceStart, Init LocalServerId=%" PRIx64 "", ServerIdClient.GetLocalServerId());
 
     while (true) {
-        Ticker.Update();
+        ServiceTicker.Update();
         IC.LoopOnce();
-        TickAll(Ticker(), ServerIdClient);
+        TickAll(ServiceTicker(), ServerIdClient);
     }
 
     return 0;

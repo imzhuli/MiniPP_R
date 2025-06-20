@@ -1,4 +1,5 @@
 #pragma once
+#include "../lib_server_util/all.hpp"
 #include "./device_manager.hpp"
 #include "./device_reporter.hpp"
 #include "./relay_connection_manager.hpp"
@@ -45,6 +46,3 @@ extern struct xRD_LocalAudit {
     auto ToString() const -> std::string;
 
 } LocalAudit;
-
-extern std::string LocalAuditFilename;
-extern xBaseLogger LocalAuditLogger;

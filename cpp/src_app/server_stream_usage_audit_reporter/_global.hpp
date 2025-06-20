@@ -1,7 +1,6 @@
 #pragma once
 #include "../lib_server_util/all.hpp"
 
-extern xRuntimeEnv RuntimeEnv;
 extern xNetAddress ServerIdCenterAddress;
 extern uint64_t    LocalServerId;
 
@@ -15,9 +14,6 @@ extern std::string BootstrapServerList;
 extern std::string Topic;
 
 extern std::string LoggerFilename;
-
-extern xBaseLogger * Logger;
-extern xTicker       Ticker;
 
 extern void InitLogger();
 extern void CleanLogger();

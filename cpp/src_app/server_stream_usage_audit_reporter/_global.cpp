@@ -3,7 +3,6 @@
 #include <config/config.hpp>
 #include <fstream>
 
-xRuntimeEnv RuntimeEnv;
 xNetAddress ServerIdCenterAddress;
 uint64_t    LocalServerId = 0;
 
@@ -17,9 +16,6 @@ std::string BootstrapServerList;
 std::string Topic;
 
 std::string LoggerFilename;
-
-xBaseLogger * Logger = nullptr;
-xTicker       Ticker;
 
 void LoadConfig() {
     auto CL = xConfigLoader(RuntimeEnv.DefaultConfigFilePath.c_str());
@@ -46,20 +42,4 @@ void LoadConfig() {
     CL.Require(Topic, "Topic");
 
     CL.Optional(LoggerFilename, "LoggerFilename", "stream_usage_audit_reporter.log");
-}
-
-void InitLogger() {
-    RuntimeAssert(!Logger);
-    Logger = new xBaseLogger();
-
-    auto Path = RuntimeEnv.GetCachePath(LoggerFilename);
-    cout << "LoggerPath: " << Path << endl;
-
-    RuntimeAssert(Logger->Init(Path.c_str(), false));
-}
-
-void CleanLogger() {
-    RuntimeAssert(Logger);
-    Logger->Clean();
-    delete Steal(Logger);
 }

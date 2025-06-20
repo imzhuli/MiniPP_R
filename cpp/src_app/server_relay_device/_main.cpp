@@ -6,6 +6,8 @@
 
 int main(int argc, char ** argv) {
 
+    auto SEG = xServiceEnvGuard(argc, argv);
+
     auto CL = xCommandLine(
         argc, argv,
         { {
@@ -29,10 +31,6 @@ int main(int argc, char ** argv) {
     RuntimeAssert(RelayConnectionManager.Init(MaxRelayConnectionCount));
 
     DeviceReporter.AddServer(DeviceAuditAddress);
-
-    auto LALG = xResourceGuard(LocalAuditLogger, LocalAuditFilename.c_str(), false);
-    RuntimeAssert(LALG);
-
     auto AuditTimer = xTimer();
     while (true) {
         auto NowMS = GetTimestampMS();
@@ -45,7 +43,7 @@ int main(int argc, char ** argv) {
         DeviceReporter.Tick(NowMS);
 
         if (AuditTimer.TestAndTag(std::chrono::minutes(1))) {
-            LocalAuditLogger.I("%s", LocalAudit.ToString().c_str());
+            Logger->I("%s", LocalAudit.ToString().c_str());
             LocalAudit.ResetPeriodicalValues();
         }
     }

@@ -1,4 +1,6 @@
 #include "../lib_backend_connection/backend_connection_pool.hpp"
+#include "./_global.hpp"
+#include "./auth_cache.hpp"
 
 #include <pp_protocol/_backend/auth_by_user_pass.hpp>
 #include <pp_protocol/command.hpp>
@@ -56,7 +58,8 @@ static void Test() {
     }
 }
 
-int main(int, char **) {
+int main(int argc, char ** argv) {
+    auto Env = xServiceEnvGuard(argc, argv);
 
     while (true) {
         IC.LoopOnce();

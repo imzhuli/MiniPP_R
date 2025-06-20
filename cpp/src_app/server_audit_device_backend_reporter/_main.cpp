@@ -2,9 +2,8 @@
 
 #include <pp_common/_.hpp>
 
-static auto IC     = xIoContext();
-static auto ICG    = xResourceGuard(IC);
-static auto Ticker = xTicker();
+static auto IC  = xIoContext();
+static auto ICG = xResourceGuard(IC);
 
 int main(int, char **) {
 
@@ -41,9 +40,9 @@ int main(int, char **) {
 
     auto T = xTimer();
     while (!T.TestAndTag(100s)) {
-        Ticker.Update();
+        ServiceTicker.Update();
         IC.LoopOnce();
-        TickAll(Ticker(), P);
+        TickAll(ServiceTicker(), P);
     }
 
     P.Clean();

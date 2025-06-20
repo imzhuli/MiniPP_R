@@ -22,8 +22,6 @@ xDeviceRelayService         DeviceRelayService;
 xRD_RelayConnectionManager  RelayConnectionManager;
 
 xRD_LocalAudit LocalAudit;
-std::string    LocalAuditFilename;
-xBaseLogger    LocalAuditLogger;
 
 void xRD_LocalAudit::ResetPeriodicalValues() {
 
