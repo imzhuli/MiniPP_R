@@ -39,13 +39,27 @@ int main(int, char **) {
     }
 
     auto T = xTimer();
-    while (!T.TestAndTag(100s)) {
+    while (!T.TestAndTag(1s)) {
         ServiceTicker.Update();
         IC.LoopOnce();
         TickAll(ServiceTicker(), P);
     }
 
     P.Clean();
+
+    auto Pool = xServiceRequestContextPool();
+    Pool.Init(1024);
+
+    auto CP = Pool.Acquire();
+    cout << CP->RequestId << endl;
+
+    T.Tag();
+    while (!T.TestAndTag(2s)) {
+        ServiceTicker.Update();
+        Pool.RemoveTimeoutRequests(1000, [](const xServiceRequestContext * RCP) { cout << "Removing timeout request: " << RCP->RequestId << endl; });
+    }
+
+    Pool.Clean();
 
     return 0;
 }

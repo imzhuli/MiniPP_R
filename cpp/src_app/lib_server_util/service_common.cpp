@@ -55,14 +55,7 @@ void xServiceRequestContextPool::Clean() {
     assert(TimeoutList.IsEmpty());
 }
 
-void xServiceRequestContextPool::RemoveTimeoutRequests(uint64_t TimeoutMS) {
-    auto KillTimepoint = ServiceTicker() - TimeoutMS;
-    while (auto P = (xServiceRequestContext *)TimeoutList.PopHead([KillTimepoint](const xServiceRequestContext & N) { return N.RequestTimestampMS <= KillTimepoint; })) {
-        Pool.Release(P->RequestId);
-    }
-}
-
-auto xServiceRequestContextPool::Acquire(uint64_t SourceConnectionId, uint64_t SourceRequestId) -> xServiceRequestContext * {
+auto xServiceRequestContextPool::Acquire(xVariable RequestContext, xVariable RequestContextEx) -> const xServiceRequestContext * {
     auto Id = Pool.Acquire();
     if (!Id) {
         return nullptr;
@@ -70,11 +63,19 @@ auto xServiceRequestContextPool::Acquire(uint64_t SourceConnectionId, uint64_t S
     auto & N             = Pool[Id];
     N.RequestId          = Id;
     N.RequestTimestampMS = ServiceTicker();
+    TimeoutList.AddTail(N);
 
-    N.SourceConnectionId = SourceConnectionId;
-    N.SourceRequestId    = SourceRequestId;
+    N.RequestContext   = RequestContext;
+    N.RequestContextEx = RequestContextEx;
+
     return &N;
 }
 
-void xServiceRequestContextPool::Release(uint64_t RequestId) {
+auto xServiceRequestContextPool::CheckAndGet(uint64_t RequestId) -> const xServiceRequestContext * {
+    return Pool.CheckAndGet(RequestId);
+}
+
+void xServiceRequestContextPool::Release(const xServiceRequestContext * RCP) {
+    assert(Pool.CheckAndGet(RCP->RequestId) == RCP);
+    Pool.Release(RCP->RequestId);
 }

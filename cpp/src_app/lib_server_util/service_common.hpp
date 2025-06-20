@@ -17,19 +17,13 @@ struct xServiceRequestContext;
 class xServiceRequestContextPool;
 
 class xServiceRequestContext : private xListNode {
-    friend class xServiceRequestContextPool;
     friend class xList<xServiceRequestContext>;
 
 public:
-    uint64_t GetRequestId() const { return RequestId; }
-    uint64_t GetSourceConnectionId() const { return SourceConnectionId; }
-    uint64_t GetSourceRequestId() const { return SourceRequestId; }
-
-private:
-    uint64_t RequestId;
-    uint64_t RequestTimestampMS;
-    uint64_t SourceConnectionId;
-    uint64_t SourceRequestId;
+    uint64_t          RequestId;
+    uint64_t          RequestTimestampMS;
+    mutable xVariable RequestContext;
+    mutable xVariable RequestContextEx;
 };
 using xServiceRequestContextList = xList<xServiceRequestContext>;
 
@@ -37,10 +31,22 @@ class xServiceRequestContextPool {
 public:
     bool Init(size_t PoolSize);
     void Clean();
-    void RemoveTimeoutRequests(uint64_t TimeoutMS);
 
-    auto Acquire(uint64_t SourceConnectionId, uint64_t SourceRequestId) -> xServiceRequestContext *;
-    void Release(uint64_t RequestId);
+    auto Acquire(xVariable RequestContext = {}, xVariable RequestContextEx = {}) -> const xServiceRequestContext *;
+    auto CheckAndGet(uint64_t RequestId) -> const xServiceRequestContext *;
+    void Release(const xServiceRequestContext * RCP);
+
+    template <typename tCallback = void(const xServiceRequestContext *)>
+    void RemoveTimeoutRequests(uint64_t TimeoutMS, tCallback && Callback = IgnoreTimeoutRequest) {
+        auto KillTimepoint = ServiceTicker() - TimeoutMS;
+        while (auto P = (const xServiceRequestContext *)TimeoutList.PopHead([KillTimepoint](const xServiceRequestContext & N) { return N.RequestTimestampMS <= KillTimepoint; })) {
+            std::forward<tCallback>(Callback)(P);
+            Pool.Release(P->RequestId);
+        }
+    }
+
+private:
+    static void IgnoreTimeoutRequest(const xServiceRequestContext *) {}
 
 private:
     xIndexedStorage<xServiceRequestContext> Pool;
