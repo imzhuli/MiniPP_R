@@ -129,7 +129,7 @@ enum eServerType : uint32_t {
     THIRD_RELAY           = 0x04,  // TR
     STATIC_RELAY_TERMINAL = 0x05,  // SRT
     PROXY_ACCESS          = 0x06,  // PA
-    ACCOUNT_CACHE         = 0x07,  // ACC
+    AUTH_CACHE            = 0x07,  // ACC
     AUDIT_CACHE           = 0x08,  // ADC
 
     // dispatchers
