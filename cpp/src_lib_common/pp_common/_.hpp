@@ -115,11 +115,12 @@ using xAuditId       = uint64_t;
 using xServerRuntimeKey = uint64_t;  // 由配置中心分配的动态服务器ID, 由序列和随机数组成
 
 // min static constants
-static constexpr const xSourcePoolId UNSPEC_SOURCE_POOL_ID = 0;
-static constexpr const xSourcePoolId MAX_SOURCE_POOL_ID    = 255;  // included
 
 static constexpr const size_t   DEFAULT_MAX_SERVER_CONNECTIONS    = 4096;
 static constexpr const uint32_t MAX_RELAY_DEVICE_SERVER_SUPPORTED = 4096;  // IdManagerMini::MaxObjectId
+
+static constexpr const uint32_t MAX_AUTH_CACHE_SERVER_COUNT             = 100;
+static constexpr const uint32_t MAX_DEVICE_AUDIT_COLLECTOR_SERVER_COUNT = 100;
 
 enum struct eServerType : uint32_t {
     UNSPECIFIED = 0x00,

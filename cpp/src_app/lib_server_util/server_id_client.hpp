@@ -24,7 +24,7 @@ public:
     };
     using xClient::Tick;
 
-    uint64_t GetLocalServerId() { return LocalServerId; }
+    uint64_t GetLocalServerId() const { return LocalServerId; }
 
     void LoadLocalServerId(const std::string & LocalServerIdFilename);
     void DumpLocalServerId(const std::string & LocalServerIdFilename);

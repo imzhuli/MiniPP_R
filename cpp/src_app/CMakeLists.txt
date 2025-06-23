@@ -61,7 +61,6 @@ set(target_list
 
 	observer_device_info
 
-	server_audit_dispatcher
 	server_audit_device_backend_reporter
 
 	server_auth_cache

@@ -3,7 +3,12 @@
 
 struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
 
-    static constexpr const uint32_t MAX_SERVER_SIZE = 150;
+    void     SerializeMembers() override { W(Version); }
+    void     DeserializeMembers() override { R(Version); }
+    uint32_t Version;
+};
+
+struct xPP_DownloadAuthCacheServerListResp : xBinaryMessage {
 
     struct ServerInfo {
         uint64_t    ServerId;
@@ -11,6 +16,7 @@ struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
     };
 
     void SerializeMembers() override {
+        W(Version);
         uint32_t Count = ServerInfoList.size();
         W(Count);
         for (auto & I : ServerInfoList) {
@@ -20,10 +26,12 @@ struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
     }
 
     void DeserializeMembers() override {
+        R(Version);
+
         uint32_t Count = 0;
         R(Count);
 
-        if (Count >= MAX_SERVER_SIZE) {
+        if (Count >= MAX_AUTH_CACHE_SERVER_COUNT) {
             GetReader()->SetError();
             return;
         }
@@ -34,13 +42,12 @@ struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
         }
     }
 
+    uint32_t                Version;
     std::vector<ServerInfo> ServerInfoList;
     //
 };
 
 struct xPP_DownloadDeviceAuditCollectorServerList : xBinaryMessage {
-
-    static constexpr const uint32_t MAX_SERVER_SIZE = 100;
 
     struct ServerInfo {
         uint64_t    ServerId;
@@ -48,6 +55,7 @@ struct xPP_DownloadDeviceAuditCollectorServerList : xBinaryMessage {
     };
 
     void SerializeMembers() override {
+        assert(ServerInfoList.size() < MAX_DEVICE_AUDIT_COLLECTOR_SERVER_COUNT);
         uint32_t Count = ServerInfoList.size();
         W(Count);
         for (auto & I : ServerInfoList) {
@@ -60,7 +68,7 @@ struct xPP_DownloadDeviceAuditCollectorServerList : xBinaryMessage {
         uint32_t Count = 0;
         R(Count);
 
-        if (Count >= MAX_SERVER_SIZE) {
+        if (Count >= MAX_DEVICE_AUDIT_COLLECTOR_SERVER_COUNT) {
             GetReader()->SetError();
             return;
         }

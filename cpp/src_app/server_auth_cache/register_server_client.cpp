@@ -6,6 +6,7 @@
 #include <pp_protocol/internal/all.hpp>
 
 void xAC_xServerIdClient::OnServerIdUpdated(uint64_t NewServerId) {
+    Logger->I("OnServerIdUpdated: %" PRIx64 "", NewServerId);
     RegisterServerClient.UpdateServerId(NewServerId);
 }
 

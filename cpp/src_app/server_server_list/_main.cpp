@@ -13,9 +13,10 @@ auto ICG = xResourceGuard(IC);
 
 struct xRegisterServerService : xService {
 
-    void OnClientConnected(xServiceClientConnection & Connection) override {}
+    void OnClientConnected(xServiceClientConnection & Connection) override { Logger->I("OnClientConnected"); }
 
     void OnClientClose(xServiceClientConnection & Connection) override {
+        Logger->I("OnClientClose");
         auto P = static_cast<xSL_AuthCacheServerInfo *>(Connection.GetUserContext().P);
         if (!P) {
             return;
@@ -34,6 +35,8 @@ struct xRegisterServerService : xService {
     }
 
     bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override {
+
+        Logger->I("OnClientPacket CommandId=%" PRIx32 "", CommandId);
         switch (CommandId) {
             case Cmd_RegisterAuthCacheServer:
                 return OnRegisterAuthCacheServer(Connection, CommandId, RequestId, PayloadPtr, PayloadSize);
@@ -49,16 +52,18 @@ struct xRegisterServerService : xService {
 
     bool OnRegisterAuthCacheServer(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
         auto & P = Connection.GetUserContext().P;
-        if (!P) {
-            X_DEBUG_PRINTF("duplicated register server");
+        if (P) {
+            Logger->D("duplicated register server");
             return false;
         }
         auto R = xPP_RegisterAuthCacheServer();
         if (!R.Deserialize(PayloadPtr, PayloadSize)) {
+            Logger->E("invalid request");
             return false;
         }
         auto NP = ServerListManager.AddAuthCacheServerInfo(R.ServerId, R.ExportServerAddress);
         if (!NP) {
+            Logger->E("failed to allocate auth cache server info");
             return false;
         }
         P = NP;
@@ -91,7 +96,7 @@ struct xDownloadServerService : xService {
     bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override {
         switch (CommandId) {
             case Cmd_DownloadAuthCacheServerList:
-                return true;
+                return OnDownloadAuthCacheServerList(Connection, CommandId, RequestId, PayloadPtr, PayloadSize);
             case Cmd_DownloadDeviceAuditServerList:
                 return true;
             case Cmd_DownloadAccountAuditCollectorServerList:
@@ -104,6 +109,9 @@ struct xDownloadServerService : xService {
     }
 
     //
+    bool OnDownloadAuthCacheServerList(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+        return false;
+    }
 };
 
 xDownloadServerService DownloadServerService;
