@@ -7,9 +7,9 @@ extern xRuntimeEnv RuntimeEnv;
 extern xLogger *   Logger;
 extern xTicker     ServiceTicker;
 
-struct xServiceEnvGuard final : xNonCopyable {
-    xServiceEnvGuard(int argc, char ** argv);
-    ~xServiceEnvGuard();
+struct xRuntimeEnvGuard final : xNonCopyable {
+    xRuntimeEnvGuard(int argc, char ** argv);
+    ~xRuntimeEnvGuard();
 };
 
 /////////////////////////

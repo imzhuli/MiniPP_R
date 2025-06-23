@@ -1,5 +1,6 @@
 #include "./service_common.hpp"
 
+#include <fstream>
 #include <mutex>
 
 /// @brief Common code in ////////
@@ -24,10 +25,10 @@ static void CleanLogger() {
     delete Steal(Logger);
 }
 
-static auto Instance = (xServiceEnvGuard *){};
+static auto Instance = (xRuntimeEnvGuard *){};
 static auto EnvMutex = std::mutex();
 
-xServiceEnvGuard::xServiceEnvGuard(int argc, char ** argv) {
+xRuntimeEnvGuard::xRuntimeEnvGuard(int argc, char ** argv) {
     auto G = std::lock_guard(EnvMutex);
     RuntimeAssert(!Instance);
 
@@ -36,7 +37,7 @@ xServiceEnvGuard::xServiceEnvGuard(int argc, char ** argv) {
     Instance = this;
 }
 
-xServiceEnvGuard::~xServiceEnvGuard() {
+xRuntimeEnvGuard::~xRuntimeEnvGuard() {
     auto G = std::lock_guard(EnvMutex);
     RuntimeAssert(this == Instance);
 
@@ -50,6 +51,7 @@ xServiceEnvGuard::~xServiceEnvGuard() {
 bool xServiceRequestContextPool::Init(size_t PoolSize) {
     return Pool.Init(PoolSize);
 }
+
 void xServiceRequestContextPool::Clean() {
     Pool.Clean();
     assert(TimeoutList.IsEmpty());

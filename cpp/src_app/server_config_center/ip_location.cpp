@@ -30,7 +30,7 @@ void xCC_IpLocationManager::ReloadIpDB() {
 
 xGeoInfo xCC_IpLocationManager::GetRegionByIp(const char * IpString) {
     auto Opt = IpDb.Get(IpString);
-    if (!Opt()) {
+    if (!Opt) {
         return xGeoInfo();
     }
     return *Opt;

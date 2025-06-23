@@ -65,8 +65,19 @@ static constexpr const xPacketCommandId Cmd_CheckinDnsServerResp    = Cmd_Server
 static constexpr const xPacketCommandId Cmd_EnableDnsDispatcher     = Cmd_ServerManagementBase + 7;
 static constexpr const xPacketCommandId Cmd_EnableDnsDispatcherResp = Cmd_ServerManagementBase + 8;
 
-static constexpr const xPacketCommandId Cmd_GetBackendServerList     = Cmd_ServerManagementBase + 100;
-static constexpr const xPacketCommandId Cmd_GetBackendServerListResp = Cmd_ServerManagementBase + 101;
+static constexpr const xPacketCommandId Cmd_GetBackendServerList     = Cmd_ServerManagementBase + 0x100;
+static constexpr const xPacketCommandId Cmd_GetBackendServerListResp = Cmd_ServerManagementBase + 0x101;
+
+static constexpr const xPacketCommandId Cmd_RegisterAuthCacheServer                     = Cmd_ServerManagementBase + 0x201;
+static constexpr const xPacketCommandId Cmd_RegisterDeviceAuditServer                   = Cmd_ServerManagementBase + 0x202;
+static constexpr const xPacketCommandId Cmd_RegisterAccountAuditCollectorServer         = Cmd_ServerManagementBase + 0x203;
+static constexpr const xPacketCommandId Cmd_RegisterServerResp                          = Cmd_ServerManagementBase + 0x2FF;
+static constexpr const xPacketCommandId Cmd_DownloadAuthCacheServerList                 = Cmd_ServerManagementBase + 0x301;
+static constexpr const xPacketCommandId Cmd_DownloadAuthCacheServerListResp             = Cmd_ServerManagementBase + 0x302;
+static constexpr const xPacketCommandId Cmd_DownloadDeviceAuditServerList               = Cmd_ServerManagementBase + 0x303;
+static constexpr const xPacketCommandId Cmd_DownloadDeviceAuditServerListResp           = Cmd_ServerManagementBase + 0x304;
+static constexpr const xPacketCommandId Cmd_DownloadAccountAuditCollectorServerList     = Cmd_ServerManagementBase + 0x305;
+static constexpr const xPacketCommandId Cmd_DownloadAccountAuditCollectorServerListResp = Cmd_ServerManagementBase + 0x306;
 
 // pa-relay:
 static constexpr const xPacketCommandId Cmd_PA_RL_Base                  = 0x06'000;

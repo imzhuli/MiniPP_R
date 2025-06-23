@@ -22,17 +22,8 @@ void xPA_AuthCacheManager::Clean() {
     xClientPool::Clean();
 }
 
-void xPA_AuthCacheManager::Tick() {
-    Tick(GetTimestampMS());
-}
-
-void xPA_AuthCacheManager::Tick(uint64_t NowMS) {
+void xPA_AuthCacheManager::OnTick(uint64_t NowMS) {
     Ticker.Update(NowMS);
-    xClientPool::Tick(NowMS);
-    OnTick();
-}
-
-void xPA_AuthCacheManager::OnTick() {
     ReconfirmTimePointMS = Ticker() - AUTH_CACHE_RECONFIRM_TIMEOUT_MS;
 
     // remove timeout cache node:

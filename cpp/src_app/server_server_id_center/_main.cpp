@@ -83,7 +83,7 @@ static auto Service = xServerIdCenterService();
 
 int main(int argc, char ** argv) {
 
-    auto SEG = xServiceEnvGuard(argc, argv);
+    auto SEG = xRuntimeEnvGuard(argc, argv);
 
     auto CL = GetConfigLoader(argc, argv);
     CL.Require(ConfigServiceBindAddress, "BindAddress");

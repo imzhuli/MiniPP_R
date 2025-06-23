@@ -65,7 +65,6 @@ set(target_list
 	server_audit_device_backend_reporter
 
 	server_auth_cache
-	server_auth_dispatcher
 	server_config_center
 	server_device_selector
 	server_device_state_relay

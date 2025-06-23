@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
 
     auto CL = xCommandLine{ argc, argv, { { 'l', nullptr, "loop", false } } };
 
-    if (CL["loop"]()) {
+    if (CL["loop"]) {
         while (true) {
             std::this_thread::sleep_for(std::chrono::seconds(60));
         }

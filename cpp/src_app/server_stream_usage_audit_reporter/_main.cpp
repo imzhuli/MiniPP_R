@@ -12,8 +12,7 @@ struct xSUAR_Service : xServerIdClient {
     void OnServerIdUpdated(uint64_t NewServerId) {
         Logger->I("UpdateLocalServerId: %" PRIx64 "", NewServerId);
         if (NewServerId) {
-            ::LocalServerId = NewServerId;
-            DumpLocalServerId(LocalServerIdFilename);
+            DumpLocalServerId(RuntimeEnv.DefaultLocalServerIdFilePath);
             ServerReady = true;
         }
     }
@@ -22,12 +21,10 @@ auto ServerIdClient = xSUAR_Service();
 
 int main(int argc, char ** argv) {
 
-    auto SEG = xServiceEnvGuard(argc, argv);
+    auto SEG = xRuntimeEnvGuard(argc, argv);
 
     LoadConfig();
-
-    LocalServerIdFilename = RuntimeEnv.CacheDir / (RuntimeEnv.ProgramName + ".local_service_id");
-    auto SICG             = xResourceGuard(ServerIdClient, &IC, ServerIdCenterAddress, LocalServerIdFilename);
+    auto SICG = xResourceGuard(ServerIdClient, &IC, ServerIdCenterAddress, RuntimeEnv.DefaultLocalServerIdFilePath);
 
     Logger->I("ServiceStart, Init LocalServerId=%" PRIx64 "", ServerIdClient.GetLocalServerId());
 

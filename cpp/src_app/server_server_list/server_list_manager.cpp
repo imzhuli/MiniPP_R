@@ -1,20 +1,24 @@
 #include "./server_list_manager.hpp"
 
-bool xSL_InternalServerListManager::AddAuthCacheServerInfo(uint64_t ServerId, xNetAddress ServerAddress) {
+auto xSL_InternalServerListManager::AddAuthCacheServerInfo(uint64_t ServerId, xNetAddress ServerAddress) -> xSL_AuthCacheServerInfo * {
+    if (AuthCacheServerInfoList.size() >= MaxAuthCacheServerCount) {
+        return nullptr;
+    }
+
     auto It    = std::lower_bound(AuthCacheServerInfoList.begin(), AuthCacheServerInfoList.end(), ServerId, [](const auto & R, uint64_t Id) { return R->ServerId < Id; });
     auto Found = (It != AuthCacheServerInfoList.end()) && ((*It)->ServerId == ServerId);
     if (Found) {
-        return false;
+        return nullptr;
     }
-    AuthCacheServerInfoList.emplace(
+    It = AuthCacheServerInfoList.emplace(
         It,
         new xSL_AuthCacheServerInfo{
-            .ServerType    = AUTH_CACHE,
+            .ServerType    = eServerType::AUTH_CACHE,
             .ServerId      = ServerId,
             .ServerAddress = ServerAddress,
         }
     );
-    return true;
+    return (*It).get();
 }
 
 void xSL_InternalServerListManager::RemoveAuthCacheServerInfo(uint64_t ServerId) {
@@ -27,3 +31,16 @@ void xSL_InternalServerListManager::RemoveAuthCacheServerInfo(uint64_t ServerId)
     }
     AuthCacheServerInfoList.erase(It);
 }
+
+auto xSL_InternalServerListManager::GetAuthCacheServerInfo(uint64_t ServerId) -> const xSL_AuthCacheServerInfo * {
+    auto It = std::lower_bound(AuthCacheServerInfoList.begin(), AuthCacheServerInfoList.end(), ServerId, [](const auto & R, uint64_t Id) { return R->ServerId < Id; });
+    if (It == AuthCacheServerInfoList.end()) {
+        return nullptr;
+    }
+    if ((*It)->ServerId != ServerId) {
+        return nullptr;
+    }
+    return (*It).get();
+}
+
+/////////////////////////////////////////////////

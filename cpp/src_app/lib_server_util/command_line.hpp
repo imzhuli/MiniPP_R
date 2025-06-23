@@ -15,6 +15,7 @@ struct xRuntimeEnv {
     std::string           ProgramName;
     std::filesystem::path DefaultConfigFilePath;
     std::filesystem::path DefaultLoggerFilePath;
+    std::filesystem::path DefaultLocalServerIdFilePath;
 
     std::filesystem::path GetBinaryPath(const std::filesystem::path & Filename) const;
     std::filesystem::path GetConfigPath(const std::filesystem::path & Filename) const;

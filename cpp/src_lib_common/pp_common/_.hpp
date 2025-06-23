@@ -15,6 +15,7 @@
 #include <network/tcp_server.hpp>
 #include <network/udp_channel.hpp>
 #include <object/object.hpp>
+#include <server_arch/client.hpp>
 #include <server_arch/client_pool.hpp>
 #include <server_arch/message.hpp>
 #include <server_arch/service.hpp>
@@ -37,6 +38,7 @@ using xel::eLogLevel;
 using xel::xAbstract;
 using xel::xBaseLogger;
 using xel::xBinaryMessage;
+using xel::xClient;
 using xel::xClientPool;
 using xel::xCommandLine;
 using xel::xIndexedStorage;
@@ -119,7 +121,7 @@ static constexpr const xSourcePoolId MAX_SOURCE_POOL_ID    = 255;  // included
 static constexpr const size_t   DEFAULT_MAX_SERVER_CONNECTIONS    = 4096;
 static constexpr const uint32_t MAX_RELAY_DEVICE_SERVER_SUPPORTED = 4096;  // IdManagerMini::MaxObjectId
 
-enum eServerType : uint32_t {
+enum struct eServerType : uint32_t {
     UNSPECIFIED = 0x00,
 
     // main service

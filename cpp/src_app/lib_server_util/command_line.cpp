@@ -37,7 +37,7 @@ xRuntimeEnv xRuntimeEnv::FromCommandLine(int CmdArgc, char ** CmdArgv) {
 
     auto DefaultBinPath = std::filesystem::current_path();
     auto HomeOpt        = CL["home_dir"];
-    if (!HomeOpt()) {
+    if (!HomeOpt) {
         Env.HomeDir   = std::filesystem::weakly_canonical(DefaultBinPath);
         Env.BinDir    = Env.HomeDir;
         Env.ConfigDir = Env.HomeDir;
@@ -53,13 +53,14 @@ xRuntimeEnv xRuntimeEnv::FromCommandLine(int CmdArgc, char ** CmdArgv) {
 
     auto ConfigFilename    = std::string("");
     auto ConfigFilenameOpt = CL["config-file"];
-    if (ConfigFilenameOpt()) {
+    if (ConfigFilenameOpt) {
         Env.DefaultConfigFilePath = Env.GetConfigPath(*ConfigFilenameOpt);
     } else {
         Env.DefaultConfigFilePath = Env.GetConfigPath("default");
     }
 
-    Env.DefaultLoggerFilePath = Env.CacheDir / (Env.ProgramName + ".log");
+    Env.DefaultLoggerFilePath        = Env.CacheDir / (Env.ProgramName + ".log");
+    Env.DefaultLocalServerIdFilePath = Env.CacheDir / (Env.ProgramName + ".local_server_id");
 
     return Env;
 }
@@ -97,7 +98,7 @@ std::string GetConfigFile(int CmdArgC, char ** CmdArgV) {
         }
     );
     auto Opt = CL["config-file"];
-    if (!Opt()) {
+    if (!Opt) {
         return {};
     }
     return *Opt;

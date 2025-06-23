@@ -59,12 +59,26 @@ static void Test() {
 }
 
 int main(int argc, char ** argv) {
-    auto Env = xServiceEnvGuard(argc, argv);
+    auto Env = xRuntimeEnvGuard(argc, argv);
+    auto CL  = xConfigLoader(RuntimeEnv.DefaultConfigFilePath);
+    CL.Require(BindAddress, "ServerIdCenterAddress");
+    CL.Require(ServerIdCenterAddress, "ServerIdCenterAddress");
+    CL.Require(ServerListRegisterAddress, "ServerListRegisterAddress");
+    CL.Require(ExportServerAddress, "ExportServerAddress");
+
+    auto SICG  = xResourceGuard(ServerIdClient, &IC, ServerIdCenterAddress);
+    auto SLRAG = xResourceGuard(RegisterServerClient, &IC, ServerListRegisterAddress);
+
+    RuntimeAssert(SICG);
+    RuntimeAssert(SLRAG);
+
+    Touch(Test);
+    Touch(C);
 
     while (true) {
+        ServiceTicker.Update();
         IC.LoopOnce();
-        C.Tick();
-        Test();
+        TickAll(ServiceTicker(), ServerIdClient, RegisterServerClient);
     }
 
     return 0;

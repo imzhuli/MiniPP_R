@@ -178,7 +178,7 @@ int main(int argc, char ** argv) {
     );
 
     auto ConfigFileOpt = CL["config_file"];
-    RuntimeAssert(ConfigFileOpt());
+    RuntimeAssert(ConfigFileOpt);
 
     LoadConfig(ConfigFileOpt->c_str());
 

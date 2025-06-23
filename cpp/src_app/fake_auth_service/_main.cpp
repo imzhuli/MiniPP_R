@@ -52,7 +52,7 @@ int main(int argc, char ** argv) {
     );
 
     auto Nopt = CL["nation"];
-    if (Nopt() && Nopt->size() == 2) {
+    if (Nopt && Nopt->size() == 2) {
         CountryId = CountryCodeToCountryId(Nopt->c_str());
         cout << "using country : " << *Nopt << ": " << CountryId << endl;
     }

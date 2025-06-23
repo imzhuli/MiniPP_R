@@ -69,7 +69,7 @@ int main(int argc, char ** argv) {
     auto OP = CL["producer"];
     auto OO = CL["observer"];
 
-    if (!OP() || !OO()) {
+    if (!OP || !OO) {
         Usage();
         return -1;
     }

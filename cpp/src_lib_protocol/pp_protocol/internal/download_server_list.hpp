@@ -3,7 +3,7 @@
 
 struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
 
-    static constexpr const uint32_t MAX_SERVER_SIZE = 100;
+    static constexpr const uint32_t MAX_SERVER_SIZE = 150;
 
     struct ServerInfo {
         uint64_t    ServerId;

@@ -26,25 +26,25 @@ bool xServerIdClient::OnServerPacket(xPacketCommandId CommandId, xPacketRequestI
 }
 
 void xServerIdClient::LoadLocalServerId(const std::string & LocalServerIdFilename) {
-    auto File = LocalServerIdFilename;
-    auto FS   = FileToStr(File);
-    if (!FS()) {
+    auto File  = LocalServerIdFilename;
+    auto FSOpt = FileToStr(File);
+    if (!FSOpt) {
         LocalServerId = 0;
         return;
     }
-    LocalServerId = (uint64_t)strtoumax(FS->c_str(), nullptr, 10);
+    LocalServerId = (uint64_t)strtoumax(FSOpt->c_str(), nullptr, 10);
 }
 
 void xServerIdClient::DumpLocalServerId(const std::string & LocalServerIdFilename) {
     if (LocalServerIdFilename.empty()) {
         return;
     }
-    auto File = LocalServerIdFilename;
-    auto FS   = std::ofstream(File, std::ios_base::binary | std::ios_base::out);
-    if (!FS) {
+    auto File  = LocalServerIdFilename;
+    auto FSOpt = std::ofstream(File, std::ios_base::binary | std::ios_base::out);
+    if (!FSOpt) {
         cerr << "failed to dump file to LocalCacheFile" << endl;
         return;
     }
-    FS << LocalServerId << endl;
+    FSOpt << LocalServerId << endl;
     return;
 }

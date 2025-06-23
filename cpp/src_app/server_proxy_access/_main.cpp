@@ -14,7 +14,7 @@ int main(int argc, char ** argv) {
         }
     );
     auto ConfigFilename = CL["config"];
-    RuntimeAssert(ConfigFilename());
+    RuntimeAssert(ConfigFilename);
     LoadConfig(ConfigFilename->c_str());
 
     auto ICG   = xResourceGuard(IC);

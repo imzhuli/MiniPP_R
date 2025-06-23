@@ -12,7 +12,7 @@ int main(int argc, char ** argv) {
     auto filename       = "./test_assets/ip-loc.BIN";
 
     auto Opt = CL["filename"];
-    if (Opt()) {
+    if (Opt) {
         filename = Opt->c_str();
     }
 
@@ -21,7 +21,7 @@ int main(int argc, char ** argv) {
 
     // auto a = ipdb.Get("240e:ff:e020:98c:0:ff:b061:c306");
     auto a = ipdb.Get("183.2.172.177");
-    if (!a()) {
+    if (!a) {
         cerr << "ip not found" << endl;
     } else {
         auto & r = *a;

@@ -22,7 +22,7 @@ int main(int argc, char ** argv) {
 
     auto AllocatorAddress    = xNetAddress::Parse("127.0.0.1", 7777);
     auto AllocatorAddressOpt = CL["config-center-address"];
-    if (AllocatorAddressOpt()) {
+    if (AllocatorAddressOpt) {
         AllocatorAddress = xNetAddress::Parse(*AllocatorAddressOpt);
         if (!AllocatorAddress) {
             X_PFATAL("Invalid address: %s", AllocatorAddressOpt->c_str());
@@ -30,7 +30,7 @@ int main(int argc, char ** argv) {
     }
     uint64_t PreviousServerId    = 0;
     auto     PreviousServerIdOpt = CL["previous-server-id"];
-    if (PreviousServerIdOpt()) {
+    if (PreviousServerIdOpt) {
         PreviousServerId = (uint64_t)std::strtoull(PreviousServerIdOpt->c_str(), nullptr, 10);
     }
 

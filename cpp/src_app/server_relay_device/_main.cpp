@@ -6,7 +6,7 @@
 
 int main(int argc, char ** argv) {
 
-    auto SEG = xServiceEnvGuard(argc, argv);
+    auto SEG = xRuntimeEnvGuard(argc, argv);
 
     auto CL = xCommandLine(
         argc, argv,
@@ -19,7 +19,7 @@ int main(int argc, char ** argv) {
     );
 
     auto ConfigFileOpt = CL["config_file"];
-    RuntimeAssert(ConfigFileOpt());
+    RuntimeAssert(ConfigFileOpt);
     RuntimeAssert(LoadConfig(ConfigFileOpt->c_str()));
 
     RuntimeAssert(GlobalIoContext.Init());
