@@ -13,6 +13,8 @@ auto ICG = xResourceGuard(IC);
 
 struct xRegisterServerService : xService {
 
+    void OnTick(uint64_t NowMS) { ServerListManager.OnTick(NowMS); }
+
     void OnClientConnected(xServiceClientConnection & Connection) override { Logger->I("OnClientConnected"); }
 
     void OnClientClose(xServiceClientConnection & Connection) override {

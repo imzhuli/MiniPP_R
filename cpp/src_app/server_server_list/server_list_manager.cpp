@@ -6,7 +6,6 @@ static constexpr const uint64_t UPGRADE_VERSION_TIMEOUT_MS = 1 * 60'000;
 
 void xSL_InternalServerListManager::OnTick(uint64_t NowMS) {
     Ticker.Update(NowMS);
-
     if (AuthCacheServerInfoListDirty && (NowMS - AuthCacheServerInfoListVersionTimestampMS) > UPGRADE_VERSION_TIMEOUT_MS) {
         Logger->I("Update VersionedAuthCacheServerInfoList");
         VersionedAuthCacheServerInfoList          = AuthCacheServerInfoList;

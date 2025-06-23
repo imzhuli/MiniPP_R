@@ -12,13 +12,13 @@ using xSL_AuthCacheServerInfo             = xSL_InternalServerBase;
 using xSL_DeviceAuditServerInfo           = xSL_InternalServerBase;
 using xSL_AccountAuditCollectorServerInfo = xSL_InternalServerBase;
 
-class xSL_InternalServerListManager : public xService {
+class xSL_InternalServerListManager {
 public:
-    bool Init(xIoContext * IoContextPtr, const xNetAddress & BindAddress, size_t MaxConnectionId) {
-        AuthCacheServerInfoListVersionTimestampMS             = GetTickTimeMS();
-        DeviceAuditServerInfoListVersionTimestampMS           = GetTickTimeMS();
-        AccountAuditCollectorServerInfoListVersionTimestampMS = GetTickTimeMS();
-        return xService::Init(IoContextPtr, BindAddress, MaxConnectionId, true);
+    bool Init() {
+        AuthCacheServerInfoListVersionTimestampMS             = Ticker();
+        DeviceAuditServerInfoListVersionTimestampMS           = Ticker();
+        AccountAuditCollectorServerInfoListVersionTimestampMS = Ticker();
+        return true;
     };
     void Clean() {
         Reset(AuthCacheServerInfoListVersion);
@@ -38,10 +38,9 @@ public:
         Reset(AccountAuditCollectorServerInfoListVersionTimestampMS);
         Reset(AccountAuditCollectorServerInfoList);
         Reset(VersionedAccountAuditCollectorServerInfoList);
-        xService::Clean();
     }
 
-    void OnTick(uint64_t NowMS) override;
+    void OnTick(uint64_t NowMS);
 
     auto AddAuthCacheServerInfo(uint64_t ServerId, xNetAddress ServerAddress) -> xSL_AuthCacheServerInfo *;
     void RemoveAuthCacheServerInfo(uint64_t ServerId);
