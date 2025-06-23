@@ -8,6 +8,9 @@ void xSL_InternalServerListManager::OnTick(uint64_t NowMS) {
     Ticker.Update(NowMS);
     if (AuthCacheServerInfoListDirty && (NowMS - AuthCacheServerInfoListVersionTimestampMS) > UPGRADE_VERSION_TIMEOUT_MS) {
         Logger->I("Update VersionedAuthCacheServerInfoList");
+        if (!++AuthCacheServerInfoListVersion) {
+            ++AuthCacheServerInfoListVersion;
+        }
         VersionedAuthCacheServerInfoList          = AuthCacheServerInfoList;
         AuthCacheServerInfoListVersionTimestampMS = NowMS;
         Reset(AuthCacheServerInfoListDirty);
