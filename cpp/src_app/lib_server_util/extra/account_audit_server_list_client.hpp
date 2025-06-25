@@ -2,7 +2,7 @@
 #include <pp_common/base.hpp>
 #include <pp_protocol/internal/all.hpp>
 
-class xDownloadAuthCacheServerListClient : public xClient {
+class xDownloadAuditAccountServerListClient : public xClient {
 public:
     static constexpr const uint64_t MIN_UPDATE_INTERVAL_MS = 60'000;
 
@@ -24,7 +24,7 @@ private:
     void OnServerConnected() override;
     bool OnServerPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override;
 
-    void PostDownloadAuthCacheServerListRequest();
+    void PostDownloadAuditAccountServerListRequest();
 
 protected:
     uint64_t                 UpdateIntervalMS       = MIN_UPDATE_INTERVAL_MS;

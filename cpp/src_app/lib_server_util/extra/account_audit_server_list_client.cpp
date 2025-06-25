@@ -1,35 +1,35 @@
-#include "./auth_cache_server_list_client.hpp"
+#include "./account_audit_server_list_client.hpp"
 
 #include <pp_protocol/command.hpp>
 
-void xDownloadAuthCacheServerListClient::SetUpdateInterval(uint64_t IntervalMS) {
+void xDownloadAuditAccountServerListClient::SetUpdateInterval(uint64_t IntervalMS) {
     UpdateIntervalMS = IntervalMS < MIN_UPDATE_INTERVAL_MS ? MIN_UPDATE_INTERVAL_MS : IntervalMS;
 }
 
-void xDownloadAuthCacheServerListClient::OnTick(uint64_t NowMS) {
+void xDownloadAuditAccountServerListClient::OnTick(uint64_t NowMS) {
     if (NowMS - LastRequestTimestampMS < UpdateIntervalMS) {
         return;
     }
-    PostDownloadAuthCacheServerListRequest();
+    PostDownloadAuditAccountServerListRequest();
 }
 
-void xDownloadAuthCacheServerListClient::PostDownloadAuthCacheServerListRequest() {
-    auto R    = xPP_DownloadAuthCacheServerList();
+void xDownloadAuditAccountServerListClient::PostDownloadAuditAccountServerListRequest() {
+    auto R    = xPP_DownloadAuditAccountServerList();
     R.Version = ServerListVersion;
-    PostMessage(Cmd_DownloadAuthCacheServerList, 0, R);
+    PostMessage(Cmd_DownloadAuditAccountServerList, 0, R);
     LastRequestTimestampMS = GetTimestampMS();
 }
 
-void xDownloadAuthCacheServerListClient::OnServerConnected() {
-    PostDownloadAuthCacheServerListRequest();
+void xDownloadAuditAccountServerListClient::OnServerConnected() {
+    PostDownloadAuditAccountServerListRequest();
 }
 
-bool xDownloadAuthCacheServerListClient::OnServerPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
-    if (CommandId != Cmd_DownloadAuthCacheServerListResp) {
+bool xDownloadAuditAccountServerListClient::OnServerPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    if (CommandId != Cmd_DownloadAuditAccountServerListResp) {
         return false;
     }
 
-    auto R = xPP_DownloadAuthCacheServerListResp();
+    auto R = xPP_DownloadAuditAccountServerListResp();
     if (!R.Deserialize(PayloadPtr, PayloadSize)) {
         return false;
     }

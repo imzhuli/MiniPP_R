@@ -12,7 +12,7 @@ xNetAddress ExportCtrlAddress;
 xNetAddress ExportDataAddress;
 xNetAddress ExportProxyAddress;
 
-xNetAddress        DeviceAuditAddress;
+xNetAddress        AuditDeviceAddress;
 xRD_DeviceReporter DeviceReporter;
 
 xRD_DeviceConnectionManager DeviceConnectionManager;

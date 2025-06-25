@@ -10,7 +10,7 @@ extern xNetAddress ExportServerAddress;
 extern xNetAddress ServerIdCenterAddress;
 extern xNetAddress ServerListRegisterAddress;
 
-extern uint64_t CacheNodeTimeoutMS;
+extern xAD_xServerIdClient      ServerIdClient;
+extern xAD_RegisterServerClient RegisterServerClient;
 
-extern xAC_xServerIdClient      ServerIdClient;
-extern xAC_RegisterServerClient RegisterServerClient;
+extern void LoadConfig();

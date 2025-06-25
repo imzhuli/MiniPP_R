@@ -19,7 +19,7 @@ extern xNetAddress ExportCtrlAddress;
 extern xNetAddress ExportDataAddress;
 extern xNetAddress ExportProxyAddress;
 
-extern xNetAddress        DeviceAuditAddress;
+extern xNetAddress        AuditDeviceAddress;
 extern xRD_DeviceReporter DeviceReporter;
 
 extern xRD_DeviceConnectionManager DeviceConnectionManager;

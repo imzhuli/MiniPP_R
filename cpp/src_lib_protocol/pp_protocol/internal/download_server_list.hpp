@@ -2,7 +2,6 @@
 #include "../base.hpp"
 
 struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
-
     void     SerializeMembers() override { W(Version); }
     void     DeserializeMembers() override { R(Version); }
     uint32_t Version;
@@ -47,15 +46,21 @@ struct xPP_DownloadAuthCacheServerListResp : xBinaryMessage {
     //
 };
 
-struct xPP_DownloadDeviceAuditCollectorServerList : xBinaryMessage {
+struct xPP_DownloadAuditDeviceServerList : xBinaryMessage {
+    void     SerializeMembers() override { W(Version); }
+    void     DeserializeMembers() override { R(Version); }
+    uint32_t Version;
+};
 
-    struct ServerInfo {
+struct xPP_DownloadAuditDeviceServerListResp : xBinaryMessage {
+
+    struct xServerInfo {
         uint64_t    ServerId;
         xNetAddress ExportServerAddress;
     };
 
     void SerializeMembers() override {
-        assert(ServerInfoList.size() < MAX_DEVICE_AUDIT_COLLECTOR_SERVER_COUNT);
+        W(Version);
         uint32_t Count = ServerInfoList.size();
         W(Count);
         for (auto & I : ServerInfoList) {
@@ -65,10 +70,12 @@ struct xPP_DownloadDeviceAuditCollectorServerList : xBinaryMessage {
     }
 
     void DeserializeMembers() override {
+        R(Version);
+
         uint32_t Count = 0;
         R(Count);
 
-        if (Count >= MAX_DEVICE_AUDIT_COLLECTOR_SERVER_COUNT) {
+        if (Count >= MAX_DEVICE_AUDIT_SERVER_COUNT) {
             GetReader()->SetError();
             return;
         }
@@ -79,7 +86,52 @@ struct xPP_DownloadDeviceAuditCollectorServerList : xBinaryMessage {
         }
     }
 
-    std::vector<ServerInfo> ServerInfoList;
+    uint32_t                 Version;
+    std::vector<xServerInfo> ServerInfoList;
+    //
+};
 
+struct xPP_DownloadAuditAccountServerList : xBinaryMessage {
+    void     SerializeMembers() override { W(Version); }
+    void     DeserializeMembers() override { R(Version); }
+    uint32_t Version;
+};
+
+struct xPP_DownloadAuditAccountServerListResp : xBinaryMessage {
+
+    struct xServerInfo {
+        uint64_t    ServerId;
+        xNetAddress ExportServerAddress;
+    };
+
+    void SerializeMembers() override {
+        W(Version);
+        uint32_t Count = ServerInfoList.size();
+        W(Count);
+        for (auto & I : ServerInfoList) {
+            W(I.ServerId);
+            W(I.ExportServerAddress);
+        }
+    }
+
+    void DeserializeMembers() override {
+        R(Version);
+
+        uint32_t Count = 0;
+        R(Count);
+
+        if (Count >= MAX_DEVICE_AUDIT_SERVER_COUNT) {
+            GetReader()->SetError();
+            return;
+        }
+        ServerInfoList.resize(Count);
+        for (auto & I : ServerInfoList) {
+            R(I.ServerId);
+            R(I.ExportServerAddress);
+        }
+    }
+
+    uint32_t                 Version;
+    std::vector<xServerInfo> ServerInfoList;
     //
 };

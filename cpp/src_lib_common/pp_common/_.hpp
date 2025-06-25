@@ -119,8 +119,9 @@ using xServerRuntimeKey = uint64_t;  // 由配置中心分配的动态服务器I
 static constexpr const size_t   DEFAULT_MAX_SERVER_CONNECTIONS    = 4096;
 static constexpr const uint32_t MAX_RELAY_DEVICE_SERVER_SUPPORTED = 4096;  // IdManagerMini::MaxObjectId
 
-static constexpr const uint32_t MAX_AUTH_CACHE_SERVER_COUNT             = 100;
-static constexpr const uint32_t MAX_DEVICE_AUDIT_COLLECTOR_SERVER_COUNT = 100;
+static constexpr const uint32_t MAX_AUTH_CACHE_SERVER_COUNT    = 125;
+static constexpr const uint32_t MAX_DEVICE_AUDIT_SERVER_COUNT  = 125;
+static constexpr const uint32_t MAX_ACCOUNT_AUDIT_SERVER_COUNT = 125;
 
 enum struct eServerType : uint32_t {
     UNSPECIFIED = 0x00,
@@ -133,7 +134,8 @@ enum struct eServerType : uint32_t {
     STATIC_RELAY_TERMINAL = 0x05,  // SRT
     PROXY_ACCESS          = 0x06,  // PA
     AUTH_CACHE            = 0x07,  // ACC
-    AUDIT_CACHE           = 0x08,  // ADC
+    AUDIT_DEVICE_CACHE    = 0x08,  // ADC
+    AUDIT_ACCOUNT_CACHE   = 0x09,  // ADC
 
     // dispatchers
     CONFIG_CENTER_ENTRY   = 0x01'01,  // not used // 2025-04-07

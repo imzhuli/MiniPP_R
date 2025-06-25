@@ -30,7 +30,7 @@ int main(int argc, char ** argv) {
     RuntimeAssert(ProxyConnectionManager.Init(&GlobalIoContext, MaxProxyCount));
     RuntimeAssert(RelayConnectionManager.Init(MaxRelayConnectionCount));
 
-    DeviceReporter.AddServer(DeviceAuditAddress);
+    DeviceReporter.AddServer(AuditDeviceAddress);
     auto AuditTimer = xTimer();
     while (true) {
         auto NowMS = GetTimestampMS();

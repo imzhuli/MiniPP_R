@@ -25,7 +25,7 @@ bool LoadConfig(const char * filename) {
     Loader.Require(ExportDataAddress, "ExportDataAddress");
     Loader.Require(ExportProxyAddress, "ExportProxyAddress");
 
-    Loader.Require(DeviceAuditAddress, "DeviceAuditAddress");
+    Loader.Require(AuditDeviceAddress, "AuditDeviceAddress");
 
     return true;
 }

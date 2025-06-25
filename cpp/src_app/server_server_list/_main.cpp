@@ -30,6 +30,15 @@ struct xRegisterServerService : xService {
                 Logger->I("RemoveAuthCacheServerInfo: ServerId=%" PRIx64 "", ServerId);
                 ServerListManager.RemoveAuthCacheServerInfo(ServerId);
                 break;
+            case eServerType::AUDIT_DEVICE_CACHE:
+                Logger->I("RemoveAuditDeviceServerInfo: ServerId=%" PRIx64 "", ServerId);
+                ServerListManager.RemoveAuditDeviceServerInfo(ServerId);
+                break;
+            case eServerType::AUDIT_ACCOUNT_CACHE:
+                Logger->I("RemoveAuditAccountServerInfo: ServerId=%" PRIx64 "", ServerId);
+                ServerListManager.RemoveAuditAccountServerInfo(ServerId);
+                break;
+
             default:
                 break;
         };
@@ -41,18 +50,18 @@ struct xRegisterServerService : xService {
         Logger->I("OnClientPacket CommandId=%" PRIx32 "", CommandId);
         switch (CommandId) {
             case Cmd_RegisterAuthCacheServer:
-                return OnRegisterAuthCacheServer(Connection, CommandId, RequestId, PayloadPtr, PayloadSize);
-            case Cmd_RegisterDeviceAuditServer:
-                return true;
-            case Cmd_RegisterAccountAuditCollectorServer:
-                return true;
+                return OnRegisterAuthCacheServer(Connection, PayloadPtr, PayloadSize);
+            case Cmd_RegisterAuditDeviceServer:
+                return OnRegisterAuditDeviceServer(Connection, PayloadPtr, PayloadSize);
+            case Cmd_RegisterAuditAccountServer:
+                return OnRegisterAuditAccountServer(Connection, PayloadPtr, PayloadSize);
             default:
                 break;
         }
         return true;
     }
 
-    bool OnRegisterAuthCacheServer(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
+    bool OnRegisterAuthCacheServer(xServiceClientConnection & Connection, ubyte * PayloadPtr, size_t PayloadSize) {
         auto & P = Connection.GetUserContext().P;
         if (P) {
             Logger->D("duplicated register server");
@@ -65,7 +74,7 @@ struct xRegisterServerService : xService {
         }
         auto NP = ServerListManager.AddAuthCacheServerInfo(R.ServerId, R.ExportServerAddress);
         if (!NP) {
-            Logger->E("failed to allocate auth cache server info");
+            Logger->E("failed to allocate server info");
             return false;
         }
         P = NP;
@@ -73,14 +82,46 @@ struct xRegisterServerService : xService {
         return true;
     }
 
-    bool OnRegisterDeviceAuditServer(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
-        return false;
+    bool OnRegisterAuditDeviceServer(xServiceClientConnection & Connection, ubyte * PayloadPtr, size_t PayloadSize) {
+        auto & P = Connection.GetUserContext().P;
+        if (P) {
+            Logger->D("duplicated register server");
+            return false;
+        }
+        auto R = xPP_RegisterAuditDeviceServer();
+        if (!R.Deserialize(PayloadPtr, PayloadSize)) {
+            Logger->E("invalid request");
+            return false;
+        }
+        auto NP = ServerListManager.AddAuditDeviceServerInfo(R.ServerId, R.ExportServerAddress);
+        if (!NP) {
+            Logger->E("failed to allocate server info");
+            return false;
+        }
+        P = NP;
+        Logger->I("OnRegisterAuditDeviceServer: ServerId=%" PRIx64 "", R.ServerId);
+        return true;
     }
 
-    bool OnRegisterAccountAuditCollectorServer(
-        xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize
-    ) {
-        return false;
+    bool OnRegisterAuditAccountServer(xServiceClientConnection & Connection, ubyte * PayloadPtr, size_t PayloadSize) {
+        auto & P = Connection.GetUserContext().P;
+        if (P) {
+            Logger->D("duplicated register server");
+            return false;
+        }
+        auto R = xPP_RegisterAuditAccountServer();
+        if (!R.Deserialize(PayloadPtr, PayloadSize)) {
+            Logger->E("invalid request");
+            return false;
+        }
+        auto NP = ServerListManager.AddAuditAccountServerInfo(R.ServerId, R.ExportServerAddress);
+        if (!NP) {
+            Logger->E("failed to allocate server info");
+            return false;
+        }
+        P = NP;
+        Logger->I("OnRegisterAuditAccountServer: ServerId=%" PRIx64 "", R.ServerId);
+        return true;
     }
 
     auto & GetServerListManager() const { return ServerListManager; }
@@ -102,10 +143,11 @@ struct xDownloadServerService : xService {
         switch (CommandId) {
             case Cmd_DownloadAuthCacheServerList:
                 return OnDownloadAuthCacheServerList(Connection, PayloadPtr, PayloadSize);
-            case Cmd_DownloadDeviceAuditServerList:
-                return true;
-            case Cmd_DownloadAccountAuditCollectorServerList:
-                return true;
+            case Cmd_DownloadAuditDeviceServerList:
+                return OnDownloadAuditDeviceServerList(Connection, PayloadPtr, PayloadSize);
+            case Cmd_DownloadAuditAccountServerList:
+                return OnDownloadAuditAccountServerList(Connection, PayloadPtr, PayloadSize);
+
             default:
                 break;
         }
@@ -144,10 +186,80 @@ struct xDownloadServerService : xService {
         return true;
     }
 
+    //
+    bool OnDownloadAuditDeviceServerList(xServiceClientConnection & Connection, ubyte * PayloadPtr, size_t PayloadSize) {
+        auto R = xPP_DownloadAuditDeviceServerList();
+        if (!R.Deserialize(PayloadPtr, PayloadSize)) {
+            return false;
+        }
+        auto & M       = RegisterServerService.GetServerListManager();
+        auto   Version = M.GetAuditDeviceServerInfoListVersion();
+        if (R.Version == Version) {
+            auto Resp    = xPP_DownloadAuditDeviceServerListResp();
+            Resp.Version = Version;
+            PostMessage(Connection, Cmd_DownloadAuditDeviceServerListResp, 0, Resp);
+            return true;
+        }
+
+        if (Version != AuditDeviceServerListVersion) {
+            auto List    = M.GetAuditDeviceServerInfoList();
+            auto Resp    = xPP_DownloadAuditDeviceServerListResp();
+            Resp.Version = Version;
+            for (auto & S : List) {
+                Resp.ServerInfoList.push_back(xPP_DownloadAuditDeviceServerListResp::xServerInfo{
+                    .ServerId            = S.ServerId,
+                    .ExportServerAddress = S.ServerAddress,
+                });
+            }
+            AuditDeviceServerListResponseSize = WriteMessage(AuditDeviceServerListResponse, Cmd_DownloadAuditDeviceServerListResp, 0, Resp);
+        }
+        PostData(Connection, AuditDeviceServerListResponse, AuditDeviceServerListResponseSize);
+        return true;
+    }
+
+    //
+    bool OnDownloadAuditAccountServerList(xServiceClientConnection & Connection, ubyte * PayloadPtr, size_t PayloadSize) {
+        auto R = xPP_DownloadAuditAccountServerList();
+        if (!R.Deserialize(PayloadPtr, PayloadSize)) {
+            return false;
+        }
+        auto & M       = RegisterServerService.GetServerListManager();
+        auto   Version = M.GetAuditAccountServerInfoListVersion();
+        if (R.Version == Version) {
+            auto Resp    = xPP_DownloadAuditAccountServerListResp();
+            Resp.Version = Version;
+            PostMessage(Connection, Cmd_DownloadAuditAccountServerListResp, 0, Resp);
+            return true;
+        }
+
+        if (Version != AuditAccountServerListVersion) {
+            auto List    = M.GetAuditAccountServerInfoList();
+            auto Resp    = xPP_DownloadAuditAccountServerListResp();
+            Resp.Version = Version;
+            for (auto & S : List) {
+                Resp.ServerInfoList.push_back(xPP_DownloadAuditAccountServerListResp::xServerInfo{
+                    .ServerId            = S.ServerId,
+                    .ExportServerAddress = S.ServerAddress,
+                });
+            }
+            AuditAccountServerListResponseSize = WriteMessage(AuditAccountServerListResponse, Cmd_DownloadAuditAccountServerListResp, 0, Resp);
+        }
+        PostData(Connection, AuditAccountServerListResponse, AuditAccountServerListResponseSize);
+        return true;
+    }
+
 private:
     uint32_t AuthCacheServerListVersion = 0;
     ubyte    AuthCacheServerListResponse[MaxPacketSize];
     size_t   AuthCacheServerListResponseSize = {};
+
+    uint32_t AuditDeviceServerListVersion = 0;
+    ubyte    AuditDeviceServerListResponse[MaxPacketSize];
+    size_t   AuditDeviceServerListResponseSize = {};
+
+    uint32_t AuditAccountServerListVersion = 0;
+    ubyte    AuditAccountServerListResponse[MaxPacketSize];
+    size_t   AuditAccountServerListResponseSize = {};
 };
 
 xDownloadServerService DownloadServerService;

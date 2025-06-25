@@ -18,7 +18,7 @@ struct xPP_RegisterAuthCacheServer : xBinaryMessage {
     //
 };
 
-struct xPP_RegiesterDeviceAuditCollectorServer : xBinaryMessage {
+struct xPP_RegisterAuditDeviceServer : xBinaryMessage {
 
     void SerializeMembers() override {
         W(ServerId);
@@ -36,7 +36,7 @@ struct xPP_RegiesterDeviceAuditCollectorServer : xBinaryMessage {
     //
 };
 
-struct xPP_RegiesterAccountAuditCollectorServer : xBinaryMessage {
+struct xPP_RegisterAuditAccountServer : xBinaryMessage {
 
     void SerializeMembers() override {
         W(ServerId);
