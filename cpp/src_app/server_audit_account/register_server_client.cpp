@@ -5,8 +5,13 @@
 #include <pp_protocol/command.hpp>
 #include <pp_protocol/internal/all.hpp>
 
+bool xAA_xServerIdClient::Init(xIoContext * ICP, xNetAddress TargetAddress) {
+    return xServerIdClient::Init(ICP, TargetAddress, RuntimeEnv.DefaultLocalServerIdFilePath);
+}
+
 void xAA_xServerIdClient::OnServerIdUpdated(uint64_t NewServerId) {
     Logger->I("OnServerIdUpdated: %" PRIx64 "", NewServerId);
+    DumpLocalServerId(RuntimeEnv.DefaultLocalServerIdFilePath);
     RegisterServerClient.UpdateServerId(NewServerId);
 }
 

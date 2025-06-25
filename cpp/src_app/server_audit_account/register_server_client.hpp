@@ -5,8 +5,8 @@
 
 class xAA_xServerIdClient : public xServerIdClient {
 public:
+    bool Init(xIoContext * ICP, xNetAddress TargetAddress);
     using xServerIdClient::Clean;
-    using xServerIdClient::Init;
 
 protected:
     void OnServerIdUpdated(uint64_t NewServerId) override;
