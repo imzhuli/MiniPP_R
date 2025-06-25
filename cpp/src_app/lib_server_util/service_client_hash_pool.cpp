@@ -87,6 +87,14 @@ void xServiceClientHashPool::UpdateServerList(const std::vector<xServerInfo> & N
         auto & S = ActiveServerList[OldIndex];
         auto & D = NewServerInfoList[NewIndex];
         if (S->ServerId == D.ServerId) {
+            if (S->Address != D.Address) {
+                S->DeleteMark = true;
+                DeleteServerList.push_back(S);
+
+                auto NSP                         = new xServerContext();
+                static_cast<xServerInfo &>(*NSP) = D;
+                UninitializedServerList.push_back(NSP);
+            }
             ++OldIndex;
             ++NewIndex;
             continue;
@@ -99,7 +107,7 @@ void xServiceClientHashPool::UpdateServerList(const std::vector<xServerInfo> & N
             continue;
         } else {  // new
             auto NSP                         = new xServerContext();
-            static_cast<xServerInfo &>(*NSP) = NewServerInfoList[NewIndex];
+            static_cast<xServerInfo &>(*NSP) = D;
             UninitializedServerList.push_back(NSP);
             ++NewIndex;
             continue;
