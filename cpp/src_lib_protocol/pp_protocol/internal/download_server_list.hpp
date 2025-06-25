@@ -10,7 +10,7 @@ struct xPP_DownloadAuthCacheServerList : xBinaryMessage {
 
 struct xPP_DownloadAuthCacheServerListResp : xBinaryMessage {
 
-    struct ServerInfo {
+    struct xServerInfo {
         uint64_t    ServerId;
         xNetAddress ExportServerAddress;
     };
@@ -42,8 +42,8 @@ struct xPP_DownloadAuthCacheServerListResp : xBinaryMessage {
         }
     }
 
-    uint32_t                Version;
-    std::vector<ServerInfo> ServerInfoList;
+    uint32_t                 Version;
+    std::vector<xServerInfo> ServerInfoList;
     //
 };
 

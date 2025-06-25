@@ -1,4 +1,4 @@
-#include "../lib_server_util/all.hpp"
+#include "../lib_server_util/base.hpp"
 #include "./server_list_manager.hpp"
 
 #include <pp_common/base.hpp>
@@ -83,6 +83,8 @@ struct xRegisterServerService : xService {
         return false;
     }
 
+    auto & GetServerListManager() const { return ServerListManager; }
+
     //
 private:
     xSL_InternalServerListManager ServerListManager;
@@ -95,10 +97,11 @@ struct xDownloadServerService : xService {
     void OnClientConnected(xServiceClientConnection & Connection) override {}
 
     void OnClientClose(xServiceClientConnection & Connection) override {}
+
     bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override {
         switch (CommandId) {
             case Cmd_DownloadAuthCacheServerList:
-                return OnDownloadAuthCacheServerList(Connection, CommandId, RequestId, PayloadPtr, PayloadSize);
+                return OnDownloadAuthCacheServerList(Connection, PayloadPtr, PayloadSize);
             case Cmd_DownloadDeviceAuditServerList:
                 return true;
             case Cmd_DownloadAccountAuditCollectorServerList:
@@ -111,9 +114,40 @@ struct xDownloadServerService : xService {
     }
 
     //
-    bool OnDownloadAuthCacheServerList(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
-        return false;
+    bool OnDownloadAuthCacheServerList(xServiceClientConnection & Connection, ubyte * PayloadPtr, size_t PayloadSize) {
+        auto R = xPP_DownloadAuthCacheServerList();
+        if (!R.Deserialize(PayloadPtr, PayloadSize)) {
+            return false;
+        }
+        auto & M       = RegisterServerService.GetServerListManager();
+        auto   Version = M.GetAuthCacheServerInfoListVersion();
+        if (R.Version == Version) {
+            auto Resp    = xPP_DownloadAuthCacheServerListResp();
+            Resp.Version = Version;
+            PostMessage(Connection, Cmd_DownloadAuthCacheServerListResp, 0, Resp);
+            return true;
+        }
+
+        if (Version != AuthCacheServerListVersion) {
+            auto List    = M.GetAuthCacheServerInfoList();
+            auto Resp    = xPP_DownloadAuthCacheServerListResp();
+            Resp.Version = Version;
+            for (auto & S : List) {
+                Resp.ServerInfoList.push_back(xPP_DownloadAuthCacheServerListResp::xServerInfo{
+                    .ServerId            = S.ServerId,
+                    .ExportServerAddress = S.ServerAddress,
+                });
+            }
+            AuthCacheServerListResponseSize = WriteMessage(AuthCacheServerListResponse, Cmd_DownloadAuthCacheServerListResp, 0, Resp);
+        }
+        PostData(Connection, AuthCacheServerListResponse, AuthCacheServerListResponseSize);
+        return true;
     }
+
+private:
+    uint32_t AuthCacheServerListVersion = 0;
+    ubyte    AuthCacheServerListResponse[MaxPacketSize];
+    size_t   AuthCacheServerListResponseSize = {};
 };
 
 xDownloadServerService DownloadServerService;

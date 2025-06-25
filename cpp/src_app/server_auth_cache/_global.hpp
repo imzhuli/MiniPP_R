@@ -1,5 +1,5 @@
 #pragma once
-#include "../lib_server_util/all.hpp"
+#include "../lib_server_util/base.hpp"
 #include "./register_server_client.hpp"
 
 #include <pp_common/base.hpp>

@@ -1,4 +1,4 @@
-#include "../lib_server_util/all.hpp"
+#include "../lib_server_util/base.hpp"
 #include "./_global.hpp"
 
 #include <pp_protocol/command.hpp>
@@ -18,9 +18,7 @@ public:
     }
     using xService::Tick;
 
-    void OnClientConnected(xServiceClientConnection & Connection) override {
-        Connections.push_back(&Connection);
-    }
+    void OnClientConnected(xServiceClientConnection & Connection) override { Connections.push_back(&Connection); }
 
     void OnClientClose(xServiceClientConnection & Connection) override {
         auto I = Connections.begin();

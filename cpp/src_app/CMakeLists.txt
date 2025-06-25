@@ -33,6 +33,7 @@ endif()
 
 aux_source_directory("./lib_backend_connection"    LIB_SRC)
 aux_source_directory("./lib_server_util"           LIB_SRC)
+aux_source_directory("./lib_server_util/extra"     LIB_SRC)
 
 add_library(server ${LIB_SRC})
 target_compile_definitions(server PRIVATE X_OPTION_STATIC)
@@ -74,6 +75,9 @@ set(target_list
 	
 	server_stream_usage_audit_dispatcher
 	server_stream_usage_audit_reporter
+
+	server_test_server_list
+
 	)
 
 

@@ -1,4 +1,4 @@
-#include "../lib_server_util/all.hpp"
+#include "../lib_server_util/base.hpp"
 
 #include <pp_common/base.hpp>
 #include <server_arch/service.hpp>
