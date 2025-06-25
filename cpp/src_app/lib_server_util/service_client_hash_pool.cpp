@@ -98,8 +98,7 @@ void xServiceClientHashPool::UpdateServerList(const std::vector<xServerInfo> & N
             ++OldIndex;
             ++NewIndex;
             continue;
-        }
-        if (S->ServerId < D.ServerId) {
+        } else if (S->ServerId < D.ServerId) {
             // delete:
             S->DeleteMark = true;
             DeleteServerList.push_back(S);
