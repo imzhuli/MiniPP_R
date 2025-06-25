@@ -36,7 +36,14 @@ bool xDownloadAuthCacheServerListClient::OnServerPacket(xPacketCommandId Command
     if (AuthCacheServerListVersion == R.Version) {
         return true;
     }
-    ServerInfoList             = R.ServerInfoList;
+
+    for (auto & S : R.ServerInfoList) {
+        SortedServerInfoList.emplace_back(xServerInfo{
+            .ServerId = S.ServerId,
+            .Address  = S.ExportServerAddress,
+        });
+    }
+    std::sort(SortedServerInfoList.begin(), SortedServerInfoList.end(), [](xServerInfo & lhs, xServerInfo & rhs) { return lhs.ServerId < rhs.ServerId; });
     AuthCacheServerListVersion = R.Version;
 
     OnServerListUpdated();

@@ -6,10 +6,13 @@ class xDownloadAuthCacheServerListClient : public xClient {
 public:
     static constexpr const uint64_t MIN_UPDATE_INTERVAL_MS = 60'000;
 
-    using xServerInfo = xPP_DownloadAuthCacheServerListResp::xServerInfo;
+    struct xServerInfo {
+        uint64_t    ServerId;
+        xNetAddress Address;
+    };
 
     uint32_t     GetVersion() const { return AuthCacheServerListVersion; }
-    const auto & GetServerInfoList() const { return ServerInfoList; }
+    const auto & GetSortedServerInfoList() const { return SortedServerInfoList; }
     void         SetUpdateInterval(uint64_t IntervalMS = 60'000);
 
 protected:
@@ -32,6 +35,6 @@ private:
     uint64_t                 UpdateIntervalMS           = MIN_UPDATE_INTERVAL_MS;
     uint64_t                 LastRequestTimestampMS     = 0;
     uint32_t                 AuthCacheServerListVersion = 0;
-    std::vector<xServerInfo> ServerInfoList;
+    std::vector<xServerInfo> SortedServerInfoList;
     //
 };
