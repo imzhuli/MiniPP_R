@@ -3,12 +3,8 @@
 
 struct xQueryAuthCache : xBinaryMessage {
 
-    void SerializeMembers() override {
-        W(UserPass);
-    }
-    void DeserializeMembers() override {
-        R(UserPass);
-    }
+    void SerializeMembers() override { W(UserPass); }
+    void DeserializeMembers() override { R(UserPass); }
 
     std::string_view UserPass;
     //
@@ -17,6 +13,7 @@ struct xQueryAuthCache : xBinaryMessage {
 struct xQueryAuthCacheResp : xBinaryMessage {
 
     void SerializeMembers() override {
+        W(AuditId);
         W(CountryId);
         W(StateId);
         W(CityId);
@@ -25,8 +22,10 @@ struct xQueryAuthCacheResp : xBinaryMessage {
         W(RequireUdp);
         W(RequireRemoteDns);
         W(AutoChangeIp);
+        W(PAToken);
     }
     void DeserializeMembers() override {
+        R(AuditId);
         R(CountryId);
         R(StateId);
         R(CityId);
@@ -35,15 +34,18 @@ struct xQueryAuthCacheResp : xBinaryMessage {
         R(RequireUdp);
         R(RequireRemoteDns);
         R(AutoChangeIp);
+        R(PAToken);
     }
 
-    xCountryId CountryId;
-    xStateId   StateId;
-    xCityId    CityId;
-    bool       IsBlocked;
-    bool       RequireIpv6;
-    bool       RequireUdp;
-    bool       RequireRemoteDns;
-    bool       AutoChangeIp;
+    xAuditId         AuditId;
+    xCountryId       CountryId;
+    xStateId         StateId;
+    xCityId          CityId;
+    bool             IsBlocked;
+    bool             RequireIpv6;
+    bool             RequireUdp;
+    bool             RequireRemoteDns;
+    bool             AutoChangeIp;
+    std::string_view PAToken;
     //
 };

@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-std::string xPPB_AuthByUserPassResp::ToString() const {
+std::string xPPB_BackendAuthByUserPassResp::ToString() const {
     auto O = std::ostringstream();
     O << "EC: " << (uint32_t)ErrorCode << endl;
     if (ErrorCode) {

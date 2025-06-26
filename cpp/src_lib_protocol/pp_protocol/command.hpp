@@ -49,10 +49,10 @@ static constexpr const xPacketCommandId Cmd_DeviceRelayServerInfo2      = Cmd_Ba
 static constexpr const xPacketCommandId Cmd_DeviceRelayServerInfoSingle = Cmd_BackendBase + 0x07;  // 2025-05-28 新增, 无返回
 static constexpr const xPacketCommandId Cmd_AuditThirdAccountUsage      = Cmd_BackendBase + 0x08;  // 2025-05-28 新增, 无返回
 
-static constexpr const xPacketCommandId Cmd_BackendChallenge     = Cmd_BackendBase + 0x101;
-static constexpr const xPacketCommandId Cmd_BackendChallengeResp = Cmd_BackendBase + 0x102;
-static constexpr const xPacketCommandId Cmd_AuthByUserPass       = Cmd_BackendBase + 0x201;
-static constexpr const xPacketCommandId Cmd_AuthByUserPassResp   = Cmd_BackendBase + 0x202;
+static constexpr const xPacketCommandId Cmd_BackendChallenge          = Cmd_BackendBase + 0x101;
+static constexpr const xPacketCommandId Cmd_BackendChallengeResp      = Cmd_BackendBase + 0x102;
+static constexpr const xPacketCommandId Cmd_BackendAuthByUserPass     = Cmd_BackendBase + 0x201;
+static constexpr const xPacketCommandId Cmd_BackendAuthByUserPassResp = Cmd_BackendBase + 0x202;
 
 // server management:
 static constexpr const xPacketCommandId Cmd_ServerManagementBase    = 0x05'000;

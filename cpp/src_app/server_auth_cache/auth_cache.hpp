@@ -17,8 +17,11 @@ struct xAC_CacheData {
     bool IsBlocked;
     bool RequireIpv6;
     bool RequireUdp;
+    bool RequireRemoteDns;
     bool AutoChangeIp;
     bool FixDeviceTimeout;
+
+    std::string PAToken;
 };
 
 struct xAC_CacheNode : xAC_CacheTimeoutNode {

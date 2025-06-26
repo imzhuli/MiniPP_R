@@ -6,7 +6,7 @@
 
 bool xAC_AuthBackendConnectionPool::OnBackendPacket(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
     switch (CommandId) {
-        case Cmd_AuthByUserPassResp:
+        case Cmd_BackendAuthByUserPassResp:
             return OnCmdAuthByUserPassResp(CommandId, RequestId, PayloadPtr, PayloadSize);
 
         default:
@@ -17,7 +17,7 @@ bool xAC_AuthBackendConnectionPool::OnBackendPacket(xPacketCommandId CommandId, 
 }
 
 bool xAC_AuthBackendConnectionPool::OnCmdAuthByUserPassResp(xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
-    auto P = xPPB_AuthByUserPassResp();
+    auto P = xPPB_BackendAuthByUserPassResp();
     if (!P.Deserialize(PayloadPtr, PayloadSize)) {
         X_DEBUG_PRINTF("invalid protocol");
         return false;
@@ -29,14 +29,22 @@ bool xAC_AuthBackendConnectionPool::OnCmdAuthByUserPassResp(xPacketCommandId Com
 
 /////////////////////////////
 
-bool xAC_AuthService::Init() {
+bool xAC_AuthService::Init(xIoContext * ICP, const xNetAddress & BindAddress) {
+    RuntimeAssert(xService::Init(ICP, BindAddress, 10000, true));
     RuntimeAssert(CacheManager.Init());
     RuntimeAssert(RequestContextPool.Init(20'000));
     return true;
 }
+
 void xAC_AuthService::Clean() {
     RequestContextPool.Clean();
     CacheManager.Clean();
+}
+
+void xAC_AuthService::OnTick(uint64_t NowMS) {
+    CacheManager.Tick();
+    RequestContextPool.RemoveTimeoutRequests(2'000);
+    TickAll(NowMS, BackendPool);
 }
 
 bool xAC_AuthService::OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) {
@@ -52,7 +60,30 @@ bool xAC_AuthService::OnClientPacket(xServiceClientConnection & Connection, xPac
         return true;
     }
 
-    auto Resp = xQueryAuthCacheResp();
-    PostMessage(Connection, Cmd_AuthService_QueryAuthCacheResp, RequestId, Resp);
+    auto NP = CacheManager.GetCacheNode(std::string(Req.UserPass));
+    if (!NP) {
+        PostResposne(Connection, RequestId, NP);
+        return true;
+    }
+
+    Todo("make async request");
     return true;
+}
+
+void xAC_AuthService::PostResposne(xServiceClientConnection & Connection, xPacketRequestId RequestId, const xAC_CacheNode * NP) {
+    auto   Resp  = xQueryAuthCacheResp();
+    auto & C     = NP->Data;
+    Resp.AuditId = C.AuditId;
+
+    Resp.CountryId        = C.CountryId;
+    Resp.StateId          = C.StateId;
+    Resp.CityId           = C.CityId;
+    Resp.IsBlocked        = C.IsBlocked;
+    Resp.RequireIpv6      = C.RequireIpv6;
+    Resp.RequireUdp       = C.RequireUdp;
+    Resp.RequireRemoteDns = C.RequireRemoteDns;
+    Resp.AutoChangeIp     = C.AutoChangeIp;
+    Resp.PAToken          = C.PAToken;
+
+    PostMessage(Connection, Cmd_AuthService_QueryAuthCacheResp, RequestId, Resp);
 }

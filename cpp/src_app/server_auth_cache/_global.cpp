@@ -10,3 +10,4 @@ uint64_t CacheNodeTimeoutMS = 10 * 60'000;
 
 xAC_xServerIdClient      ServerIdClient;
 xAC_RegisterServerClient RegisterServerClient;
+xAC_AuthService          AuthService;

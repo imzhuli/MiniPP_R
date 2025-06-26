@@ -1,7 +1,7 @@
 #pragma once
 #include "../base.hpp"
 
-class xPPB_AuthByUserPass : public xBinaryMessage {
+class xPPB_BackendAuthByUserPass : public xBinaryMessage {
 public:
     void SerializeMembers() override {
         W(UserPass);
@@ -17,13 +17,14 @@ public:
     xNetAddress ClientIp;
 };
 
-class xPPB_AuthByUserPassResp : public xBinaryMessage {
+class xPPB_BackendAuthByUserPassResp : public xBinaryMessage {
 public:
     void SerializeMembers() override {
         W(ErrorCode);
         if (!ErrorCode) {
             W(AuditId, ContinentId, CountryId, StateId, CityId, Duration, Random);
             W(AutoChangeIpOnDeviceOffline, EnableUdp, Ipv6Prefered);
+            W(PoolFlags, ServerToken);
             W(Redirect, AuditIdForThirdPartyResource);
         }
         if (xBinaryMessageWriter::HasError()) {
@@ -35,6 +36,7 @@ public:
         if (!ErrorCode) {
             R(AuditId, ContinentId, CountryId, StateId, CityId, Duration, Random);
             R(AutoChangeIpOnDeviceOffline, EnableUdp, Ipv6Prefered);
+            R(PoolFlags, ServerToken);
             R(Redirect, AuditIdForThirdPartyResource);
         }
         if (xBinaryMessageReader::HasError()) {
@@ -57,6 +59,7 @@ public:
     bool         EnableUdp;
     bool         Ipv6Prefered;
     std::string  PoolFlags;
+    std::string  ServerToken;
     std::string  Redirect;
     uint32_t     AuditIdForThirdPartyResource;
 };
