@@ -1,6 +1,6 @@
 #include "../lib_backend_connection/backend_connection_pool.hpp"
+#include "../lib_server_util/auth_cache/auth_cache_client.hpp"
 #include "./_global.hpp"
-#include "./auth_cache.hpp"
 
 #include <pp_protocol/_backend/auth_by_user_pass.hpp>
 #include <pp_protocol/command.hpp>

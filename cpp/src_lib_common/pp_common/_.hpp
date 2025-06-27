@@ -7,6 +7,9 @@
 #include <core/indexed_storage.hpp>
 #include <core/list.hpp>
 #include <core/logger.hpp>
+#include <core/memory.hpp>
+#include <core/memory_pool.hpp>
+#include <core/optional.hpp>
 #include <core/string.hpp>
 #include <crypto/base64.hpp>
 #include <crypto/md5.hpp>
@@ -49,9 +52,12 @@ using xel::xList;
 using xel::xListNode;
 using xel::xLogger;
 using xel::xMd5Result;
+using xel::xMemoryPool;
+using xel::xMemoryPoolOptions;
 using xel::xNetAddress;
 using xel::xObjectIdManager;
 using xel::xObjectIdManagerMini;
+using xel::xOptional;
 using xel::xPacket;
 using xel::xPacketCommandId;
 using xel::xPacketHeader;

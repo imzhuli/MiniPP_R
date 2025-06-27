@@ -1,7 +1,7 @@
 #pragma once
 #include "../lib_backend_connection/backend_connection_pool.hpp"
+#include "../lib_server_util/auth_cache/auth_cache_client.hpp"
 #include "../lib_server_util/base.hpp"
-#include "./auth_cache.hpp"
 
 #include <pp_common/base.hpp>
 
@@ -24,10 +24,10 @@ struct xAC_AuthService : xService {
 
     bool OnClientPacket(xServiceClientConnection & Connection, xPacketCommandId CommandId, xPacketRequestId RequestId, ubyte * PayloadPtr, size_t PayloadSize) override;
 
-    void PostResposne(xServiceClientConnection & Connection, xPacketRequestId RequestId, const xAC_CacheNode * CacheNode);
+    void PostResposne(xServiceClientConnection & Connection, xPacketRequestId RequestId, const xAuthCacheInfo * CacheNode);
 
     //
     xAC_AuthBackendConnectionPool BackendPool;
-    xAC_CacheManager              CacheManager;
+    xAuthCacheManager             CacheManager;
     xServiceRequestContextPool    RequestContextPool;
 };

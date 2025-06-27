@@ -31,9 +31,10 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	set(PLATFORM_LIBRARIES dl ${SYSTEM_CONFIGURATION_LIBRARY} ${FUNDATION_LIBRARY} ${IOKIT_LIBRARY} ${COCOA_LIBRARY} )
 endif()
 
-aux_source_directory("./lib_backend_connection"    LIB_SRC)
-aux_source_directory("./lib_server_util"           LIB_SRC)
-aux_source_directory("./lib_server_util/extra"     LIB_SRC)
+aux_source_directory("./lib_backend_connection"      LIB_SRC)
+aux_source_directory("./lib_server_util"             LIB_SRC)
+aux_source_directory("./lib_server_util/auth_cache"  LIB_SRC)
+aux_source_directory("./lib_server_util/extra"       LIB_SRC)
 
 add_library(server ${LIB_SRC})
 target_compile_definitions(server PRIVATE X_OPTION_STATIC)

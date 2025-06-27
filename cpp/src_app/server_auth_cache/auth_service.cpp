@@ -31,7 +31,7 @@ bool xAC_AuthBackendConnectionPool::OnCmdAuthByUserPassResp(xPacketCommandId Com
 
 bool xAC_AuthService::Init(xIoContext * ICP, const xNetAddress & BindAddress) {
     RuntimeAssert(xService::Init(ICP, BindAddress, 10000, true));
-    RuntimeAssert(CacheManager.Init());
+    RuntimeAssert(CacheManager.Init(100'000));
     RuntimeAssert(RequestContextPool.Init(20'000));
     return true;
 }
@@ -42,7 +42,7 @@ void xAC_AuthService::Clean() {
 }
 
 void xAC_AuthService::OnTick(uint64_t NowMS) {
-    CacheManager.Tick();
+    CacheManager.RemoveTimeoutCacheNodes(15 * 60'000);
     RequestContextPool.RemoveTimeoutRequests(2'000);
     TickAll(NowMS, BackendPool);
 }
@@ -60,9 +60,9 @@ bool xAC_AuthService::OnClientPacket(xServiceClientConnection & Connection, xPac
         return true;
     }
 
-    auto NP = CacheManager.GetCacheNode(std::string(Req.UserPass));
+    auto NP = CacheManager.AcquireCacheNode(std::string(Req.UserPass));
     if (!NP) {
-        PostResposne(Connection, RequestId, NP);
+        PostResposne(Connection, RequestId, NP->InfoOpt.Get());
         return true;
     }
 
@@ -70,20 +70,19 @@ bool xAC_AuthService::OnClientPacket(xServiceClientConnection & Connection, xPac
     return true;
 }
 
-void xAC_AuthService::PostResposne(xServiceClientConnection & Connection, xPacketRequestId RequestId, const xAC_CacheNode * NP) {
-    auto   Resp  = xQueryAuthCacheResp();
-    auto & C     = NP->Data;
-    Resp.AuditId = C.AuditId;
+void xAC_AuthService::PostResposne(xServiceClientConnection & Connection, xPacketRequestId RequestId, const xAuthCacheInfo * NP) {
+    auto Resp = xQueryAuthCacheResp();
 
-    Resp.CountryId        = C.CountryId;
-    Resp.StateId          = C.StateId;
-    Resp.CityId           = C.CityId;
-    Resp.IsBlocked        = C.IsBlocked;
-    Resp.RequireIpv6      = C.RequireIpv6;
-    Resp.RequireUdp       = C.RequireUdp;
-    Resp.RequireRemoteDns = C.RequireRemoteDns;
-    Resp.AutoChangeIp     = C.AutoChangeIp;
-    Resp.PAToken          = C.PAToken;
+    Resp.AuditId          = NP->AuditId;
+    Resp.CountryId        = NP->CountryId;
+    Resp.StateId          = NP->StateId;
+    Resp.CityId           = NP->CityId;
+    Resp.IsBlocked        = NP->IsBlocked;
+    Resp.RequireIpv6      = NP->RequireIpv6;
+    Resp.RequireUdp       = NP->RequireUdp;
+    Resp.RequireRemoteDns = NP->RequireRemoteDns;
+    Resp.AutoChangeIp     = NP->AutoChangeIp;
+    Resp.PAToken          = NP->PAToken;
 
     PostMessage(Connection, Cmd_AuthService_QueryAuthCacheResp, RequestId, Resp);
 }
